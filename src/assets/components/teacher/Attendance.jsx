@@ -209,10 +209,13 @@ const Attendance = () => {
                     >
                       <div>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          Date: {new Date(session.date).toLocaleString()}
+                          Attendance ID: {session.id}
                         </span>
                         <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">
-                          Attendance ID: {session.id}
+                          Created Date: {new Date(session.createdAt).toLocaleString()}
+                        </span>
+                        <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">
+                          Modified Date: {session.updatedAt ? new Date(session.updatedAt).toLocaleString() : 'N/A'}
                         </span>
                       </div>
                       <button
