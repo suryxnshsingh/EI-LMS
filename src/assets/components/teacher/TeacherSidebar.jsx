@@ -1,4 +1,4 @@
-import React, { Children, useState, useEffect } from 'react';
+import React, { Children, useState, useEffect, Profiler } from 'react';
 import { cn } from '../../../../lib/utils';
 import { 
   LayoutDashboard,
@@ -23,8 +23,8 @@ import TeacherDashboard from './TeacherDashboard';
 import SubjectDashboard from './SubjectDashboard';
 import Reports from './Reports';
 import ManageStudents from './ManageStudents';
-import subDash from '../subDash';
 import SubDash from '../subDash';
+import Profile from './Profile';
 import Tests from './Tests';
 import Cookies from 'js-cookie';
 
@@ -49,6 +49,11 @@ const TeacherSidebar = () => {
       label: "Dashboard",
       href: "/teachers/",
       icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    },
+    {
+      label: "Manage Attendance",
+      href: "/teachers/attendance",
+      icon: <ListTodo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Manage Tests",
@@ -166,12 +171,14 @@ const Dashboard = () => {
           <Routes>
             <Route path="/" element={<TeacherDashboard />} />
             <Route path="/:subjectCode" element={<SubjectDashboard />} />
+            <Route path="/attendance" element={<Attendance />} />
             <Route path="/students" element={<ManageStudents />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/reports/:subjectCode" element={<SubDash />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
           </div>
           </div>

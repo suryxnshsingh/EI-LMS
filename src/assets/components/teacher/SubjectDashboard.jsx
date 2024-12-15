@@ -4,13 +4,12 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Routes, Route, Link } from 'react-router-dom';
-import Attendance from './Attendance';
 import Assignments from './Assignment';
 import Notes from './Notes';
 import Tests from './Tests';
 import Books from './Books';
 
-const tabs = ["Attendance", "Assignments", "Tests", "Notes", "Books"];
+const tabs = ["Assignments", "Tests", "Notes", "Books"];
 const SubjectDashboard = () => {
     const { subjectCode } = useParams();
     const [selected, setSelected] = useState(tabs[0]);
@@ -28,7 +27,6 @@ const SubjectDashboard = () => {
             ))}
         </div>
         <div className='md:p-10 p-5'>
-        {selected === "Attendance" && <Attendance/>}
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
         {selected === "Tests" && <Tests/>}
