@@ -166,6 +166,7 @@ const Attendance = () => {
         <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 space-y-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <QrCode/>
               <select
                 value={selectedCourseForSession?.id || ''}
                 onChange={(e) => {
