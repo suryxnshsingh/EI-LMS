@@ -232,20 +232,13 @@ const Attendance = () => {
                           Attendance ID: {session.id}
                         </span>
                         <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">
-                          Created: {new Date(session.createdAt).toLocaleString()}
+                          Created Date:<br/> {new Date(session.createdAt).toLocaleString()}
                         </span>
                         <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">
-                          Modified Date: {session.updatedAt ? new Date(session.updatedAt).toLocaleString() : 'N/A'}
+                          Modified Date:<br/> {session.updatedAt ? new Date(session.updatedAt).toLocaleString() : 'N/A'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setQrCodeSession(session.id)} // Set QR code session
-                          disabled={!session.isActive} // Disable if session is not active
-                          className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                         <QrCode/>
-                        </button>
+                      <div className="flex flex-col md:flex-row items-center gap-2 mt-2 md:mt-0">
                         <button
                           onClick={() => toggleAttendanceSessionStatus(session.id, !session.isActive)}
                           disabled={togglingSession[session.id]}
@@ -261,30 +254,39 @@ const Attendance = () => {
                             session.isActive ? 'Deactivate' : 'Activate'
                           )}
                         </button>
-                        <div className="relative">
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() => toggleDropdown(session.id)}
-                            className="inline-flex items-center px-0 py-1 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors"
+                            onClick={() => setQrCodeSession(session.id)} // Set QR code session
+                            disabled={!session.isActive} // Disable if session is not active
+                            className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <MoreVertical />
+                            <QrCode/>
                           </button>
-                          {dropdownOpen[session.id] && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10">
-                              <button
-                                onClick={() => deleteSession(session.id)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-700"
-                              >
-                                Delete Session
-                              </button>
-                              <hr/>
-                              <button
-                                onClick={() => viewResponses(session.id)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-700"
-                              >
-                                View Responses
-                              </button>
-                            </div>
-                          )}
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleDropdown(session.id)}
+                              className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors"
+                            >
+                              <MoreVertical />
+                            </button>
+                            {dropdownOpen[session.id] && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10">
+                                <button
+                                  onClick={() => deleteSession(session.id)}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-700"
+                                >
+                                  Delete Session
+                                </button>
+                                <hr/>
+                                <button
+                                  onClick={() => viewResponses(session.id)}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-700"
+                                >
+                                  View Responses
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
