@@ -14,8 +14,8 @@ const ManageCourses = () => {
   const [create, setCreate] = useState(false);
 
 const teacherData = {
-  firstName: localStorage.getItem('firstName'),
-  lastName: localStorage.getItem('lastName'),
+  firstName: Cookies.get('firstName'),
+  lastName: Cookies.get('lastName'),
 };
 
 const fetchCourses = async () => {
@@ -366,7 +366,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
             <input
               type="text"
               name="name"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 dark:text-gray-200 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.name}
               onChange={handleChange}
@@ -381,7 +381,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
             <input
               type="text"
               name="code"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 dark:text-gray-200 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.code}
               onChange={handleChange}
@@ -396,7 +396,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
             <input
               type="text"
               name="session"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 dark:text-gray-200 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.session}
               onChange={handleChange}
@@ -411,7 +411,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
             <input
               type="text"
               name="semester"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 dark:text-gray-200 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.semester}
               onChange={handleChange}

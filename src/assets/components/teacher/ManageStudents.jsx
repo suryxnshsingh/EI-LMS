@@ -11,6 +11,7 @@ const ManageStudentsPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState({ courses: null, enrollments: null });
   const [activeTab, setActiveTab] = useState(0);
+  const [buttonLoading, setButtonLoading] = useState({ refresh: false, enrollments: {} });
 
   // Fetch teacher courses
   const fetchCourses = async () => {
@@ -71,6 +72,7 @@ const ManageStudentsPage = () => {
   };
 
   const handleRefresh = async () => {
+    setButtonLoading((prev) => ({ ...prev, refresh: true }));
     setRefreshing(true);
     setError({ courses: null, enrollments: null });
     await fetchCourses();
@@ -78,9 +80,14 @@ const ManageStudentsPage = () => {
       await fetchPendingEnrollments();
     }
     setRefreshing(false);
+    setButtonLoading((prev) => ({ ...prev, refresh: false }));
   };
 
   const handleEnrollmentStatus = async (enrollmentId, status) => {
+    setButtonLoading((prev) => ({
+      ...prev,
+      enrollments: { ...prev.enrollments, [enrollmentId]: true }
+    }));
     try {
       await axios.put(
         `${BASE_URL}/api/enrollment/enrollments/${enrollmentId}/status`,
@@ -97,6 +104,11 @@ const ManageStudentsPage = () => {
       setError((prev) => ({
         ...prev,
         enrollments: "Failed to update enrollment status"
+      }));
+    } finally {
+      setButtonLoading((prev) => ({
+        ...prev,
+        enrollments: { ...prev.enrollments, [enrollmentId]: false }
       }));
     }
   };
@@ -127,11 +139,11 @@ const ManageStudentsPage = () => {
             <h1 className="text-4xl font-semibold text-gray-900 dark:text-white">Manage Students</h1>
             <button
               onClick={handleRefresh}
-              disabled={refreshing}
+              disabled={refreshing || buttonLoading.refresh}
               className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
             >
-              <RotateCw className={`h-4 w-4 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              <RotateCw className={`h-4 w-4 mr-1.5 ${refreshing || buttonLoading.refresh ? 'animate-spin' : ''}`} />
+              {refreshing || buttonLoading.refresh ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
         </div>
@@ -191,16 +203,28 @@ const ManageStudentsPage = () => {
                         </div>
                         <div className="space-x-2 space-y-2">
                           <button
-                            className="inline-flex items-center px-3 py-1.5 border border-green-500 text-green-500 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 rounded text-sm font-medium transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 border border-green-500 text-green-500 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 rounded text-sm font-medium transition-colors disabled:opacity-50"
                             onClick={() => handleEnrollmentStatus(enrollment.id, 'ACCEPTED')}
+                            disabled={buttonLoading.enrollments[enrollment.id]}
                           >
-                            <Check className="h-4 w-4 mr-1" /> Accept
+                            {buttonLoading.enrollments[enrollment.id] ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4 mr-1" />
+                            )}
+                            Accept
                           </button>
                           <button
-                            className="inline-flex items-center px-3 py-1.5 border border-red-500 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded text-sm font-medium transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 border border-red-500 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded text-sm font-medium transition-colors disabled:opacity-50"
                             onClick={() => handleEnrollmentStatus(enrollment.id, 'REJECTED')}
+                            disabled={buttonLoading.enrollments[enrollment.id]}
                           >
-                            <X className="h-4 w-4 mr-1" /> Reject
+                            {buttonLoading.enrollments[enrollment.id] ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <X className="h-4 w-4 mr-1" />
+                            )}
+                            Reject
                           </button>
                         </div>
                       </div>
