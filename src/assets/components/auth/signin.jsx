@@ -6,6 +6,7 @@ import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 import Cookies from 'js-cookie';
+import { Sun, Moon } from 'lucide-react';
 
 const Signin = () => {
   const [loading, setLoading] = useState(true);
@@ -15,16 +16,21 @@ const Signin = () => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [theme, setTheme] = useState(Cookies.get("theme") || "dark");
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.documentElement.classList.add("dark");
-    Cookies.set("theme", "dark", { expires: 365 });
+    if (theme) {
+      document.documentElement.classList.add(theme);
+    } else {
+      document.documentElement.classList.add("dark");
+      Cookies.set("theme", "dark", { expires: 365 });
+    }
 
     setTimeout(() => {
       setLoading(false);
     }, 200);
-  }, []);
+  }, [theme]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -96,6 +102,14 @@ const Signin = () => {
     }
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    document.documentElement.classList.remove(theme);
+    document.documentElement.classList.add(newTheme);
+    Cookies.set("theme", newTheme, { expires: 365 });
+    setTheme(newTheme);
+  };
+
   // If loading, display skeleton
   if (loading) {
     return <SkeletonSignin />;
@@ -149,6 +163,11 @@ const Signin = () => {
             Don't have an account? <a href="/signup" className="text-blue-500 underline">Create Account</a>
           </p>
         </form>
+        <div className="flex justify-center mt-4">
+          <button onClick={toggleTheme} className="flex items-center justify-center p-2 rounded-full bg-gray-200 dark:bg-gray-800">
+            {theme === "dark" ? <Sun className="text-yellow-500" /> : <Moon className="text-gray-500" />}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ const TeacherSidebar = () => {
       : "light"
   );
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = Cookies.get("theme");
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
@@ -43,6 +43,16 @@ const TeacherSidebar = () => {
   }, []);
 
   const [open, setOpen] = useState(false);
+
+  const handleLogout = () => {
+    Cookies.remove("firstName");
+    Cookies.remove("lastName");
+    Cookies.remove("token");
+    Cookies.remove("userId");
+    Cookies.remove("userEmail");
+    Cookies.remove("userRole");
+    window.location.href = "/signin";
+  };
 
   const links = [
     {
@@ -89,11 +99,6 @@ const TeacherSidebar = () => {
       label: "Settings",
       href: "/teachers/settings",
       icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Logout",
-      href: "/signin",
-      icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     }
     
   ];
@@ -116,6 +121,13 @@ const TeacherSidebar = () => {
                 <span className='text-neutral-700 dark:text-neutral-200 text-md'>{link.label}</span>
                 </Link>
               ))}
+              <SidebarLink 
+              onClick={handleLogout}
+              className='pl-2'
+              link={{
+                label: 'Logout',
+                icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+              }} />
             </div>
           </div>
           <div>
@@ -199,7 +211,7 @@ const SettingsPage = () => {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('theme', theme);
+    Cookies.set('theme', theme);
   }, [theme]);
 
   const handleThemeToggle = () => {
