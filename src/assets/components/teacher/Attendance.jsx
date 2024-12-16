@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Loader2, RotateCw, BookUser, QrCode } from 'lucide-react';
+import { Loader2, RotateCw, BookUser, QrCode, MoreVertical } from 'lucide-react'; // Import MoreVertical icon
 import { QRCodeSVG } from 'qrcode.react'; // Correct QRCode import
 import { useMediaQuery } from 'react-responsive'; // Import useMediaQuery
 
@@ -20,6 +20,21 @@ const Attendance = () => {
   const [buttonLoading, setButtonLoading] = useState({ refresh: false, sessions: {} });
   const [qrCodeSession, setQrCodeSession] = useState(null); // Add state for QR code session
   const isSmallDevice = useMediaQuery({ maxWidth: 768 }); // Define media query for small devices
+  const [dropdownOpen, setDropdownOpen] = useState({}); // State for dropdown menu
+
+  const toggleDropdown = (id) => {
+    setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const deleteSession = (id) => {
+    // Implement delete session logic here
+    console.log(`Delete session ${id}`);
+  };
+
+  const viewResponses = (id) => {
+    // Implement view responses logic here
+    console.log(`View responses for session ${id}`);
+  };
 
   // Fetch teacher courses
   const fetchCourses = async () => {
@@ -223,7 +238,7 @@ const Attendance = () => {
                           Modified Date: {session.updatedAt ? new Date(session.updatedAt).toLocaleString() : 'N/A'}
                         </span>
                       </div>
-                      <div className="flex flex-col md:flex-row items-center gap-2">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => setQrCodeSession(session.id)} // Set QR code session
                           disabled={!session.isActive} // Disable if session is not active
@@ -246,6 +261,31 @@ const Attendance = () => {
                             session.isActive ? 'Deactivate' : 'Activate'
                           )}
                         </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleDropdown(session.id)}
+                            className="inline-flex items-center px-0 py-1 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors"
+                          >
+                            <MoreVertical />
+                          </button>
+                          {dropdownOpen[session.id] && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10">
+                              <button
+                                onClick={() => deleteSession(session.id)}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-700"
+                              >
+                                Delete Session
+                              </button>
+                              <hr/>
+                              <button
+                                onClick={() => viewResponses(session.id)}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-700"
+                              >
+                                View Responses
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
