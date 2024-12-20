@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Routes, Route, Link } from 'react-router-dom';
-import Attendance from './Attendance';
-import Assignments from './Assignment';
-import Notes from './Notes';
+import Attendance from './attendance/Attendance';
+import Assignments from './components/Assignment';
+import Notes from './components/Notes';
 import Tests from './Tests';
-import Books from './Books';
+import Books from './components/Books';
 
 const tabs = ["Attendance", "Assignments", "Tests", "Notes", "Books"];
 const SubjectDashboard = () => {

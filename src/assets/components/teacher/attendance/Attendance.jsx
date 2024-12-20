@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Loader2, RotateCw, BookUser, QrCode, MoreVertical } from 'lucide-react'; // Import MoreVertical icon
-import { QRCodeSVG } from 'qrcode.react'; // Correct QRCode import
-import { useMediaQuery } from 'react-responsive'; // Import useMediaQuery
+import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { useMediaQuery } from 'react-responsive';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -18,17 +18,40 @@ const Attendance = () => {
   const [creatingSession, setCreatingSession] = useState(false);
   const [togglingSession, setTogglingSession] = useState({});
   const [buttonLoading, setButtonLoading] = useState({ refresh: false, sessions: {} });
-  const [qrCodeSession, setQrCodeSession] = useState(null); // Add state for QR code session
+  const [qrCodeSession, setQrCodeSession] = useState(null); // QR code session
   const isSmallDevice = useMediaQuery({ maxWidth: 768 }); // Define media query for small devices
-  const [dropdownOpen, setDropdownOpen] = useState({}); // State for dropdown menu
+  const [dropdownOpen, setDropdownOpen] = useState({});
+  const [deletingSession, setDeletingSession] = useState({});
+  const [showAttendanceId, setShowAttendanceId] = useState(false); // State to toggle attendance ID visibility
 
   const toggleDropdown = (id) => {
     setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const deleteSession = (id) => {
-    // Implement delete session logic here
-    console.log(`Delete session ${id}`);
+  const deleteSession = async (id, teacherId) => {
+    setDeletingSession((prev) => ({ ...prev, [id]: true }));
+    try {
+      console.log(`Deleting session ${id} for teacher ${teacherId}`);
+
+      await axios.delete(`${BASE_URL}/api/attendance/attendance/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Cookies.get("token")}`
+        },
+        data: {
+          teacherId
+        }
+      });
+
+      console.log(`Session ${id} deleted successfully`);
+
+      fetchAttendanceSessions(selectedCourse.id);
+    } catch (err) {
+      console.error(`Failed to delete session ${id}:`, err);
+      setError(err.response?.data?.message || "Failed to delete attendance session");
+    } finally {
+      setDeletingSession((prev) => ({ ...prev, [id]: false }));
+    }
   };
 
   const viewResponses = (id) => {
@@ -69,6 +92,10 @@ const Attendance = () => {
 
   // Create attendance session
   const createAttendanceSession = async (courseId, teacherId, date, duration) => {
+    if (!selectedCourseForSession) {
+      setError("No course selected for session");
+      return;
+    }
     setCreatingSession(true);
     try {
       const response = await axios.post(`${BASE_URL}/api/attendance/attendance`, {
@@ -129,8 +156,14 @@ const Attendance = () => {
   useEffect(() => {
     if (selectedCourse) {
       fetchAttendanceSessions(selectedCourse.id);
+      setSelectedCourseForSession(selectedCourse); // Update selectedCourseForSession based on active tab
     }
   }, [selectedCourse]);
+
+  const handleDeleteSession = (sessionId) => {
+    const teacherId = selectedCourseForSession.teacherId;
+    deleteSession(sessionId, teacherId);
+  };
 
   if (loading) {
     return (
@@ -183,7 +216,7 @@ const Attendance = () => {
               <button
                 onClick={() => createAttendanceSession(selectedCourseForSession.id, selectedCourseForSession.teacherId, new Date().toISOString(), 60)}
                 disabled={creatingSession || !selectedCourseForSession}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="inline-flex text-center items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
                 {creatingSession ? (
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -257,7 +290,7 @@ const Attendance = () => {
                         </button>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setQrCodeSession(session.id)} // Set QR code session
+                            onClick={() => setQrCodeSession(session.id) && setShowAttendanceId(false)} // Set QR code session
                             disabled={!session.isActive} // Disable if session is not active
                             className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -271,17 +304,21 @@ const Attendance = () => {
                               <MoreVertical />
                             </button>
                             {dropdownOpen[session.id] && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10">
+                              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10 divide-y divide-gray-100 dark:divide-neutral-500">
                                 <button
-                                  onClick={() => deleteSession(session.id)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-700"
+                                  onClick={() => handleDeleteSession(session.id)}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-600"
+                                  disabled={deletingSession[session.id]}
                                 >
-                                  Delete Session
+                                  {deletingSession[session.id] ? (
+                                    <Loader2 className="h-4 w-4 text-center animate-spin" />
+                                  ) : (
+                                    'Delete Session'
+                                  )}
                                 </button>
-                                <hr/>
                                 <button
                                   onClick={() => viewResponses(session.id)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-700"
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-600"
                                 >
                                   View Responses
                                 </button>
@@ -304,18 +341,28 @@ const Attendance = () => {
       </div>
 
       {qrCodeSession && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
-          <div className="bg-white p-6 rounded-lg shadow-lg dark:bg-neutral-800">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white text-center">Attendance ID: {qrCodeSession}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
+          <div className="bg-white rounded-lg shadow-lg dark:bg-neutral-800 px-6 pb-6 pt-2">
+            <div className="flex justify-between items-center mb-3 pb-1 border-b-2 border-gray-200 dark:border-neutral-700">
+              <div className="flex items-center gap-2">
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-sm'}`}>
+                  Attendance ID: {qrCodeSession}
+                </h2>
+                <button
+                  onClick={() => setShowAttendanceId(!showAttendanceId)}
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  {showAttendanceId ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                </button>
+              </div>
               <button
-                onClick={() => setQrCodeSession(null)}
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              >
-                ❌
-              </button>
+              onClick={() => setQrCodeSession(null)}
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex w-full justify-end"
+            >
+              ❌
+            </button>
             </div>
-            <QRCodeSVG value={qrCodeSession.toString()} size={isSmallDevice ? 300 : 512} /> {/* Adjust size based on device */}
+            <QRCodeSVG value={qrCodeSession.toString()} size={isSmallDevice ? 300 : 550} /> {/* Adjust size based on device */}
           </div>
         </div>
       )}

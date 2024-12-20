@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
-import Attendance from './Attendance';
+import Attendance from './attendance/Attendance';
 import ManageCourses from './ManageCourses';
 import TeacherDashboard from './TeacherDashboard';
 import SubjectDashboard from './SubjectDashboard';
