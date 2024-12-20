@@ -345,8 +345,12 @@ const Attendance = () => {
           <div className="bg-white rounded-lg shadow-lg dark:bg-neutral-800 px-6 pb-6 pt-2">
             <div className="flex justify-between items-center mb-3 pb-1 border-b-2 border-gray-200 dark:border-neutral-700">
               <div className="flex items-center gap-2">
-                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-sm'}`}>
-                  Attendance ID: {qrCodeSession}
+              
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center`}>
+                    Attendance ID :
+                </h2>
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-[4px]'}`}>
+                   {qrCodeSession}
                 </h2>
                 <button
                   onClick={() => setShowAttendanceId(!showAttendanceId)}
