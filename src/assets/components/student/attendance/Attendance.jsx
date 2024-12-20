@@ -97,12 +97,12 @@ const Attendance = () => {
                 value={attendanceId}
                 onChange={(e) => setAttendanceId(e.target.value)}
                 placeholder="Enter Attendance ID"
-                className="px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
+                className="px-3 py-2 rounded-lg text-center border border-gray-200 dark:border-neutral-700 bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
               />
               <button
                 onClick={handleMarkAttendance}
                 disabled={loading || !attendanceId}
-                className="inline-flex text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex justify-center text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

@@ -198,25 +198,27 @@ const Attendance = () => {
 
         <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 space-y-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <QrCode/>
-              <select
-                value={selectedCourseForSession?.id || ''}
-                onChange={(e) => {
-                  const course = courses.find(course => course.id === parseInt(e.target.value));
-                  setSelectedCourseForSession(course);
-                }}
-                className="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
-              >
-                <option value="" disabled>Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>{course.name}</option>
-                ))}
-              </select>
+            <div className="flex flex-col justify-center md:flex-row md:items-center gap-4">
+              <div className='flex justify-between items-center gap-4 w-full'>
+                <QrCode size={30}/>
+                <select
+                  value={selectedCourseForSession?.id || ''}
+                  onChange={(e) => {
+                    const course = courses.find(course => course.id === parseInt(e.target.value));
+                    setSelectedCourseForSession(course);
+                  }}
+                  className="px-3 py-2 rounded-lg text-start border border-gray-200 dark:border-neutral-700 bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
+                >
+                  <option value="" disabled>Select Course</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>{course.name}</option>
+                  ))}
+                </select>
+              </div>
               <button
                 onClick={() => createAttendanceSession(selectedCourseForSession.id, selectedCourseForSession.teacherId, new Date().toISOString(), 60)}
                 disabled={creatingSession || !selectedCourseForSession}
-                className="inline-flex text-center items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex justify-center text-nowrap text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
                 {creatingSession ? (
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -349,7 +351,7 @@ const Attendance = () => {
                 <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center`}>
                     Attendance ID :
                 </h2>
-                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-[4px]'}`}>
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-[5px]'}`}>
                    {qrCodeSession}
                 </h2>
                 <button
