@@ -182,7 +182,7 @@ const Attendance = () => {
             <button
               onClick={handleRefresh}
               disabled={refreshing || buttonLoading.refresh}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center px-3 py-1.5 transition-all text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 disabled:opacity-50"
             >
               <RotateCw className={`h-4 w-4 mr-1.5 ${refreshing || buttonLoading.refresh ? 'animate-spin' : ''}`} />
               {refreshing || buttonLoading.refresh ? 'Refreshing...' : 'Refresh'}
