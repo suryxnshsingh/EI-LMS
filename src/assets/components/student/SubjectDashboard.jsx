@@ -2,21 +2,18 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Routes, Route, Link } from 'react-router-dom';
-import Attendance from './attendance/Attendance';
 import Assignments from './components/Assignment';
 import Notes from './components/Notes';
 import Tests from './Tests';
 import Books from './components/Books';
 
-const tabs = ["Attendance", "Assignments", "Tests", "Notes", "Books"];
+const tabs = [ "Assignments", "Tests", "Notes", "Books"];
 const SubjectDashboard = () => {
     const { subjectCode } = useParams();
     const [selected, setSelected] = useState(tabs[0]);
   return (
     <div className='w-full'>
-        <p className="text-4xl font-semibold md:m-10 m-5 ">Subject Name</p>
+        <p className="text-4xl font-semibold md:m-10 m-5 ">{ subjectCode }</p>
         <div className="md:px-10 px-5  flex items-center flex-wrap gap-4 overflow-x-auto">
             {tabs.map((tab) => (
                 <Chip
@@ -28,7 +25,6 @@ const SubjectDashboard = () => {
             ))}
         </div>
         <div className='md:p-10 p-5'>
-        {selected === "Attendance" && <Attendance/>}
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
         {selected === "Tests" && <Tests/>}

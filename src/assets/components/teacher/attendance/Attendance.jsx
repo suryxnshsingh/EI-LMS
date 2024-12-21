@@ -174,7 +174,7 @@ const Attendance = () => {
   }
 
   return (
-    <div className="w-full m-10">
+    <div className="w-full m-2 md:m-10">
       <div className="container p-4 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
@@ -301,7 +301,7 @@ const Attendance = () => {
                           <div className="relative">
                             <button
                               onClick={() => toggleDropdown(session.id)}
-                              className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors"
+                              className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-900 transition-colors"
                             >
                               <MoreVertical />
                             </button>
@@ -309,7 +309,7 @@ const Attendance = () => {
                               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl z-10 divide-y divide-gray-100 dark:divide-neutral-500">
                                 <button
                                   onClick={() => handleDeleteSession(session.id)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-600"
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-t-lg dark:hover:bg-neutral-900"
                                   disabled={deletingSession[session.id]}
                                 >
                                   {deletingSession[session.id] ? (
@@ -320,7 +320,7 @@ const Attendance = () => {
                                 </button>
                                 <button
                                   onClick={() => viewResponses(session.id)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-600"
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-b-lg dark:hover:bg-neutral-900"
                                 >
                                   View Responses
                                 </button>

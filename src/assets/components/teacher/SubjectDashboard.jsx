@@ -2,8 +2,6 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Routes, Route, Link } from 'react-router-dom';
 import Assignments from './Assignment';
 import Notes from './Notes';
 import Tests from './Tests';
@@ -15,7 +13,7 @@ const SubjectDashboard = () => {
     const [selected, setSelected] = useState(tabs[0]);
   return (
     <div className='w-full'>
-        <p className="text-4xl font-semibold md:m-10 m-5 ">Subject Name</p>
+        <p className="text-4xl font-semibold md:m-10 m-5 ">{ subjectCode }</p>
         <div className="md:px-10 px-5  flex items-center flex-wrap gap-4 overflow-x-auto">
             {tabs.map((tab) => (
                 <Chip
