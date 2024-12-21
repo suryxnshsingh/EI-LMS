@@ -2,8 +2,10 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Trash2, Pencil, Users, BookPlus, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
+
+const BASE_URL = 'http://localhost:8080';
 
 const ManageCourses = () => {
   const [subjects, setSubjects] = useState([]);
@@ -20,7 +22,7 @@ const teacherData = {
 
 const fetchCourses = async () => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/courses/teacher-courses`, {
+    const response = await axios.get(`${BASE_URL}/api/courses/teacher-courses`, {
       headers: {
         Authorization: `Bearer ${Cookies.get("token")}`
       }
@@ -30,6 +32,7 @@ const fetchCourses = async () => {
   } catch (err) {
     console.error('Error details:', err.response?.data || err);
     setError(err.response?.data?.message || "Failed to fetch courses");
+    toast.error(err.response?.data?.message || "Failed to fetch courses");
     setLoading(false);
   }
 };
@@ -41,18 +44,20 @@ const handleDeleteCourse = async (courseId) => {
 
   setDeleteLoading(courseId);
   try {
-    await axios.delete(`http://localhost:8080/api/courses/courses/${courseId}`, {
+    await axios.delete(`${BASE_URL}/api/courses/courses/${courseId}`, {
       headers: {
         Authorization: `Bearer ${Cookies.get("token")}`
       }
     });
 
     // Fetch updated courses after deletion
+    toast.success('Course deleted successfully');
     await fetchCourses();
     
   } catch (err) {
     console.error('Error deleting course:', err);
     alert(err.response?.data?.message || 'Failed to delete course');
+    toast.error(err.response?.data?.message || 'Failed to delete course');
   } finally {
     setDeleteLoading(null);
   }
@@ -194,8 +199,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
     setError('');
 
     try {
-      const response = await axios.put(
-        `http://localhost:8080/api/courses/courses/${course.id}`,
+      const response = await axios.put(`${BASE_URL}/api/courses/courses/${course.id}`,
         {
           name: formData.name,
           courseCode: formData.code,
@@ -212,6 +216,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
 
       console.log('Course updated:', response.data);
       setSuccess("Course updated successfully");
+      toast.success('Course updated successfully');
       setTimeout(() => {
         onSuccess();
       }, 1000);
@@ -327,7 +332,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
 
     try {
       await axios.post(
-        `http://localhost:8080/api/courses/courses`,
+        `${BASE_URL}/api/courses/courses`,
         {
           name: formData.name,
           courseCode: formData.code,
@@ -343,6 +348,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
       );
 
       setSuccess("Course created successfully");
+      toast.success('Course created successfully');
       setTimeout(() => {
         onSuccess();
       }, 1000);
@@ -350,6 +356,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
     } catch (error) {
       console.error('Error:', error);
       setError(error.response?.data?.message || 'Failed to create course. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to create course. Please try again.');
     }
   };
 
