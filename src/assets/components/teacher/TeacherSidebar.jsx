@@ -12,8 +12,7 @@ import {
   Settings,
   Users,
   LogOut,
-  ArrowUp01,
-  AudioLines
+  Cpu
 } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
@@ -23,7 +22,6 @@ import TeacherDashboard from './TeacherDashboard';
 import SubjectDashboard from './SubjectDashboard';
 import Reports from './Reports';
 import ManageStudents from './ManageStudents';
-import SubDash from '../subDash';
 import Profile from './Profile';
 import Tests from './Tests';
 import Cookies from 'js-cookie';
@@ -86,14 +84,9 @@ const TeacherSidebar = () => {
         icon: <FileDown className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Analog Simulator",
+      label: "Simulators",
       href: "/teachers/",
-      icon: <AudioLines className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Digital Simulator",
-      href: "/teachers/",
-      icon: <ArrowUp01 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Settings",
@@ -182,12 +175,11 @@ const Dashboard = () => {
         <div className=' flex items-center justify-center text-black  dark:text-white'>
           <Routes>
             <Route path="/" element={<TeacherDashboard />} />
-            <Route path="/:subjectCode" element={<SubjectDashboard />} />
+            <Route path="/:courseId" element={<SubjectDashboard />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/students" element={<ManageStudents />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/reports/:subjectCode" element={<SubDash />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<Profile />} />
