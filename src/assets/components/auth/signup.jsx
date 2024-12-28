@@ -8,11 +8,6 @@ import { Toaster, toast } from "react-hot-toast";
 import Cookies from 'js-cookie';
 
 const Signup = () => {
-  const [theme, setTheme] = useState(
-    typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light"
-  );
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -23,6 +18,7 @@ const Signup = () => {
     secretKey: ""
   });
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(Cookies.get("theme") || "dark");
   const navigate = useNavigate();
 
   // Secret keys for teacher and admin
@@ -31,9 +27,8 @@ const Signup = () => {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    if (theme) {
+      document.documentElement.classList.add(theme);
     }
 
     setTimeout(() => {

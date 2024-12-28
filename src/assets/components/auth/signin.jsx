@@ -6,6 +6,7 @@ import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 import Cookies from 'js-cookie';
+import { Sun, Moon, UserPlus, ShieldQuestion } from 'lucide-react';
 
 const Signin = () => {
   const [loading, setLoading] = useState(true);
@@ -15,16 +16,21 @@ const Signin = () => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [theme, setTheme] = useState(Cookies.get("theme") || "dark");
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.documentElement.classList.add("dark");
-    Cookies.set("theme", "dark", { expires: 365 });
+    if (theme) {
+      document.documentElement.classList.add(theme);
+    } else {
+      document.documentElement.classList.add("dark");
+      Cookies.set("theme", "dark", { expires: 365 });
+    }
 
     setTimeout(() => {
       setLoading(false);
     }, 200);
-  }, []);
+  }, [theme]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -96,6 +102,14 @@ const Signin = () => {
     }
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    document.documentElement.classList.remove(theme);
+    document.documentElement.classList.add(newTheme);
+    Cookies.set("theme", newTheme, { expires: 365 });
+    setTheme(newTheme);
+  };
+
   // If loading, display skeleton
   if (loading) {
     return <SkeletonSignin />;
@@ -145,10 +159,31 @@ const Signin = () => {
 
           <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
 
-          <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300 text-center">
-            Don't have an account? <a href="/signup" className="text-blue-500 underline">Create Account</a>
-          </p>
         </form>
+
+        <div className="flex flex-col space-y-2">
+        <a
+            href="/forgot-password"
+            className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            <p className="flex gap-4 text-sm"><ShieldQuestion size={20}/> Forgot Password</p>
+            <BottomGradient />
+          </a>
+        <a
+            href="/signup"
+            className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            <p className="flex gap-4 text-sm"><UserPlus size={20}/> Create New Account</p>
+            <BottomGradient />
+          </a>
+          <button
+            onClick={toggleTheme}
+            className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            {theme === "dark" ? <p className="flex gap-4 text-sm"><Sun size={20}/> Light Mode</p> : <p className="flex gap-4 text-sm"><Moon size={20}/> Dark Mode</p>}
+            <BottomGradient />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -132,7 +132,7 @@ const ManageStudentsPage = () => {
   }
 
   return (
-    <div className="w-full m-10">
+    <div className="w-full m-2 md:m-10">
       <div className="container p-4 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">

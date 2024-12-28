@@ -49,14 +49,17 @@ const Dash = () => {
         // Filter for accepted enrollments and transform the data
         const courses = response.data
           .filter(enrollment => enrollment.status === 'ACCEPTED')
-          .map(enrollment => ({
-            id: enrollment.course.id,
-            name: enrollment.course.name,
-            code: enrollment.course.courseCode,
-            teacher: `${enrollment.course.teacher.firstName} ${enrollment.course.teacher.lastName}`,
-            session: enrollment.course.session,
-            semester: enrollment.course.semester
-          }));
+          .map(enrollment => {
+            const course = enrollment.course || {}; // Ensure course object exists
+            return {
+              id: enrollment.courseId, // Use courseId instead of course.id
+              name: course.name,
+              code: course.courseCode,
+              teacher: `${course.teacher?.firstName} ${course.teacher?.lastName}`,
+              session: course.session,
+              semester: course.semester
+            };
+          });
 
         setEnrolledCourses(courses);
         setLoading(false);
@@ -88,9 +91,9 @@ const Dash = () => {
           {enrolledCourses.map((course) => (
             <SubCard 
               key={course.id}
+              id={course.id} // Ensure id prop is passed
               code={course.code} 
               name={course.name} 
-              id={course.id}
             />
           ))}
         </div>

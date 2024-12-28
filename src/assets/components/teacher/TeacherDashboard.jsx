@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+const BASE_URL = 'http://localhost:8080';
+
 const Loading = () => {
     return (
       <div className="flex justify-center items-center h-screen text-black dark:text-white">
@@ -22,7 +24,6 @@ const Loading = () => {
         <div>
           <button 
           onClick={() => {
-            localStorage.clear();
             navigate("/signin")
           }}
           className="bg-purple-500 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-xl my-5"
@@ -38,7 +39,7 @@ const TeacherDashbard = () => {
 
     const fetchCourses = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/courses/teacher-courses`, {
+        const response = await axios.get(`${BASE_URL}/api/courses/teacher-courses`, {
           headers: {
             Authorization: `Bearer ${Cookies.get("token")}`
           }

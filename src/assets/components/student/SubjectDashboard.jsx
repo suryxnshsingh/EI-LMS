@@ -1,22 +1,45 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Routes, Route, Link } from 'react-router-dom';
-import Attendance from './Attendance';
-import Assignments from './Assignment';
-import Notes from './Notes';
-import Tests from './Tests';
-import Books from './Books';
+import { useState, useEffect } from "react";
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import Assignments from './components/Assignment';
+import Notes from './components/Notes';
+import Books from './components/Books';
 
-const tabs = ["Attendance", "Assignments", "Tests", "Notes", "Books"];
+const tabs = [ "Assignments", "Notes", "Books"];
 const SubjectDashboard = () => {
-    const { subjectCode } = useParams();
+    const { courseId } = useParams();
     const [selected, setSelected] = useState(tabs[0]);
+    const [courseName, setCourseName] = useState('');
+    const [courseCode, setCourseCode] = useState('');
+    
+    useEffect(() => {
+          const fetchCourseDetails = async () => {
+              try {
+                  const token = Cookies.get('token');
+                  const response = await axios.get(`http://localhost:8080/api/courses/course-details/${courseId}`, {
+                      headers: {
+                          Authorization: `Bearer ${token}`
+                      }
+                  });
+                  setCourseName(response.data.name);
+                  setCourseCode(response.data.courseCode);
+              } catch (error) {
+                  console.error('Error fetching course details:', error);
+              }
+          };
+
+          fetchCourseDetails();
+      }, [courseId]);
+
   return (
     <div className='w-full'>
-        <p className="text-4xl font-semibold md:m-10 m-5 ">Subject Name</p>
+        <div className='flex flex-col md:m-10 m-5'>
+          <p className="text-4xl font-semibold ">{courseName}</p>
+          <p className="text-2xl font-semibold text-neutral-700 dark:text-neutral-300 ">{courseCode}</p>
+        </div>
         <div className="md:px-10 px-5  flex items-center flex-wrap gap-4 overflow-x-auto">
             {tabs.map((tab) => (
                 <Chip
@@ -28,10 +51,8 @@ const SubjectDashboard = () => {
             ))}
         </div>
         <div className='md:p-10 p-5'>
-        {selected === "Attendance" && <Attendance/>}
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
-        {selected === "Tests" && <Tests/>}
         {selected === "Books" && <Books/>}
         </div>
     </div>

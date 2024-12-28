@@ -5,24 +5,22 @@ import {
   NotebookPen,
   FlaskConical,
   LibraryBig,
-  NotepadText,
-  UserCircle,
-  AudioLines,
-  ArrowUp01,
+  ListTodo,
+  Cpu,
+  Sun,
+  Moon,
   Settings, 
   LogOut 
 } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
 import Dash from './Dash';
-import Assignment from './Assignment';
-import Tests from './Tests';
-import Books from './Books';
-import Notes from './Notes';
+import Tests from './tests/Tests';
 import Profile from './Profile';
 import SubjectDashboard from './SubjectDashboard';
-import ManageCourses from './ManageCourses';
+import ManageCourses from './courses/ManageCourses';
 import Cookies from 'js-cookie';
+import Attendance from './attendance/Attendance';
 
 const StudentSidebar = () => {
 
@@ -36,10 +34,11 @@ const StudentSidebar = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     document.documentElement.classList.toggle("dark", newTheme === "dark");
-    localStorage.setItem("theme", newTheme);
+    Cookies.set("theme", newTheme);
   };
+
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = Cookies.get("theme");
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
@@ -55,9 +54,9 @@ const StudentSidebar = () => {
       icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Assignment",
-      href: "/students/assignment",
-      icon: <NotebookPen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Attendance",
+      href: "/students/attendance",
+      icon: <ListTodo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Tests",
@@ -70,24 +69,29 @@ const StudentSidebar = () => {
       icon: <LibraryBig className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Analog Simulator",
-      href: "/students/",
-      icon: <AudioLines className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Simulators",
+      href: "/teachers/",
+      icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Digital Simulator",
-      href: "/students/",
-      icon: <ArrowUp01 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Settings",
-      href: "/students/settings",
-      icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Change Theme",
+      href: "#",
+      icon: theme === "dark" ? <Moon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> : <Sun className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: handleThemeToggle
     },
     {
       label: "Logout",
-      href: "/signin",
-      icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      href: "#",
+      icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: () => {
+        Cookies.remove("token");
+        Cookies.remove("firstName");
+        Cookies.remove("lastName");
+        Cookies.remove("userId");
+        Cookies.remove("userEmail");
+        Cookies.remove("userRole");
+        window.location.href = "/signin";
+      }
     }
   ];
   const firstName = Cookies.get("firstName") || "Profile";
@@ -104,10 +108,17 @@ const StudentSidebar = () => {
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-14 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <Link to={link.href} key={idx} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg">
-                {link.icon}
-                <span className='text-neutral-700 dark:text-neutral-200 text-md text-nowrap'>{link.label}</span>
-                </Link>
+                link.onClick ? (
+                  <div key={idx} onClick={link.onClick} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg cursor-pointer">
+                    {link.icon}
+                    <span className='text-neutral-700 dark:text-neutral-200 text-md text-nowrap'>{link.label}</span>
+                  </div>
+                ) : (
+                  <Link to={link.href} key={idx} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg">
+                    {link.icon}
+                    <span className='text-neutral-700 dark:text-neutral-200 text-md text-nowrap'>{link.label}</span>
+                  </Link>
+                )
               ))}
             </div>
           </div>
@@ -162,12 +173,11 @@ const Dashboard = () => {
         <div className=' flex items-center justify-center text-black  dark:text-white'>
           <Routes>
             <Route path="/" element={<Dash />} />
-            <Route path="/:subjectCode" element={<SubjectDashboard />} />
-            <Route path="/assignment" element={<Assignment />} />
+            <Route path="/:courseId" element={<SubjectDashboard />} />
+            <Route path="/attendance" element={<Attendance />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
           </div>
           </div>
@@ -175,51 +185,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-const SettingsPage = () => {
-  const [theme, setTheme] = useState(
-      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-    );
-  
-    const handleThemeToggle = () => {
-      const newTheme = theme === "dark" ? "light" : "dark";
-      setTheme(newTheme);
-      document.documentElement.classList.toggle("dark", newTheme === "dark");
-      localStorage.setItem("theme", newTheme);
-    };
-    useEffect(() => {
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) {
-        setTheme(savedTheme);
-        document.documentElement.classList.toggle("dark", savedTheme === "dark");
-      }
-    }, []);
-
-  return    (
-    <div>
-        <h1 className='text-3xl py-10'>Settings</h1>
-        <div>
-            <h1>Change Theme : </h1>
-            <div className="flex items-center justify-center z-50">
-            <label className="relative inline-flex items-center cursor-pointer mr-2">
-                <input
-                type="checkbox"
-                className="sr-only"
-                checked={theme === "dark"}
-                onChange={handleThemeToggle}
-                />
-                <div className="w-12 h-6 bg-gray-200 dark:bg-gray-800 rounded-full shadow-inner"></div>
-                <div
-                className={`absolute w-6 h-6 bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${
-                    theme === "dark" ? "translate-x-6" : "translate-x-0"
-                }`}
-                ></div>
-            </label>
-            <span className="text-xl">{theme === "dark" ? "🌙" : "☀️"}</span>
-            </div>
-        </div>
-  </div>)};
 
 export default StudentSidebar;
