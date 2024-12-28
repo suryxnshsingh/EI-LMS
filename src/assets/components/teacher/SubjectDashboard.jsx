@@ -26,7 +26,6 @@ const SubjectDashboard = () => {
                 });
                 setCourseName(response.data.name);
                 setCourseCode(response.data.courseCode);
-                console.log(response.data);
             } catch (error) {
                 console.error('Error fetching course details:', error);
             }

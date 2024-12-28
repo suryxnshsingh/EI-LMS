@@ -6,9 +6,7 @@ import {
   FlaskConical,
   LibraryBig,
   ListTodo,
-  UserCircle,
-  AudioLines,
-  ArrowUp01,
+  Cpu,
   Settings, 
   LogOut 
 } from 'lucide-react';
@@ -68,14 +66,9 @@ const StudentSidebar = () => {
       icon: <LibraryBig className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Analog Simulator",
-      href: "/students/",
-      icon: <AudioLines className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Digital Simulator",
-      href: "/students/",
-      icon: <ArrowUp01 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Simulators",
+      href: "/teachers/",
+      icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Settings",
@@ -176,7 +169,7 @@ const Dashboard = () => {
         <div className=' flex items-center justify-center text-black  dark:text-white'>
           <Routes>
             <Route path="/" element={<Dash />} />
-            <Route path="/:subjectCode" element={<SubjectDashboard />} />
+            <Route path="/:courseId" element={<SubjectDashboard />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/managecourses" element={<ManageCourses />} />
