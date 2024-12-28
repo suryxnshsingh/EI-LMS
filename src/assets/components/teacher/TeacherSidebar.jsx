@@ -1,4 +1,4 @@
-import React, { Children, useState, useEffect, Profiler } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '../../../../lib/utils';
 import { 
   LayoutDashboard,
@@ -9,7 +9,8 @@ import {
   NotepadText,
   FileDown,
   UserCircle, 
-  Settings,
+  Sun,
+  Moon,
   Users,
   LogOut,
   Cpu
@@ -32,6 +33,14 @@ const TeacherSidebar = () => {
       ? "dark"
       : "light"
   );
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    Cookies.set("theme", newTheme);
+  };
+
   useEffect(() => {
     const savedTheme = Cookies.get("theme");
     if (savedTheme) {
@@ -89,11 +98,17 @@ const TeacherSidebar = () => {
       icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Settings",
-      href: "/teachers/settings",
-      icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Change Theme",
+      href: "#",
+      icon: theme === "dark" ? <Moon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> : <Sun className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: handleThemeToggle
+    },
+    {
+      label: "Logout",
+      href: "#",
+      icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: handleLogout
     }
-    
   ];
   const firstName = Cookies.get("firstName") || "Profile";
   const lastName = Cookies.get("lastName") || ""; 
@@ -109,18 +124,18 @@ const TeacherSidebar = () => {
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-14 flex flex-col gap-2 text-nowrap">
               {links.map((link, idx) => (
-                <Link to={link.href} key={idx} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg">
-                {link.icon}
-                <span className='text-neutral-700 dark:text-neutral-200 text-md'>{link.label}</span>
-                </Link>
+                link.onClick ? (
+                  <div key={idx} onClick={link.onClick} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg cursor-pointer">
+                    {link.icon}
+                    <span className='text-neutral-700 dark:text-neutral-200 text-md'>{link.label}</span>
+                  </div>
+                ) : (
+                  <Link to={link.href} key={idx} className="flex items-center gap-2 p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg">
+                    {link.icon}
+                    <span className='text-neutral-700 dark:text-neutral-200 text-md'>{link.label}</span>
+                  </Link>
+                )
               ))}
-              <SidebarLink 
-              onClick={handleLogout}
-              className='pl-2'
-              link={{
-                label: 'Logout',
-                icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-              }} />
             </div>
           </div>
           <div>
@@ -167,7 +182,6 @@ const LogoIcon = () => {
 };
 
 const Dashboard = () => {
-
   return (
     <div className="flex flex-1 bg-neutral-100 dark:bg-neutral-950">
       <div className=" rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black dark:bg-dot-white/[0.2] bg-dot-black/[0.2] ">
@@ -181,59 +195,10 @@ const Dashboard = () => {
             <Route path="/tests" element={<Tests />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/managecourses" element={<ManageCourses />} />
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
           </div>
           </div>
-      </div>
-    </div>
-  );
-};
-
-const SettingsPage = () => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'light';
-    
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) return savedTheme;
-    
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    Cookies.set('theme', theme);
-  }, [theme]);
-
-  const handleThemeToggle = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
-  };
-
-  return (
-    <div className="p-6 text-start">
-      <h1 className="text-3xl font-semibold mb-8">Settings</h1>
-      
-      <div className="space-y-6">
-        <div className="flex items-center justify-between max-w-md">
-          <h2 className="text-lg font-medium pr-2">Theme Preference :</h2>
-          
-          <div className="flex items-center space-x-3">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={theme === "dark"}
-                onChange={handleThemeToggle}
-                aria-label="Toggle theme"
-              />
-              <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
-            <span className="text-xl" aria-hidden="true">
-              {theme === "dark" ? "🌙" : "☀️"}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

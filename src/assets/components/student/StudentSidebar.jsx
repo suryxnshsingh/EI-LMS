@@ -7,6 +7,8 @@ import {
   LibraryBig,
   ListTodo,
   Cpu,
+  Sun,
+  Moon,
   Settings, 
   LogOut 
 } from 'lucide-react';
@@ -32,10 +34,11 @@ const StudentSidebar = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     document.documentElement.classList.toggle("dark", newTheme === "dark");
-    localStorage.setItem("theme", newTheme);
+    Cookies.set("theme", newTheme);
   };
+
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = Cookies.get("theme");
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
@@ -71,9 +74,10 @@ const StudentSidebar = () => {
       icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
-      label: "Settings",
-      href: "/students/settings",
-      icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      label: "Change Theme",
+      href: "#",
+      icon: theme === "dark" ? <Moon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> : <Sun className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: handleThemeToggle
     },
     {
       label: "Logout",
@@ -174,7 +178,6 @@ const Dashboard = () => {
             <Route path="/tests" element={<Tests />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
           </div>
           </div>
@@ -182,51 +185,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-const SettingsPage = () => {
-  const [theme, setTheme] = useState(
-      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-    );
-  
-    const handleThemeToggle = () => {
-      const newTheme = theme === "dark" ? "light" : "dark";
-      setTheme(newTheme);
-      document.documentElement.classList.toggle("dark", newTheme === "dark");
-      Cookies.set("theme", newTheme);
-    };
-    useEffect(() => {
-      const savedTheme = Cookies.get("theme");
-      if (savedTheme) {
-        setTheme(savedTheme);
-        document.documentElement.classList.toggle("dark", savedTheme === "dark");
-      }
-    }, []);
-
-  return    (
-    <div>
-        <h1 className='text-3xl py-10'>Settings</h1>
-        <div>
-            <h1>Change Theme : </h1>
-            <div className="flex items-center justify-center z-50">
-            <label className="relative inline-flex items-center cursor-pointer mr-2">
-                <input
-                type="checkbox"
-                className="sr-only"
-                checked={theme === "dark"}
-                onChange={handleThemeToggle}
-                />
-                <div className="w-12 h-6 bg-gray-200 dark:bg-gray-800 rounded-full shadow-inner"></div>
-                <div
-                className={`absolute w-6 h-6 bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${
-                    theme === "dark" ? "translate-x-6" : "translate-x-0"
-                }`}
-                ></div>
-            </label>
-            <span className="text-xl">{theme === "dark" ? "🌙" : "☀️"}</span>
-            </div>
-        </div>
-  </div>)};
 
 export default StudentSidebar;
