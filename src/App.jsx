@@ -5,6 +5,8 @@ import Signup from './assets/components/auth/signup'
 import StudentSidebar from './assets/components/student/StudentSidebar'
 import TeacherSidebar from './assets/components/teacher/TeacherSidebar'
 import { Toaster } from 'react-hot-toast';
+import ForgotPassword from './assets/components/auth/ForgotPassword';
+import ChangePassword from './assets/components/auth/ChangePassword';
 
 function App() {
 
@@ -47,6 +49,8 @@ function App() {
             <Route path="/signup" element={<Signup/>}/>
             <Route path='/students/*' element={<StudentSidebar />} />
             <Route path='/teachers/*' element={<TeacherSidebar />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/change-password" element={<ChangePassword />} />
           </Routes>
         </BrowserRouter>
       </div>
