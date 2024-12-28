@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import Assignments from './components/Assignment';
 import Notes from './components/Notes';
-import Tests from './Tests';
 import Books from './components/Books';
 
 const tabs = [ "Assignments", "Tests", "Notes", "Books"];
@@ -27,7 +26,6 @@ const SubjectDashboard = () => {
         <div className='md:p-10 p-5'>
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
-        {selected === "Tests" && <Tests/>}
         {selected === "Books" && <Books/>}
         </div>
     </div>
