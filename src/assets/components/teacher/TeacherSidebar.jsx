@@ -17,13 +17,13 @@ import {
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
 import Attendance from './attendance/Attendance';
-import ManageCourses from './ManageCourses';
+import ManageCourses from './courses/ManageCourses';
 import TeacherDashboard from './TeacherDashboard';
 import SubjectDashboard from './SubjectDashboard';
-import Reports from './Reports';
-import ManageStudents from './ManageStudents';
+import Reports from './reports/Reports';
+import ManageStudents from './students/ManageStudents';
 import Profile from './Profile';
-import Tests from './Tests';
+import Tests from './tests/Tests';
 import Cookies from 'js-cookie';
 
 const TeacherSidebar = () => {

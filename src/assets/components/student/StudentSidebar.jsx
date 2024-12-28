@@ -13,7 +13,7 @@ import {
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
 import Dash from './Dash';
-import Tests from './Tests';
+import Tests from './tests/Tests';
 import Profile from './Profile';
 import SubjectDashboard from './SubjectDashboard';
 import ManageCourses from './courses/ManageCourses';
