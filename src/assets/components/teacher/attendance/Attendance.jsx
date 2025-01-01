@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff } from 'lucide-react';
+import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff, X } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useMediaQuery } from 'react-responsive';
+import Responses from './Responses';
+import AttendanceDownloadDialog from './AttendanceDownloadDialog';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -23,6 +25,9 @@ const Attendance = () => {
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [deletingSession, setDeletingSession] = useState({});
   const [showAttendanceId, setShowAttendanceId] = useState(false); // State to toggle attendance ID visibility
+  const [showResponses, setShowResponses] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
   const toggleDropdown = (id) => {
     setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -55,8 +60,8 @@ const Attendance = () => {
   };
 
   const viewResponses = (id) => {
-    // Implement view responses logic here
-    console.log(`View responses for session ${id}`);
+    setSelectedSessionId(id);
+    setShowResponses(true);
   };
 
   // Fetch teacher courses
@@ -188,6 +193,14 @@ const Attendance = () => {
               {refreshing || buttonLoading.refresh ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
+          {selectedCourse && (
+            <button
+              onClick={() => setShowDownloadDialog(true)}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700"
+            >
+              Download Excel
+            </button>
+          )}
         </div>
 
         {error && (
@@ -371,6 +384,39 @@ const Attendance = () => {
             <QRCodeSVG value={qrCodeSession.toString()} size={isSmallDevice ? 300 : 550} /> {/* Adjust size based on device */}
           </div>
         </div>
+      )}
+
+      {/* Responses Modal */}
+      {showResponses && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-neutral-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Attendance Responses
+              </h2>
+              <button
+                onClick={() => setShowResponses(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4">
+              <Responses 
+                courseId={selectedCourse?.id} 
+                attendanceId={selectedSessionId} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDownloadDialog && (
+        <AttendanceDownloadDialog
+          courseId={selectedCourse.id}
+          courseName={selectedCourse.name}
+          onClose={() => setShowDownloadDialog(false)}
+        />
       )}
     </div>
   );
