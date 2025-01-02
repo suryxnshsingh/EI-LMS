@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Loader2, Check, X, Users, BookUser, RotateCw } from 'lucide-react';
 import Cookies from 'js-cookie';
+import StudentAttendanceDialog from './StudentAttendanceDialog';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -12,6 +13,7 @@ const ManageStudentsPage = () => {
   const [error, setError] = useState({ courses: null, enrollments: null });
   const [activeTab, setActiveTab] = useState(0);
   const [buttonLoading, setButtonLoading] = useState({ refresh: false, enrollments: {} });
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Fetch teacher courses
   const fetchCourses = async () => {
@@ -252,6 +254,16 @@ const ManageStudentsPage = () => {
                               ({enrollment.student.enrollmentNumber})
                             </span>
                           </div>
+                          <button
+                            onClick={() => setSelectedStudent({
+                              id: enrollment.studentId,
+                              firstName: enrollment.student.firstName,
+                              lastName: enrollment.student.lastName
+                            })}
+                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                          >
+                            See Attendance
+                          </button>
                         </div>
                       ))}
                   </div>
@@ -271,6 +283,14 @@ const ManageStudentsPage = () => {
           </div>
         )}
       </div>
+      {selectedStudent && (
+        <StudentAttendanceDialog
+          student={selectedStudent}
+          courseId={courses[activeTab].id}
+          courseName={courses[activeTab].name}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
     </div>
   );
 };
