@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 
 const BASE_URL = 'http://localhost:8080';
 
-const StudentAttendanceDialog = ({ student, courseId, courseName, onClose }) => {
+const StudentAttendanceDialog = ({ student, courseId, courseName, session, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [attendanceData, setAttendanceData] = useState(null);
   const [error, setError] = useState(null);
@@ -42,8 +42,8 @@ const StudentAttendanceDialog = ({ student, courseId, courseName, onClose }) => 
               Attendance Record of {student.firstName} {student.lastName} - {courseName}
             </h2>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              <span className="mr-3">Enrollment: {attendanceData?.student?.enrollmentNumber || 'N/A'}</span>
-              <span>Session: {new Date().getFullYear()}-{(new Date().getFullYear() + 1).toString().slice(-2)}</span>
+              <span className="mr-3">Enrollment: {attendanceData?.student?.enrollmentNumber || student.enrollmentNumber || 'N/A'}</span>
+              <span>Session: {session}</span>
             </div>
           </div>
           <button

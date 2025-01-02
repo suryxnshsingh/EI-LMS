@@ -258,7 +258,8 @@ const ManageStudentsPage = () => {
                             onClick={() => setSelectedStudent({
                               id: enrollment.studentId,
                               firstName: enrollment.student.firstName,
-                              lastName: enrollment.student.lastName
+                              lastName: enrollment.student.lastName,
+                              enrollmentNumber: enrollment.student.enrollmentNumber
                             })}
                             className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                           >
@@ -288,6 +289,7 @@ const ManageStudentsPage = () => {
           student={selectedStudent}
           courseId={courses[activeTab].id}
           courseName={courses[activeTab].name}
+          session={courses[activeTab].session}
           onClose={() => setSelectedStudent(null)}
         />
       )}
