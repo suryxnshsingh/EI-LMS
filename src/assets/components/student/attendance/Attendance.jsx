@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { ScanQrCode, Loader2, Download } from 'lucide-react';
+import { ScanQrCode, Loader2, Download, History } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QrScanner from 'qr-scanner';
 import StudentAttendanceDownloadDialog from './StudentAttendanceDownloadDialog';
@@ -14,15 +14,13 @@ const Attendance = () => {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const videoRef = useRef(null);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
-  useEffect(() => {
-    fetchAttendanceHistory();
-  }, []);
-
   const fetchAttendanceHistory = async () => {
+    setHistoryLoading(true);
     try {
       const studentId = Cookies.get('userId');
       console.log('Fetching attendance history for student:', studentId);
@@ -75,12 +73,17 @@ const Attendance = () => {
       toast.success('Attendance marked successfully', {
         id: loadingToast,
       });
+      // Refresh history if it's being shown
+      if (showHistory) {
+        fetchAttendanceHistory();
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to mark attendance', {
         id: loadingToast,
       });
     } finally {
       setLoading(false);
+      setAttendanceId('');
     }
   };
 
@@ -115,6 +118,13 @@ const Attendance = () => {
 
   const handleScan = () => {
     setScanning(true);
+  };
+
+  const toggleHistory = () => {
+    if (!showHistory) {
+      fetchAttendanceHistory();
+    }
+    setShowHistory(!showHistory);
   };
 
   return (
@@ -161,59 +171,68 @@ const Attendance = () => {
                 <Download className="h-4 w-4 mr-2" />
                 Download Complete Attendance
               </button>
+              <button
+                onClick={toggleHistory}
+                className="flex justify-center text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-300 dark:hover:bg-purple-700 transition-colors"
+              >
+                <History className="h-4 w-4 mr-2" />
+                {showHistory ? 'Hide History' : 'Show History'}
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Attendance History
-          </h2>
-          
-          {historyLoading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          ) : attendanceHistory.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-4">
-              No attendance records found
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b dark:border-neutral-700">
-                    <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Date</th>
-                    <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Course</th>
-                    <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceHistory.map((record, index) => (
-                    <tr 
-                      key={index}
-                      className="border-b dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
-                    >
-                      <td className="py-2 px-4 text-gray-700 dark:text-gray-300">
-                        {new Date(record.date).toLocaleDateString('en-GB')}
-                      </td>
-                      <td className="py-2 px-4 text-gray-700 dark:text-gray-300">
-                        {record.courseName} ({record.courseCode})
-                      </td>
-                      <td className={`py-2 px-4 ${
-                        record.status === 'Present' 
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {record.status}
-                      </td>
+        {showHistory && (
+          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Attendance History
+            </h2>
+            
+            {historyLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              </div>
+            ) : attendanceHistory.length === 0 ? (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+                No attendance records found
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b dark:border-neutral-700">
+                      <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Date</th>
+                      <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Course</th>
+                      <th className="py-3 px-4 font-semibold text-gray-900 dark:text-white">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody>
+                    {attendanceHistory.map((record, index) => (
+                      <tr 
+                        key={index}
+                        className="border-b dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+                      >
+                        <td className="py-2 px-4 text-gray-700 dark:text-gray-300">
+                          {new Date(record.date).toLocaleDateString('en-GB')}
+                        </td>
+                        <td className="py-2 px-4 text-gray-700 dark:text-gray-300">
+                          {record.courseName} ({record.courseCode})
+                        </td>
+                        <td className={`py-2 px-4 ${
+                          record.status === 'Present' 
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {record.status}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
         {scanning && (
           <div className="absolute -top-6 left-0 w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">

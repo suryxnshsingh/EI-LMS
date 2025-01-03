@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff, X } from 'lucide-react';
+import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff, X, Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useMediaQuery } from 'react-responsive';
 import Responses from './Responses';
@@ -193,14 +193,6 @@ const Attendance = () => {
               {refreshing || buttonLoading.refresh ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
-          {selectedCourse && (
-            <button
-              onClick={() => setShowDownloadDialog(true)}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700"
-            >
-              Download Excel
-            </button>
-          )}
         </div>
 
         {error && (
@@ -263,8 +255,17 @@ const Attendance = () => {
         {selectedCourse && (
           <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none">
             <div className="border-b px-6 py-4 border-gray-200 dark:border-neutral-700">
-              <div className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white">
-                {selectedCourse.name} <p className="hidden md:block">({selectedCourse.courseCode})</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white">
+                  {selectedCourse.name} <p className="hidden md:block">({selectedCourse.courseCode})</p>
+                </div>
+                <button
+                  onClick={() => setShowDownloadDialog(true)}
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700 transition-colors"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
               </div>
             </div>
 
