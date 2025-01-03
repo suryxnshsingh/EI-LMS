@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import Cookies from 'js-cookie';
+import StudentAttendanceDialog from '../../teacher/students/StudentAttendanceDialog';
 
 const Tab = ({ label, active, onClick }) => (
   <button
@@ -23,37 +24,9 @@ const Loading = () => (
 );
 
 const CourseCard = ({ course, onEnroll, status }) => {
-  const getStatusButton = () => {
-    switch (status) {
-      case 'ACCEPTED':
-        return (
-          <button 
-            className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded cursor-not-allowed"
-            disabled
-          >
-            Enrolled
-          </button>
-        );
-      case 'PENDING':
-        return (
-          <button 
-            className="w-full bg-yellow-500 text-white font-semibold py-2 px-4 rounded cursor-not-allowed"
-            disabled
-          >
-            Pending Approval
-          </button>
-        );
-      default:
-        return (
-          <button
-            onClick={() => onEnroll(course.id)}
-            className="w-full bg-purple-500 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-          >
-            Apply for Enrollment
-          </button>
-        );
-    }
-  };
+  const [showAttendance, setShowAttendance] = useState(false);
+
+  console.log('Course data:', course);
 
   return (
     <div className="rounded shadow-md p-6 border-[1px] border-slate-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-950">
@@ -65,7 +38,51 @@ const CourseCard = ({ course, onEnroll, status }) => {
       <p className="text-gray-600 dark:text-gray-400 mb-4">
         Session: {course.session} | Semester: {course.semester}
       </p>
-      {getStatusButton()}
+      {status === 'ACCEPTED' ? (
+        <div className="space-y-2">
+          <button 
+            className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded cursor-not-allowed"
+            disabled
+          >
+            Enrolled
+          </button>
+          <button
+            onClick={() => setShowAttendance(true)}
+            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+          >
+            See Attendance
+          </button>
+        </div>
+      ) : status === 'PENDING' ? (
+        <button 
+          className="w-full bg-yellow-500 text-white font-semibold py-2 px-4 rounded cursor-not-allowed"
+          disabled
+        >
+          Pending Approval
+        </button>
+      ) : (
+        <button
+          onClick={() => onEnroll(course.id)}
+          className="w-full bg-purple-500 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+        >
+          Apply for Enrollment
+        </button>
+      )}
+
+      {showAttendance && (
+        <StudentAttendanceDialog
+          student={{
+            id: course.enrollment.studentId,
+            firstName: course.enrollment.student.firstName,
+            lastName: course.enrollment.student.lastName,
+            enrollmentNumber: course.enrollment.student.enrollmentNumber
+          }}
+          courseId={course.id}
+          courseName={course.name}
+          session={course.session}
+          onClose={() => setShowAttendance(false)}
+        />
+      )}
     </div>
   );
 };
@@ -112,9 +129,21 @@ const ManageCourses = () => {
 
         const enrollments = enrollmentsResponse.data;
         
-        const accepted = enrollments.filter(e => e.status === 'ACCEPTED').map(e => e.course);
-        const pending = enrollments.filter(e => e.status === 'PENDING').map(e => e.course);
-        const enrolledIds = enrollments.map(e => e.course.id);
+        const accepted = enrollments
+          .filter(e => e.status === 'ACCEPTED')
+          .map(e => ({
+            ...e.course,
+            enrollment: {
+              studentId: e.studentId,
+              student: e.student
+            }
+          }));
+
+        const pending = enrollments
+          .filter(e => e.status === 'PENDING')
+          .map(e => e.course);
+
+        const enrolledIds = enrollments.map(e => e.courseId);
         const available = coursesResponse.data.filter(
           course => !enrolledIds.includes(course.id)
         );
