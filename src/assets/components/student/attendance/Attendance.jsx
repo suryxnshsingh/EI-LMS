@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { ScanQrCode, Loader2 } from 'lucide-react';
+import { ScanQrCode, Loader2, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QrScanner from 'qr-scanner';
+import StudentAttendanceDownloadDialog from './StudentAttendanceDownloadDialog';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -15,6 +16,7 @@ const Attendance = () => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const videoRef = useRef(null);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
   useEffect(() => {
     fetchAttendanceHistory();
@@ -152,6 +154,13 @@ const Attendance = () => {
                   'Mark Attendance'
                 )}
               </button>
+              <button
+                onClick={() => setShowDownloadDialog(true)}
+                className="flex justify-center text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700 transition-colors"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Complete Attendance
+              </button>
             </div>
           </div>
         </div>
@@ -218,6 +227,12 @@ const Attendance = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {showDownloadDialog && (
+          <StudentAttendanceDownloadDialog
+            onClose={() => setShowDownloadDialog(false)}
+          />
         )}
       </div>
     </div>
