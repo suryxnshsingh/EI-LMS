@@ -1,8 +1,8 @@
 import React from 'react'
 
-const digital = () => {
+const Digital = () => {
   return (
-    <div>
+    <div className='w-full h-full m-0 p-0'>
         <iframe
             src="https://logijs.com/editor"
             width="100%"
@@ -13,4 +13,4 @@ const digital = () => {
   )
 }
 
-export default digital
+export default Digital

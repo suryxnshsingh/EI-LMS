@@ -24,7 +24,6 @@ const Attendance = () => {
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(false);
 
   const fetchAttendanceHistory = async () => {
     setHistoryLoading(true);
@@ -49,9 +48,10 @@ const Attendance = () => {
         return;
       }
 
-      setAttendanceHistory(response.data.records);
+      const sortedRecords = response.data.records.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setAttendanceHistory(sortedRecords);
       setAttendanceStats(response.data.stats);
-      calculateAttendanceStats(response.data.records);
+      calculateAttendanceStats(sortedRecords);
     } catch (error) {
       console.error('Error fetching attendance history:', error);
       console.error('Error details:', {
@@ -66,7 +66,6 @@ const Attendance = () => {
   };
 
   const calculateAttendanceStats = (history) => {
-    setStatsLoading(true);
     try {
       const totalClasses = history.length;
       const totalPresent = history.filter(record => record.status === 'Present').length;
@@ -83,7 +82,6 @@ const Attendance = () => {
       console.error('Error calculating attendance stats:', error);
       toast.error('Failed to calculate attendance stats');
     } finally {
-      setStatsLoading(false);
     }
   };
 
@@ -175,23 +173,23 @@ const Attendance = () => {
   };
 
   return (
-    <div className="w-full m-10">
+    <div className="w-full m-4 md:m-10">
       <div className="container p-4 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-semibold text-gray-900 dark:text-white">Attendance</h1>
+            <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-white">Attendance</h1>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 space-y-6 mb-6">
+        <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-4 md:p-6 space-y-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-center">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div
                 onClick={handleScan}
-                className="flex justify-center items-center gap-2 bg-gray-200 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 dark:hover:bg-neutral-600 hover:bg-neutral-300 transition-colors border border-gray-200 dark:border-neutral-600 rounded-lg p-2 cursor-pointer"
+                className="flex justify-center h-32 md:h-11 items-center gap-2 bg-gray-200 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 dark:hover:bg-neutral-600 hover:bg-neutral-300 transition-colors border border-gray-200 dark:border-neutral-600 rounded-lg p-2 cursor-pointer"
               >
-                <ScanQrCode size={35} />
-                <h1 className="text-xl font-medium poppins">Scan</h1>
+                <ScanQrCode size={35} md:size={80} />
+                <h1 className="text-lg md:text-xl font-medium poppins">Scan</h1>
               </div>
               <input
                 type="text"
@@ -230,37 +228,39 @@ const Attendance = () => {
         </div>
 
         {showStats && (
-          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none mb-6">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-neutral-700 p-4 mb-4">
               Attendance Stats
             </h2>
-            {attendanceStats && attendanceStats.percentage < 75 && (
-              <div className="bg-red-100 text-red-600 p-2 text-center rounded-lg mb-4">
-                <strong>LOW ATTENDANCE</strong>
-                <p>Attend {attendanceStats.classesNeededFor75} more classes to reach 75% attendance</p>
-              </div>
-            )}
-            {statsLoading ? (
+            {historyLoading ? (
               <div className="flex justify-center items-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
               </div>
             ) : attendanceStats ? (
-              <div className="space-y-4 grid grid-col-1 md:grid-cols-2 gap-4">
-                <div className='flex flex-col justify-center items-center'>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    <strong>Total Classes:</strong> {attendanceStats.totalClasses}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    <strong>Total Present:</strong> {attendanceStats.totalPresent}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    <strong>Percentage:</strong> {attendanceStats.percentage}%
-                  </p>
+              <>
+                {attendanceStats.percentage < 75 && (
+                  <div className="bg-red-200 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-600 dark:border-red-300 p-2 text-center rounded-lg mx-4">
+                    <strong>LOW ATTENDANCE</strong>
+                    <p>Attend <strong>{attendanceStats.classesNeededFor75}</strong> more classes to complete 75% attendance</p>
+                  </div>
+                )}
+                <div className="space-y-4 grid grid-col-1 md:grid-cols-2 gap-4 p-4">
+                  <div className='flex flex-col justify-center gap-2 md:gap-4 items-center text-lg'>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      <strong>Total Classes:</strong> {attendanceStats.totalClasses}
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      <strong>Total Present:</strong> {attendanceStats.totalPresent}
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      <strong>Percentage:</strong> {attendanceStats.percentage}%
+                    </p>
+                  </div>
+                  <div className="w-32 md:w-48 h-32 md:h-48 mx-auto">
+                    <Doughnut data={doughnutData} />
+                  </div>
                 </div>
-                <div className="w-48 md:w-96 h-48 mx-auto">
-                  <Doughnut data={doughnutData} />
-                </div>
-              </div>
+              </>
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 py-4">
                 No attendance stats available
@@ -270,8 +270,8 @@ const Attendance = () => {
         )}
 
         {showHistory && (
-          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white p-4 border-b dark:border-neutral-700 mb-4">
               Attendance History
             </h2>
             
@@ -284,7 +284,7 @@ const Attendance = () => {
                 No attendance records found
               </p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto p-4">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b dark:border-neutral-700">
@@ -324,7 +324,7 @@ const Attendance = () => {
         {scanning && (
           <div className="absolute -top-6 left-0 w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
             <div className="bg-white rounded-lg shadow-lg dark:bg-neutral-800 p-6">
-              <video ref={videoRef} className="w-[60svw] h-[60svh]" />
+              <video ref={videoRef} className="w-[80vw] h-[80vh] md:w-[60vw] md:h-[60vh]" />
               <button
                 onClick={() => setScanning(false)}
                 className="mt-4 inline-flex text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-800 dark:text-red-300 dark:hover:bg-red-700 transition-colors"

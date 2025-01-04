@@ -23,6 +23,7 @@ import TeacherDashboard from './TeacherDashboard';
 import SubjectDashboard from './SubjectDashboard';
 import Reports from './reports/Reports';
 import ManageStudents from './students/ManageStudents';
+import Digital from '../simulators/digital';
 import Profile from './Profile';
 import Tests from './tests/Tests';
 import Cookies from 'js-cookie';
@@ -195,6 +196,7 @@ const Dashboard = () => {
             <Route path="/tests" element={<Tests />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/managecourses" element={<ManageCourses />} />
+            <Route path="/simulators" element={<Digital/>} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
           </div>
