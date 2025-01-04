@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { ScanQrCode, Loader2, Download, History } from 'lucide-react';
+import { ScanQrCode, Loader2, Download, History, BarChart2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QrScanner from 'qr-scanner';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import StudentAttendanceDownloadDialog from './StudentAttendanceDownloadDialog';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -18,6 +22,9 @@ const Attendance = () => {
   const [showHistory, setShowHistory] = useState(false);
   const videoRef = useRef(null);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [attendanceStats, setAttendanceStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   const fetchAttendanceHistory = async () => {
     setHistoryLoading(true);
@@ -36,13 +43,15 @@ const Attendance = () => {
 
       console.log('Received attendance data:', response.data);
       
-      if (!response.data || !Array.isArray(response.data)) {
+      if (!response.data || !Array.isArray(response.data.records)) {
         console.error('Invalid response format:', response.data);
         toast.error('Invalid response format from server');
         return;
       }
 
-      setAttendanceHistory(response.data);
+      setAttendanceHistory(response.data.records);
+      setAttendanceStats(response.data.stats);
+      calculateAttendanceStats(response.data.records);
     } catch (error) {
       console.error('Error fetching attendance history:', error);
       console.error('Error details:', {
@@ -53,6 +62,28 @@ const Attendance = () => {
       toast.error('Failed to fetch attendance history');
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const calculateAttendanceStats = (history) => {
+    setStatsLoading(true);
+    try {
+      const totalClasses = history.length;
+      const totalPresent = history.filter(record => record.status === 'Present').length;
+      const percentage = totalClasses ? ((totalPresent / totalClasses) * 100).toFixed(2) : 0;
+      const classesNeededFor75 = Math.ceil((0.75 * totalClasses - totalPresent) / 0.25);
+
+      setAttendanceStats({
+        totalClasses,
+        totalPresent,
+        percentage,
+        classesNeededFor75: classesNeededFor75 > 0 ? classesNeededFor75 : 0
+      });
+    } catch (error) {
+      console.error('Error calculating attendance stats:', error);
+      toast.error('Failed to calculate attendance stats');
+    } finally {
+      setStatsLoading(false);
     }
   };
 
@@ -116,15 +147,31 @@ const Attendance = () => {
     }
   }, [qrId]);
 
+  useEffect(() => {
+    if (showStats) {
+      fetchAttendanceHistory();
+    }
+  }, [showStats]);
+
   const handleScan = () => {
     setScanning(true);
   };
 
-  const toggleHistory = () => {
-    if (!showHistory) {
-      fetchAttendanceHistory();
-    }
+  const toggleStatsAndHistory = () => {
+    setShowStats(!showStats);
     setShowHistory(!showHistory);
+  };
+
+  const doughnutData = {
+    labels: ['Present', 'Absent'],
+    datasets: [
+      {
+        data: [attendanceStats?.totalPresent || 0, (attendanceStats?.totalClasses || 0) - (attendanceStats?.totalPresent || 0)],
+        backgroundColor: ['#2196F3', '#F44336'],
+        hoverBackgroundColor: ['#64B5F6', '#EF5350'],
+        borderWidth: 0 // Remove the white border
+      }
+    ]
   };
 
   return (
@@ -137,7 +184,7 @@ const Attendance = () => {
         </div>
 
         <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 space-y-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-center">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div
                 onClick={handleScan}
@@ -172,15 +219,55 @@ const Attendance = () => {
                 Download Complete Attendance
               </button>
               <button
-                onClick={toggleHistory}
-                className="flex justify-center text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-300 dark:hover:bg-purple-700 transition-colors"
+                onClick={toggleStatsAndHistory}
+                className="flex justify-center text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-300 dark:hover:bg-yellow-700 transition-colors"
               >
-                <History className="h-4 w-4 mr-2" />
-                {showHistory ? 'Hide History' : 'Show History'}
+                <BarChart2 className="h-4 w-4 mr-2" />
+                {showStats ? 'Hide Stats & History' : 'Show Stats & History'}
               </button>
             </div>
           </div>
         </div>
+
+        {showStats && (
+          <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Attendance Stats
+            </h2>
+            {attendanceStats && attendanceStats.percentage < 75 && (
+              <div className="bg-red-100 text-red-600 p-2 text-center rounded-lg mb-4">
+                <strong>LOW ATTENDANCE</strong>
+                <p>Attend {attendanceStats.classesNeededFor75} more classes to reach 75% attendance</p>
+              </div>
+            )}
+            {statsLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              </div>
+            ) : attendanceStats ? (
+              <div className="space-y-4 grid grid-col-1 md:grid-cols-2 gap-4">
+                <div className='flex flex-col justify-center items-center'>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    <strong>Total Classes:</strong> {attendanceStats.totalClasses}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    <strong>Total Present:</strong> {attendanceStats.totalPresent}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    <strong>Percentage:</strong> {attendanceStats.percentage}%
+                  </p>
+                </div>
+                <div className="w-48 md:w-96 h-48 mx-auto">
+                  <Doughnut data={doughnutData} />
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+                No attendance stats available
+              </p>
+            )}
+          </div>
+        )}
 
         {showHistory && (
           <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none p-6">
@@ -220,7 +307,7 @@ const Attendance = () => {
                         </td>
                         <td className={`py-2 px-4 ${
                           record.status === 'Present' 
-                            ? 'text-green-600 dark:text-green-400'
+                            ? 'text-blue-600 dark:text-blue-400'
                             : 'text-red-600 dark:text-red-400'
                         }`}>
                           {record.status}
