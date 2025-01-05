@@ -19,6 +19,7 @@ import Tests from './tests/Tests';
 import Profile from './Profile';
 import SubjectDashboard from './SubjectDashboard';
 import ManageCourses from './courses/ManageCourses';
+import Digital from '../simulators/digital';
 import Cookies from 'js-cookie';
 import Attendance from './attendance/Attendance';
 
@@ -70,7 +71,7 @@ const StudentSidebar = () => {
     },
     {
       label: "Simulators",
-      href: "/teachers/",
+      href: "/students/simulators",
       icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
@@ -178,6 +179,7 @@ const Dashboard = () => {
             <Route path="/tests" element={<Tests />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/simulators" element={<Digital/>} />
           </Routes>
           </div>
           </div>
