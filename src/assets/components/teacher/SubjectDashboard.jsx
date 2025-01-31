@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import Assignments from './components/Assignment';
+import Assignments from './Assignments';
 import Notes from './components/Notes';
-import Books from './components/Books';
+import Create from './components/Home';
 
-const tabs = ["Assignments", "Notes", "Books"];
+const tabs = ["Home","Assignments", "Notes"];
 const SubjectDashboard = () => {
     const { courseId } = useParams();
     const [selected, setSelected] = useState(tabs[0]);
@@ -51,9 +51,9 @@ const SubjectDashboard = () => {
             ))}
         </div>
         <div className='md:p-10 p-5'>
+        {selected === "Home" && <Create/>}
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
-        {selected === "Books" && <Books/>}
         </div>
     </div>
   )
