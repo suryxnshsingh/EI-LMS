@@ -215,7 +215,7 @@ const AssignmentDialog = ({ courseId, assignment, onClose, onCreate }) => {
           loading={loading}
         />
       )}
-      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg w-1/3 max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg w-[90%] md:w-1/3 max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-neutral-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {assignment ? 'Assignment Details' : 'Create Assignment'}

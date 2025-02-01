@@ -5,7 +5,7 @@ import { useState } from "react";
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Assignments from './Assignments';
-import Notes from './components/Notes';
+import Notes from './Notes';
 import Create from './components/Home';
 
 const tabs = ["Home","Assignments", "Notes"];
