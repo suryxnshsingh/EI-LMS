@@ -63,6 +63,15 @@ const Notes = () => {
     }
   };
 
+  const downloadFile = async (fileUrl) => {
+    try {
+      const filename = fileUrl.split('/').pop();
+      window.open(`${BASE_URL}/api/notes/download/${filename}`, '_blank');
+    } catch (error) {
+      console.error('Download error:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -77,7 +86,7 @@ const Notes = () => {
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="inline-flex w-full items-center justify-center px-3 py-1.5 transition-all text-md font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700"
+            className="inline-flex w-full items-center justify-center px-3 py-1.5 transition-all text-md font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white" // updated create button styling
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Create Note
@@ -94,15 +103,16 @@ const Notes = () => {
           {notes.map((note) => (
             <div
               key={note.id}
-              className="p-4 rounded bg-gray-50 dark:bg-neutral-800 hover:shadow-lg dark:shadow-gray-600 transition-shadow"
+              className="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow" // updated card container styling
             >
               <div className="flex justify-between items-center mb-0">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">{note.title}</h2>
                 <button
                   onClick={() => handleDeleteNote(note.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-800 dark:text-red-300 dark:hover:bg-red-700"
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white" // updated delete button styling
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
                 </button>
               </div>
               <div className="">
@@ -110,10 +120,13 @@ const Notes = () => {
               </div>
               <div className="mb-0">
                 {note.fileUrl && (
-                  <a href={`${BASE_URL}/${note.fileUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 mt-2">
+                  <button
+                    onClick={() => downloadFile(note.fileUrl)}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white mt-2" // updated download button styling
+                  >
                     <FileDown className="h-4 w-4 mr-1" />
                     Download File
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
