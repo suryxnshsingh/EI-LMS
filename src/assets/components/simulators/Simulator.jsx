@@ -8,33 +8,34 @@ export function Simulator() {
       <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
       <div className="flex flex-col md:flex-row gap-10">
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
-          <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900" />
+          <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
         <Card title="Circuit Simulator" icon={<CircuitBoardIcon />} link='https://www.falstad.com/circuit/circuitjs.html'>
           <CanvasRevealEffect
-            animationSpeed={3}
-            containerClassName="bg-transparent"
+            animationSpeed={5}
+            containerClassName="bg-purple-900 dark:bg-black"
             colors={[
               [59, 130, 246],
               [139, 92, 246],
             ]}
-            dotSize={2} />
+            dotSize={3} />
         </Card>
         <Card title="Analogue Sim." icon={<AceternityIcon />} link='https://eecircuit.com/'>
           <CanvasRevealEffect
-            animationSpeed={3}
-            containerClassName="bg-black"
+            animationSpeed={5}
+            containerClassName="bg-pink-900 dark:bg-black"
             colors={[
               [236, 72, 153],
               [232, 121, 249],
             ]}
-            dotSize={2} />
+            dotSize={3} />
         </Card>
         <Card title="Matlab Simulator" icon={<MatlabIcon />} disabled>
           <CanvasRevealEffect
-            animationSpeed={3}
-            containerClassName="bg-sky-900"
-            colors={[[125, 211, 252]]} />
+            animationSpeed={5}
+            containerClassName="bg-black"
+            colors={[[125, 211, 252]]} 
+            dotSize={4}/>
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <span className="text-white text-xl font-bold pt-40">(Coming Soon)</span>
           </div>
