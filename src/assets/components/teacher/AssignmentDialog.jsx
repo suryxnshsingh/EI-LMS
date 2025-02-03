@@ -243,19 +243,19 @@ const AssignmentDialog = ({ courseId, assignment, onClose, onCreate }) => {
           loading={loading}
         />
       )}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full md:w-1/2 lg:w-1/3 max-h-[90vh] overflow-y-auto p-6 transition">
-        <div className="flex justify-between items-center border-b pb-4 mb-4">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full md:w-1/2 lg:w-1/3 max-h-[90vh] overflow-y-auto transition">
+        <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-700 pb-4 mb-4 px-6 py-3">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
             {assignment ? 'Assignment Details' : 'Create Assignment'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+            className="p-2 rounded transition"
           >
-            <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+            <X className="h-6 w-6 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
           </button>
         </div>
-        <div className="p-2">
+        <div className="px-6 pb-6">
           {assignment ? (
             <>
               <p className="text-xl font-semibold text-gray-800 dark:text-gray-200">{assignment.title}</p>
@@ -294,7 +294,7 @@ const AssignmentDialog = ({ courseId, assignment, onClose, onCreate }) => {
                     checked={acceptingSubmissions}
                     onChange={toggleAcceptingSubmissions}
                   />
-                  <div className={`relative w-11 h-6 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 ${
+                  <div className={`relative w-11 h-6 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 ${
                     acceptingSubmissions ? 'bg-red-600 dark:peer-checked:bg-red-600' : 'bg-green-600 dark:peer-checked:bg-green-600'
                   }`}></div>
                   <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -302,7 +302,7 @@ const AssignmentDialog = ({ courseId, assignment, onClose, onCreate }) => {
                   </span>
                 </label>
               </div>
-              <div className="flex justify-center gap-4 pt-5 mt-5 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-center gap-4 pt-5 mt-5 border-t border-gray-200 dark:border-neutral-700">
                 <button
                   onClick={handleUpdate}
                   className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
