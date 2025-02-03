@@ -57,12 +57,20 @@ const Assignment = () => {
 		"to-do late": { label: "To Do/Late", class: "bg-yellow-100 text-yellow-800" },
 		"completed": { label: "Completed", class: "bg-green-100 text-green-800" },
 		"late submission": { label: "Late Submission", class: "bg-red-100 text-red-800" },
-		"missed": { label: "Missed", class: "bg-gray-100 text-gray-800" }
+		"missed": { label: "Missed", class: "bg-red-100 text-red-800" }
+	};
+
+	const downloadFile = (fileUrl) => {
+		try {
+			const filename = fileUrl.split('/').pop();
+			window.open(`${BASE_URL}/api/assignment/download/${filename}`, '_blank');
+		} catch (error) {
+			console.error('Download error:', error);
+		}
 	};
 
 	return (
-		<div className="p-4">
-			<h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Student Assignments</h1>
+		<div className="">
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{sortedAssignments.map(a => (
 					<div key={a.id} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-xl transition relative">
@@ -71,6 +79,12 @@ const Assignment = () => {
 						<div className="text-xs text-gray-500 dark:text-gray-300 mb-3">
 							Due: {new Date(a.dueDate).toLocaleString()}
 						</div>
+						{/* Display download link if file exists */}
+						{a.fileUrl && (
+							<div className="text-xs text-gray-500 dark:text-gray-300 mb-3">
+								<button onClick={() => downloadFile(a.fileUrl)} className="text-blue-500 hover:underline">Download Assignment File</button>
+							</div>
+						)}
 						{/* Display submission date/time if submission exists */}
 						{a.submissions && a.submissions.length > 0 && (
 							<div className="text-xs text-gray-500 dark:text-gray-300 mb-3">

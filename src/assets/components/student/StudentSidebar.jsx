@@ -22,6 +22,7 @@ import ManageCourses from './courses/ManageCourses';
 import Digital from '../simulators/digital';
 import Cookies from 'js-cookie';
 import Attendance from './attendance/Attendance';
+import { Simulator } from '../simulators/Simulator';
 
 const StudentSidebar = () => {
 
@@ -170,7 +171,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-1 bg-neutral-100 dark:bg-neutral-950">
       <div className=" rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black dark:bg-dot-white/[0.2] bg-dot-black/[0.2] overflow-scroll ">
-        <div className='p-2 md:p-10 rounded-tl-2xl  w-screen h-screen '>
+        <div className='p-2 rounded-tl-2xl  w-screen h-screen '>
         <div className=' flex items-center justify-center text-black  dark:text-white'>
           <Routes>
             <Route path="/" element={<Dash />} />
@@ -179,7 +180,7 @@ const Dashboard = () => {
             <Route path="/tests" element={<Tests />} />
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/simulators" element={<Digital/>} />
+            <Route path="/simulators" element={<Simulator/>} />
           </Routes>
           </div>
           </div>

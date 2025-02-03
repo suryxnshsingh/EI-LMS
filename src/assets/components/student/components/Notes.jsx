@@ -51,10 +51,8 @@ const Notes = () => {
   }
 
   return (
-    <div className="w-full m-0">
+    <div className="w-full">
       <div className="container space-y-6">
-        <h1 className="text-3xl mb-4">Notes</h1>
-
         {error && (
           <div className="border px-4 py-3 rounded mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900 dark:border-red-800 dark:text-red-200">
             {error}
@@ -63,13 +61,15 @@ const Notes = () => {
 
         <div className="space-y-4">
           {notes.map((note) => (
-            <div key={note.id} className="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"> {/* updated card container styling */}
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">{note.title}</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{note.description}</p>
+            <div key={note.id} className="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow flex justify-between items-center"> {/* updated card container styling */}
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">{note.title}</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{note.description}</p>
+              </div>
               {note.fileUrl && (
                 <button
                   onClick={() => downloadFile(note.fileUrl)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white mt-2" // updated download button styling
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white" // updated download button styling
                 >
                   <FileDown className="h-4 w-4 mr-1" />
                   Download File
