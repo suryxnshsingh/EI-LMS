@@ -66,6 +66,10 @@ html{
     font-style: italic;
   }
 
+  .card-text {
+    font-family: "Chakra Petch", sans-serif;
+  }
+
   .poppins-thin {
     font-family: "Poppins", sans-serif;
     font-weight: 100;
@@ -173,4 +177,4 @@ html{
     font-weight: 900;
     font-style: italic;
   }
-  
+
