@@ -61,7 +61,7 @@ const Notes = () => {
 
         <div className="space-y-4">
           {notes.map((note) => (
-            <div key={note.id} className="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow flex justify-between items-center"> {/* updated card container styling */}
+            <div key={note.id} className="p-4 rounded bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-700 hover:shadow-lg transition-shadow flex justify-between items-center"> {/* updated card container styling */}
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">{note.title}</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{note.description}</p>

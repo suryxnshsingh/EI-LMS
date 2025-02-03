@@ -6,9 +6,9 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import Assignments from './components/Assignment';
 import Notes from './components/Notes';
-import Books from './components/Books';
+import Home from './components/Home';
 
-const tabs = [ "Assignments", "Notes", "Books"];
+const tabs = [ "Home", "Assignments", "Notes"];
 const SubjectDashboard = () => {
     const { courseId } = useParams();
     const [selected, setSelected] = useState(tabs[0]);
@@ -53,7 +53,7 @@ const SubjectDashboard = () => {
         <div className='md:p-10 p-5'>
         {selected === "Assignments" && <Assignments/>}
         {selected === "Notes" && <Notes/>}
-        {selected === "Books" && <Books/>}
+        {selected === "Home" && <Home/>}
         </div>
     </div>
   )

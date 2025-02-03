@@ -71,10 +71,9 @@ const Assignments = () => {
     <div className="w-full m-0">
       <div className="container space-y-6">
         <div className="flex justify-between items-center mb-6">
-          {/* <h1 className="text-4xl font-semibold text-gray-900 dark:text-white">Assignments</h1> */}
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="inline-flex w-full items-center justify-center px-3 py-1.5 transition-all text-md font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700"
+            className="inline-flex w-full items-center justify-center px-3 py-1.5 transition-all text-md font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Create Assignment
@@ -92,7 +91,7 @@ const Assignments = () => {
             <div
               key={assignment.id}
               onClick={() => handleViewAssignment(assignment)}
-              className="flex items-center justify-between p-4 rounded bg-gray-50 dark:bg-neutral-800 cursor-pointer hover:shadow-lg dark:shadow-gray-600 transition-shadow"
+              className="flex items-center justify-between p-4 rounded bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-700 cursor-pointer hover:shadow-lg dark:shadow-neutral-800 transition-shadow"
             >
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">{assignment.title}</h2>
