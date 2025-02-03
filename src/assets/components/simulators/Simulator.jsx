@@ -4,13 +4,23 @@ import { CanvasRevealEffect } from "../ui/canvas-reveal-effect";
 
 export function Simulator() {
   return (
-    <div className="w-full h-full m-10 md:m-20 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 ">Simulators</h1>
-      <div className="flex flex-col md:flex-row items-center justify-center gap-20">
+    <div className="w-full h-full m-10 mb-20 -left-10 md:m-20 flex flex-col">
+      <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
+      <div className="flex flex-col md:flex-row gap-10">
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900" />
         </Card>
-        <Card title="Analogue Sim." icon={<CircuitBoardIcon />} disabled>
+        <Card title="Circuit Simulator" icon={<CircuitBoardIcon />} link='https://www.falstad.com/circuit/circuitjs.html'>
+          <CanvasRevealEffect
+            animationSpeed={3}
+            containerClassName="bg-transparent"
+            colors={[
+              [59, 130, 246],
+              [139, 92, 246],
+            ]}
+            dotSize={2} />
+        </Card>
+        <Card title="Analogue Sim." icon={<AceternityIcon />} link='https://eecircuit.com/'>
           <CanvasRevealEffect
             animationSpeed={3}
             containerClassName="bg-black"
@@ -19,14 +29,11 @@ export function Simulator() {
               [232, 121, 249],
             ]}
             dotSize={2} />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <span className="text-white text-xl font-bold pt-40">(Coming Soon)</span>
-          </div>
         </Card>
         <Card title="Matlab Simulator" icon={<MatlabIcon />} disabled>
           <CanvasRevealEffect
             animationSpeed={3}
-            containerClassName="bg-sky-600"
+            containerClassName="bg-sky-900"
             colors={[[125, 211, 252]]} />
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <span className="text-white text-xl font-bold pt-40">(Coming Soon)</span>
@@ -82,7 +89,7 @@ const AceternityIcon = () => {
       viewBox="0 0 66 65"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="h-14 w-14 text-black dark:text-white group-hover/canvas-card:text-white">
+      className="h-10 w-10 text-black dark:text-white group-hover/canvas-card:text-white">
       <path
         d="M8 8.05571C8 8.05571 54.9009 18.1782 57.8687 30.062C60.8365 41.9458 9.05432 57.4696 9.05432 57.4696"
         stroke="currentColor"
