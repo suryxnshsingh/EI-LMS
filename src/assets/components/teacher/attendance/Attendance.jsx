@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useMediaQuery } from 'react-responsive';
 import Responses from './Responses';
 import AttendanceDownloadDialog from './AttendanceDownloadDialog';
+import CryptoJS from 'crypto-js'; // Import CryptoJS
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -95,6 +96,15 @@ const Attendance = () => {
     }
   };
 
+  const encrypt = (text) => {
+    return CryptoJS.AES.encrypt(text, 'secret-key').toString();
+  };
+
+  const decrypt = (ciphertext) => {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, 'secret-key');
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
+
   // Create attendance session
   const createAttendanceSession = async (courseId, teacherId, date, duration) => {
     if (!selectedCourseForSession) {
@@ -115,7 +125,7 @@ const Attendance = () => {
       });
       fetchAttendanceSessions(courseId);
       setSelectedCourse(courses.find(course => course.id === courseId)); // Trigger the tab of the specific course
-      setQrCodeSession(response.data.id); // Trigger the QR code for the new session
+      setQrCodeSession(encrypt(response.data.id.toString())); // Encrypt the QR code session ID
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create attendance session");
     } finally {
@@ -366,7 +376,7 @@ const Attendance = () => {
                     Attendance ID :
                 </h2>
                 <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-[5px]'}`}>
-                   {qrCodeSession}
+                   {decrypt(qrCodeSession)}
                 </h2>
                 <button
                   onClick={() => setShowAttendanceId(!showAttendanceId)}
@@ -382,7 +392,7 @@ const Attendance = () => {
               ❌
             </button>
             </div>
-            <QRCodeSVG value={qrCodeSession.toString()} size={isSmallDevice ? 300 : 550} /> {/* Adjust size based on device */}
+            <QRCodeSVG value={qrCodeSession} size={isSmallDevice ? 300 : 550} /> {/* Adjust size based on device */}
           </div>
         </div>
       )}

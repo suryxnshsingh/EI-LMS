@@ -7,6 +7,7 @@ import QrScanner from 'qr-scanner';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import StudentAttendanceDownloadDialog from './StudentAttendanceDownloadDialog';
+import CryptoJS from 'crypto-js'; // Import CryptoJS
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -85,13 +86,19 @@ const Attendance = () => {
     }
   };
 
+  const decrypt = (ciphertext) => {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, 'secret-key');
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
+
   const handleMarkAttendance = async () => {
     setLoading(true);
     const loadingToast = toast.loading('Marking Attendance...');
     try {
       const userId = Cookies.get('userId');
       const token = Cookies.get('token');
-      await axios.post(`${BASE_URL}/api/attendance/attendance/${attendanceId || qrId }/mark`, {
+      const decryptedId = decrypt(attendanceId || qrId); // Decrypt the attendance ID
+      await axios.post(`${BASE_URL}/api/attendance/attendance/${decryptedId}/mark`, {
         userId: parseInt(userId)
       }, {
         headers: {
