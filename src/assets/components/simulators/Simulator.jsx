@@ -36,9 +36,6 @@ export function Simulator() {
             containerClassName="bg-black"
             colors={[[125, 211, 252]]} 
             dotSize={4}/>
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <span className="text-white text-xl font-bold pt-40">(Coming Soon)</span>
-          </div>
         </Card>
       </div>
     </div>
