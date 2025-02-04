@@ -30,7 +30,7 @@ export function Simulator() {
             ]}
             dotSize={3} />
         </Card>
-        <Card title="Matlab Simulator" icon={<MatlabIcon />} disabled>
+        <Card title="Matlab Simulator" icon={<MatlabIcon />} link='https://www.mycompiler.io/new/octave'>
           <CanvasRevealEffect
             animationSpeed={5}
             containerClassName="bg-black"
