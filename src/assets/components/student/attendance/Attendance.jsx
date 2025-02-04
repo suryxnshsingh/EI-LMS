@@ -97,8 +97,8 @@ const Attendance = () => {
     try {
       const userId = Cookies.get('userId');
       const token = Cookies.get('token');
-      const decryptedId = decrypt(attendanceId || qrId); // Decrypt the attendance ID
-      await axios.post(`${BASE_URL}/api/attendance/attendance/${decryptedId}/mark`, {
+      const idToUse = attendanceId || decrypt(qrId); // Use the attendance ID directly or decrypt if using qrId
+      await axios.post(`${BASE_URL}/api/attendance/attendance/${idToUse}/mark`, {
         userId: parseInt(userId)
       }, {
         headers: {
@@ -136,6 +136,7 @@ const Attendance = () => {
           // onDecodeError: (error) => {
           //   toast.error('Failed to scan QR code');
           // },
+          willReadFrequently: true
         }
       );
       qrScanner.start();
