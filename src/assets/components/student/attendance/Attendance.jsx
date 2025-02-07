@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { ScanQrCode, Loader2, Download, History, BarChart2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import QrScanner from 'qr-scanner';
+import { Html5Qrcode } from "html5-qrcode";
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import StudentAttendanceDownloadDialog from './StudentAttendanceDownloadDialog';
@@ -13,6 +13,29 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const BASE_URL = 'http://localhost:8080';
 
+const scannerStyles = {
+  container: {
+    width: '300px',
+    height: '420px', // Increased height to accommodate the button
+    position: 'relative',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  header: {
+    padding: '0.75rem',
+    textAlign: 'center'
+  },
+  readerContainer: {
+    width: '300px',
+    height: '300px',
+    position: 'relative',
+    overflow: 'hidden',
+    flex: '1 1 auto'
+  }
+};
+
 const Attendance = () => {
   const [attendanceId, setAttendanceId] = useState('');
   const [qrId, setQrId] = useState('');
@@ -21,10 +44,13 @@ const Attendance = () => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const videoRef = useRef(null);
+  const [html5QrCode, setHtml5QrCode] = useState(null);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const scannerRef = useRef(null); // Add this ref to store scanner instance
 
   const fetchAttendanceHistory = async () => {
     setHistoryLoading(true);
@@ -97,8 +123,9 @@ const Attendance = () => {
     try {
       const userId = Cookies.get('userId');
       const token = Cookies.get('token');
-      const idToUse = attendanceId || decrypt(qrId); // Use the attendance ID directly or decrypt if using qrId
-      await axios.post(`${BASE_URL}/api/attendance/attendance/${idToUse}/mark`, {
+      const idToUse = attendanceId || decrypt(qrId);
+      
+      const response = await axios.post(`${BASE_URL}/api/attendance/attendance/${idToUse}/mark`, {
         userId: parseInt(userId)
       }, {
         headers: {
@@ -106,9 +133,18 @@ const Attendance = () => {
           'Authorization': `Bearer ${token}`
         }
       });
+
       toast.success('Attendance marked successfully', {
         id: loadingToast,
       });
+      
+      // Set success message with course details if available
+      setSuccessMessage({
+        message: 'Attendance marked successfully',
+        timestamp: new Date(),
+        course: response.data?.courseName || 'Course'
+      });
+
       // Refresh history if it's being shown
       if (showHistory) {
         fetchAttendanceHistory();
@@ -120,31 +156,81 @@ const Attendance = () => {
     } finally {
       setLoading(false);
       setAttendanceId('');
+      setQrId('');
+    }
+  };
+
+  const handleScan = async () => {
+    if (!isScanning) {
+      setScanning(true);
     }
   };
 
   useEffect(() => {
-    if (scanning && videoRef.current) {
-      const qrScanner = new QrScanner(
-        videoRef.current,
-        async (result) => {
-          await setQrId(result.data);
-          qrScanner.stop();
-          setScanning(false);
-        },
-        {
-          // onDecodeError: (error) => {
-          //   toast.error('Failed to scan QR code');
-          // },
-          willReadFrequently: true
-        }
-      );
-      qrScanner.start();
+    const initializeScanner = async () => {
+      if (scanning && !isScanning) {
+        try {
+          // Clean up any existing instance
+          if (scannerRef.current) {
+            await scannerRef.current.clear();
+            scannerRef.current = null;
+          }
 
-      return () => {
-        qrScanner.stop();
+          // Create new instance
+          const scanner = new Html5Qrcode("reader");
+          scannerRef.current = scanner;
+          setHtml5QrCode(scanner);
+          setIsScanning(true);
+          
+          await scanner.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 200, height: 200 },
+              aspectRatio: 1
+            },
+            async (decodedText) => {
+              setQrId(decodedText);
+              if (scannerRef.current) {
+                try {
+                  await scannerRef.current.stop();
+                } catch (err) {
+                  console.error('Error stopping scanner:', err);
+                }
+                scannerRef.current = null;
+                setIsScanning(false);
+                setScanning(false);
+              }
+            },
+            () => {} // Ignore errors during scanning
+          );
+        } catch (err) {
+          console.error("Error starting QR Code scanning", err);
+          toast.error("Failed to start camera");
+          setScanning(false);
+          setIsScanning(false);
+        }
+      }
+    };
+
+    initializeScanner();
+
+    // Cleanup function
+    return () => {
+      const cleanup = async () => {
+        if (scannerRef.current) {
+          try {
+            await scannerRef.current.stop();
+            await scannerRef.current.clear();
+          } catch (err) {
+            console.error('Error cleaning up scanner:', err);
+          }
+          scannerRef.current = null;
+          setIsScanning(false);
+        }
       };
-    }
+      cleanup();
+    };
   }, [scanning]);
 
   useEffect(() => {
@@ -158,10 +244,6 @@ const Attendance = () => {
       fetchAttendanceHistory();
     }
   }, [showStats]);
-
-  const handleScan = () => {
-    setScanning(true);
-  };
 
   const toggleStatsAndHistory = () => {
     setShowStats(!showStats);
@@ -178,6 +260,20 @@ const Attendance = () => {
         borderWidth: 0 // Remove the white border
       }
     ]
+  };
+
+  const handleCancelScan = async () => {
+    if (scannerRef.current && isScanning) {
+      try {
+        await scannerRef.current.stop();
+        await scannerRef.current.clear();
+      } catch (error) {
+        console.error('Error stopping scanner:', error);
+      }
+      scannerRef.current = null;
+    }
+    setIsScanning(false);
+    setScanning(false);
   };
 
   return (
@@ -234,6 +330,43 @@ const Attendance = () => {
             </div>
           </div>
         </div>
+
+        {/* Success Banner - moved here and updated styling */}
+        {successMessage && (
+          <div className="rounded-lg bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 shadow-md mb-6">
+            <div className="p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-6 w-6 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-lg font-medium text-green-800 dark:text-green-200">
+                    {successMessage.message}
+                  </h3>
+                  <div className="mt-2 text-sm text-green-700 dark:text-green-300">
+                    <p className="font-semibold">Course: {successMessage.course}</p>
+                    <p className="mt-1">
+                      Marked on: {successMessage.timestamp.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="ml-auto pl-3">
+                  <button
+                    onClick={() => setSuccessMessage(null)}
+                    className="inline-flex rounded-md p-1.5 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 focus:outline-none transition-colors"
+                  >
+                    <span className="sr-only">Dismiss</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 011.414 0L10 8.586l4.293-4.293a1 1 111.414 1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 01-1.414-1.414L8.586 10 4.293 5.707a1 1 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showStats && (
           <div className="rounded-lg bg-white dark:bg-neutral-800 shadow-md dark:shadow-none mb-6">
@@ -330,15 +463,33 @@ const Attendance = () => {
         )}
 
         {scanning && (
-          <div className="absolute -top-6 left-0 w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
-            <div className="bg-white rounded-lg shadow-lg dark:bg-neutral-800 p-6">
-              <video ref={videoRef} className="w-[80vw] h-[80vh] md:w-[60vw] md:h-[60vh]" />
-              <button
-                onClick={() => setScanning(false)}
-                className="mt-4 inline-flex text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-800 dark:text-red-300 dark:hover:bg-red-700 transition-colors"
-              >
-                Cancel
-              </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
+            <div style={scannerStyles.container} className="bg-white dark:bg-neutral-800 shadow-lg">
+              <div style={scannerStyles.header} className="border-b border-gray-200 dark:border-neutral-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Scan QR Code
+                </h3>
+              </div>
+              <div style={scannerStyles.readerContainer}>
+                <div 
+                  id="reader" 
+                  className="relative"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                />
+              </div>
+              <div className="p-3 text-center border-t border-gray-200 dark:border-neutral-700">
+                <button
+                  onClick={handleCancelScan}
+                  className="inline-flex items-center px-4 py-1.5 text-sm font-medium rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 dark:hover:bg-red-800/50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
