@@ -119,10 +119,10 @@ const ManageCourses = () => {
     const fetchData = async () => {
       try {
         const [coursesResponse, enrollmentsResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/courses/all-courses', {
+          axios.get('http://10.25.201.227:8080/api/courses/all-courses', {
             headers: { Authorization: `Bearer ${Cookies.get('token')}` }
           }),
-          axios.get('http://localhost:8080/api/enrollment/enrollments/my-courses', {
+          axios.get('http://10.25.201.227:8080/api/enrollment/enrollments/my-courses', {
             headers: { Authorization: `Bearer ${Cookies.get('token')}` }
           })
         ]);
@@ -165,7 +165,7 @@ const ManageCourses = () => {
   const handleEnroll = async (courseId) => {
     try {
       await axios.post(
-        'http://localhost:8080/api/enrollment/enrollments',
+        'http://10.25.201.227:8080/api/enrollment/enrollments',
         { courseId },
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` }}
       );

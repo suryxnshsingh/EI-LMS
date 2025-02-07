@@ -11,7 +11,7 @@ import CryptoJS from 'crypto-js'; // Import CryptoJS
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://10.25.201.227:8080';
 
 const scannerStyles = {
   container: {

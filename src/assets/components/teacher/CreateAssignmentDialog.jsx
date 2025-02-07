@@ -3,7 +3,7 @@ import { X, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://10.25.201.227:8080';
 
 const CreateAssignmentDialog = ({ courseId, onClose, onCreate }) => {
   const [title, setTitle] = useState('');
