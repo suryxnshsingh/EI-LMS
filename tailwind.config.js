@@ -19,11 +19,16 @@ module.exports = {
       },
       animation: {
         move: "move 5s linear infinite",
+        'fade-in': 'fade-in 0.3s ease-out',
       },
       keyframes: {
         move: {
           "0%": { transform: "translateX(-200px)" },
           "100%": { transform: "translateX(200px)" },
+        },
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
         },
       },
     },

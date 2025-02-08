@@ -40,7 +40,7 @@ const Dash = () => {
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/enrollment/enrollments/my-courses', {
+        const response = await axios.get('http://10.25.201.227:8080/api/enrollment/enrollments/my-courses', {
           headers: {
             Authorization: `Bearer ${Cookies.get('token')}`
           }
