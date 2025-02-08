@@ -4,7 +4,7 @@ import { Loader2, Check, X, Users, BookUser, RotateCw } from 'lucide-react';
 import Cookies from 'js-cookie';
 import StudentAttendanceDialog from './StudentAttendanceDialog';
 
-const BASE_URL = 'http://10.25.201.227:8080';
+const BASE_URL = 'http://localhost:8080';
 
 const ManageStudentsPage = () => {
   const [courses, setCourses] = useState([]);

@@ -8,7 +8,7 @@ import Responses from './Responses';
 import AttendanceDownloadDialog from './AttendanceDownloadDialog';
 import CryptoJS from 'crypto-js'; // Import CryptoJS
 
-const BASE_URL = 'http://10.25.201.227:8080';
+const BASE_URL = 'http://localhost:8080';
 
 const Attendance = () => {
   const [courses, setCourses] = useState([]);

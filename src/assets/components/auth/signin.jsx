@@ -44,7 +44,7 @@ const Signin = () => {
     const loadingToast = toast.loading('Signing in...');
 
     try {
-      const response = await axios.post(`http://10.25.201.227:8080/api/auth/login`, formData);
+      const response = await axios.post(`http://localhost:8080/api/auth/login`, formData);
       
       const { token, user } = response.data;
 

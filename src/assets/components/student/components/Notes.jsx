@@ -4,7 +4,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { FileDown } from 'lucide-react'; // added for consistency
 
-const BASE_URL = 'http://10.25.201.227:8080';
+const BASE_URL = 'http://localhost:8080';
 
 const Notes = () => {
   const { courseId } = useParams();

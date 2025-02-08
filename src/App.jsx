@@ -7,7 +7,7 @@ import TeacherSidebar from './assets/components/teacher/TeacherSidebar'
 import { Toaster } from 'react-hot-toast';
 import ForgotPassword from './assets/components/auth/ForgotPassword';
 import ChangePassword from './assets/components/auth/ChangePassword';
-import Digital from './assets/components/simulators/digital'
+import {Spice, CircuitSim} from './assets/components/simulators/sims'
 
 function App() {
 
@@ -52,7 +52,8 @@ function App() {
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path='/students/*' element={<StudentSidebar />} />
             <Route path='/teachers/*' element={<TeacherSidebar />} />
-            <Route path='/simulator/' element={<Digital />} />
+            <Route path='/spice' element={<Spice />} />
+            <Route path='/circuit' element={<CircuitSim />} />
           </Routes>
         </BrowserRouter>
       </div>
