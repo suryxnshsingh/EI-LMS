@@ -19,7 +19,6 @@ import Tests from './tests/Tests';
 import Profile from './Profile';
 import SubjectDashboard from './SubjectDashboard';
 import ManageCourses from './courses/ManageCourses';
-import Digital from '../simulators/digital';
 import Cookies from 'js-cookie';
 import Attendance from './attendance/Attendance';
 import { Simulator } from '../simulators/Simulator';
