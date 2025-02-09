@@ -187,33 +187,32 @@ const Tests = () => {
       ) : (
         <div className="flex flex-wrap gap-4 w-full">
           {Array.isArray(quizzes) && quizzes.map((quiz) => (
-            <div key={quiz.id} className='w-96 px-4 py-2 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md'>
+            <div 
+              key={quiz.id} 
+              className='w-96 p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
+              onClick={() => navigate(`/teachers/test/${quiz.id}`)}
+            >
               <div className="poppins-regular">
                 <div className="mb-4">
                   <h6 className="text-2xl font-bold mb-2">{quiz.title}</h6>
                   <p className="text-gray-600 dark:text-gray-300">{quiz.description}</p>
                 </div>
-                <div className="flex flex-col gap-2 mb-4">
+                <div className="flex flex-col gap-0 mb-4">
                   <div className="chip flex items-center gap-2 py-1">
                     <Clock size={16} /> {quiz.timeLimit} mins
                   </div>
-                  <div className="flex items-center w-fit gap-1 px-2 py-1 rounded-full bg-gray-200 dark:bg-neutral-900 text-sm">
+                  <div className="flex items-center w-fit gap-2 py-1">
                     <Book size={16} /> {getCoursesDisplay(quiz.Course)}
                   </div>
                 </div>
                 <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
                 <div className="flex justify-between items-center p-1">
-                  <div className={`p-0.5 px-2 rounded-md cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={() => handleToggleStatus(quiz.id, quiz.isActive)}>
+                  <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => { e.stopPropagation(); handleToggleStatus(quiz.id, quiz.isActive); }}>
                     {quiz.isActive ? 'Active' : 'Inactive'}
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleDeleteQuiz(quiz.id)} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-red-600">
-                      <Trash2 size={18} /> Delete
-                    </button>
-                    <button onClick={() => navigate(`/teachers/test/${quiz.id}`)} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-blue-600">
-                      <Pencil size={18} /> Edit
-                    </button>
-                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-red-600">
+                    <Trash2 size={18} /> Delete
+                  </button>
                 </div>
               </div>
             </div>
