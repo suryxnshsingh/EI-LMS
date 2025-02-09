@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card, CardContent, Typography, IconButton, Chip, Dialog,
-         TextField, Stack, FormControl, InputLabel, Select, MenuItem, Tooltip,
-         Skeleton, Paper, Divider, Alert } from '@mui/material';
-import { Plus, Pencil, Trash2, Clock, Book } from 'lucide-react';
+import { Plus, Pencil, Trash2, Clock, Book, FlaskConical, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { useTheme } from '@mui/material/styles';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const Tests = () => {
-  const theme = useTheme();
-  console.log("Current theme mode in Tests:", theme.palette.mode); // <-- Debug log
-
   const navigate = useNavigate();
-  const [quizzes, setQuizzes] = useState([]);  // Initialize as empty array
-  const [courses, setCourses] = useState([]); // Initialize as empty array
-  const [loading, setLoading] = useState(true);  // Add loading state
-  const [error, setError] = useState(null);      // Add error state
+  const [quizzes, setQuizzes] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [newQuiz, setNewQuiz] = useState({
     title: '',
@@ -44,12 +37,12 @@ const Tests = () => {
       const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, {
         headers: { Authorization: `Bearer ${Cookies.get("token")}` }
       });
-      setQuizzes(response.data || []); // Ensure we always set an array
+      setQuizzes(response.data || []);
       setError(null);
     } catch (error) {
       console.error('Failed to fetch quizzes:', error);
       setError('Failed to load quizzes');
-      setQuizzes([]); // Reset to empty array on error
+      setQuizzes([]);
     } finally {
       setLoading(false);
     }
@@ -61,10 +54,10 @@ const Tests = () => {
         headers: { Authorization: `Bearer ${Cookies.get("token")}` }
       });
       console.log('Courses:', response.data);
-      setCourses(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
+      setCourses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to fetch courses:', error);
-      setCourses([]); // Reset to empty array on error
+      setCourses([]);
     }
   };
 
@@ -73,7 +66,8 @@ const Tests = () => {
     fetchCourses();
   }, []);
 
-  const handleCreateQuiz = async () => {
+  const handleCreateQuiz = async (e) => {
+    e.preventDefault();
     try {
       const token = Cookies.get("token");
       if (!token) {
@@ -113,7 +107,7 @@ const Tests = () => {
 
       await axios.patch(
         `${BASE_URL}/api/quiz/teacher/${quizId}/toggle-status`,
-        {}, // empty body for PATCH request
+        {},
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -122,7 +116,7 @@ const Tests = () => {
         }
       );
       
-      fetchQuizzes(); // Refresh the quiz list
+      fetchQuizzes();
     } catch (error) {
       console.error('Failed to toggle quiz status:', error.response?.data || error.message);
       setError(error.response?.data?.error || 'Failed to toggle quiz status');
@@ -147,7 +141,7 @@ const Tests = () => {
           }
         );
         
-        fetchQuizzes(); // Refresh the list after successful deletion
+        fetchQuizzes();
       } catch (error) {
         console.error('Failed to delete quiz:', error.response?.data || error.message);
         setError(error.response?.data?.error || 'Failed to delete quiz');
@@ -161,300 +155,169 @@ const Tests = () => {
     return `${courses[0].name} +${courses.length - 1}`;
   };
 
-  const LoadingSkeleton = () => {
-    const skeletonDarkStyle = localTheme === 'dark' ? { bgcolor: '#3F3F46' } : {};
+  const LoadingSpinner = () => {
     return (
-      <Box sx={{ 
-        display: 'grid', 
-        gap: 3, 
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: 'repeat(auto-fill, minmax(280px, 1fr))',
-        },
-        maxWidth: '1800px',
-        mx: 'auto',
-      }}>
-        {[1, 2, 3, 4, 5, 6].map((n) => (
-          <Card key={n} sx={{
-            borderRadius: 2,
-            bgcolor: localTheme==='dark'? '#18181B' : 'background.default',
-            border: 1,
-            borderColor: 'divider'
-          }}>
-            <CardContent sx={{ p: 3 }}>
-              <Skeleton variant="text" sx={{ fontSize: '1.25rem', width: '70%', mb: 1, ...skeletonDarkStyle }} />
-              <Skeleton variant="text" sx={{ fontSize: '0.875rem', width: '90%', mb: 2, ...skeletonDarkStyle }} />
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <Skeleton variant="rounded" width={100} height={24} sx={skeletonDarkStyle} />
-                <Skeleton variant="rounded" width={120} height={24} sx={skeletonDarkStyle} />
-              </Box>
-              <Skeleton variant="rectangular" height={1} sx={{ mb: 2, ...skeletonDarkStyle }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Skeleton variant="rounded" width={80} height={32} sx={skeletonDarkStyle} />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Skeleton variant="circular" width={32} height={32} sx={skeletonDarkStyle} />
-                  <Skeleton variant="circular" width={32} height={32} sx={skeletonDarkStyle} />
-                </Box>
-              </Box> {/* Added missing closing tag for Box */}
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+      <div className="flex justify-center items-center h-[70svh]">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-900 dark:text-white" />
+      </div>
     );
   };
 
   return (
-    <Box sx={{ 
-      p: 4, 
-      width: { xs: '100%', md: 'calc(100vw - 240px)' }, // Limit width based on sidebar
-      mx: 'auto',
-      position: 'relative'
-    }}>
-      {/* Create Quiz button */}
-      <Box sx={{ position: 'absolute', top: 16, right: 32 }}>
-        <Tooltip title="Create a new quiz" arrow>
-          <Button
-            variant="contained"
-            startIcon={<Plus size={20} />}
+    <div className="w-full p-5 md:p-10">
+      <div className="mb-10 flex flex-col md:flex-row justify-between w-full pr-20">
+          <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-2">
+            Manage Tests
+          </h1>
+          <button
             onClick={() => setOpenDialog(true)}
-            sx={{ borderRadius: 2, textTransform: 'none' }}
+            className="mt-4 md:mt-0 w-fit px-4 py-2 text-xl text-white border-2 border-neutral-200 dark:border-neutral-700 rounded-md bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 transition-colors duration-800"
           >
-            Create New Quiz
-          </Button>
-        </Tooltip>
-      </Box>
-
-      {/* Centered heading */}
-      <Typography 
-        variant="h4" 
-        sx={{ 
-          fontWeight: 'bold', 
-          color: localTheme==='dark'?'#FFFFFF':'#000000',
-          textAlign: 'center',
-          mb: 4
-        }}
-      >
-        My Quizzes
-      </Typography>
-
+            <div className='flex items-center'><FlaskConical className='mr-2'/>Create New Test</div>
+          </button>
+      </div>
       {error && (
-        <Alert severity="error" sx={{ mb: 3, maxWidth: '1400px', mx: 'auto' }}>
+        <div className="alert alert-error text-red-600 mb-4 max-w-2xl mx-auto">
           {error}
-        </Alert>
+        </div>
       )}
 
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSpinner />
       ) : (
-        <Box className="grid gap-3 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] max-w-[1800px] mx-auto">
+        <div className="flex flex-wrap gap-4 w-full">
           {Array.isArray(quizzes) && quizzes.map((quiz) => (
-            <Card key={quiz.id} sx={{
-              borderRadius: 2,
-              bgcolor: localTheme === 'dark' ? '#18181B' : 'background.default',
-              border: 1,
-              borderColor: 'divider',
-              transition: 'all 0.3s ease',
-              '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 }
-            }}>
-              <CardContent sx={{ p: 3 }}>
-                {/* ...existing quiz card content... */}
-                <div className="mb-2">
-                  <h6 className="font-bold text-2xl my-1 dark:text-white">{quiz.title}</h6>
-                  <p className="text-md text-gray-600 dark:text-gray-300 mb-2">{quiz.description}</p>
+            <div key={quiz.id} className='w-96 px-4 py-2 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md'>
+              <div className="poppins-regular">
+                <div className="mb-4">
+                  <h6 className="text-2xl font-bold mb-2">{quiz.title}</h6>
+                  <p className="text-gray-600 dark:text-gray-300">{quiz.description}</p>
                 </div>
-                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                  <Chip
-                    icon={<Clock size={16} />}
-                    label={`${quiz.timeLimit} mins`}
-                    size="small"
-                    variant="outlined"
-                    sx={ localTheme === 'dark'
-                      ? { color: '#fff', borderColor: '#aaa', px: 1, py: 0.5, m: 0.5 }
-                      : { px: 1, py: 0.5, m: 0.5 }
-                    }
-                  />
-                  <Tooltip title={quiz.Course?.map(c => c.name).join(', ')} arrow>
-                    <Chip
-                      icon={<Book size={16} />}
-                      label={getCoursesDisplay(quiz.Course)}
-                      size="small"
-                      variant="outlined"
-                      sx={ localTheme === 'dark'
-                        ? { color: '#fff', borderColor: '#aaa', px: 1, py: 0.5, m: 0.5 }
-                        : { px: 1, py: 0.5, m: 0.5 }
-                      }
-                    />
-                  </Tooltip>
-                </Stack>
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Tooltip title={`Click to ${quiz.isActive ? 'deactivate' : 'activate'}`} arrow>
-                    <Chip
-                      label={quiz.isActive ? 'Active' : 'Inactive'}
-                      color={quiz.isActive ? 'success' : 'default'}
-                      onClick={() => handleToggleStatus(quiz.id, quiz.isActive)}
-                      sx={{ 
-                        cursor: 'pointer', 
-                        transition: 'all 0.2s ease',
-                        ...(localTheme === 'dark' && { color: '#fff' })
-                      }}
-                    />
-                  </Tooltip>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title="Delete quiz" arrow>
-                      <IconButton onClick={() => handleDeleteQuiz(quiz.id)} color="error" size="small">
-                        <Trash2 size={18} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit quiz" arrow>
-                      <IconButton onClick={() => navigate(`/teachers/test/${quiz.id}`)} color="primary" size="small">
-                        <Pencil size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
+                <div className="flex flex-col gap-2 mb-4">
+                  <div className="chip flex items-center gap-2 py-1">
+                    <Clock size={16} /> {quiz.timeLimit} mins
+                  </div>
+                  <div className="flex items-center w-fit gap-1 px-2 py-1 rounded-full bg-gray-200 dark:bg-neutral-900 text-sm">
+                    <Book size={16} /> {getCoursesDisplay(quiz.Course)}
+                  </div>
+                </div>
+                <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
+                <div className="flex justify-between items-center p-1">
+                  <div className={`p-0.5 px-2 rounded-md cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={() => handleToggleStatus(quiz.id, quiz.isActive)}>
+                    {quiz.isActive ? 'Active' : 'Inactive'}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleDeleteQuiz(quiz.id)} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-red-600">
+                      <Trash2 size={18} /> Delete
+                    </button>
+                    <button onClick={() => navigate(`/teachers/test/${quiz.id}`)} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-blue-600">
+                      <Pencil size={18} /> Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {!loading && Array.isArray(quizzes) && quizzes.length === 0 && (
-        <Box sx={{ 
-          p: 4, 
-          textAlign: 'center',
-          bgcolor: localTheme === 'dark' ? 'gray.900' : 'background.default', // Updated card color in dark mode
-          borderRadius: 2,
-          // Removed border and borderColor properties
-          maxWidth: '600px',
-          mx: 'auto'
-        }}>
-          <Typography 
-            variant="h6" 
-            color={localTheme === 'dark' ? 'gray.100' : 'text.secondary'} // Updated text color in dark mode
-          >
-            No quizzes available
-          </Typography>
-          <Typography 
-            variant="body2" 
-            color={localTheme === 'dark' ? 'gray.100' : 'text.secondary'} 
-            sx={{ mt: 1 }}
-          >
-            Create your first quiz by clicking the 'Create New Quiz' button
-          </Typography>
-        </Box>
+        <div className="p-4 text-center bg-gray-100 dark:bg-gray-900 rounded-md max-w-lg mx-auto">
+          <h6 className="text-lg font-bold mb-2">No quizzes available</h6>
+          <p className="text-gray-600 dark:text-gray-300">Create your first quiz by clicking the 'Create New Quiz' button</p>
+        </div>
       )}
 
-      <Dialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)} 
-        maxWidth="sm" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            bgcolor: 'background.default',
-            backgroundImage: 'none'
-          }
-        }}
-      >
-        <Box sx={{ 
-          p: 4,
-          bgcolor: 'background.default',
-          color: 'text.primary'
-        }}>
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main', mb: 3 }}>
-            Create New Quiz
-          </Typography>
-          <Stack spacing={3}>
-            <TextField
-              label="Title"
-              value={newQuiz.title}
-              onChange={(e) => setNewQuiz({ ...newQuiz, title: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Description"
-              value={newQuiz.description}
-              onChange={(e) => setNewQuiz({ ...newQuiz, description: e.target.value })}
-              multiline
-              rows={3}
-              fullWidth
-            />
-            <TextField
-              label="Time Limit (minutes)"
-              type="number"
-              value={newQuiz.timeLimit}
-              onChange={(e) => setNewQuiz({ ...newQuiz, timeLimit: parseInt(e.target.value) })}
-              fullWidth
-            />
-            <FormControl fullWidth>
-              <InputLabel id="course-select-label">Assign to Courses</InputLabel>
-              <Select
-                labelId="course-select-label"
-                multiple
-                value={newQuiz.courseIds}
-                onChange={(e) => setNewQuiz({ ...newQuiz, courseIds: e.target.value })}
-                renderValue={(selected) => {
-                  if (selected.length === 0) {
-                    return "";  // Return empty string so that the label is visible
-                  }
-                  return (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map(courseId => (
-                        <Chip 
-                          key={courseId} 
-                          label={
-                            // Show course name and additional details for selected courses
-                            (() => {
-                              const course = courses.find(c => c.id === courseId);
-                              return course ? `${course.name} (${course.courseCode} | ${course.session} | ${course.semester})` : courseId;
-                            })()
-                          }
-                          sx={{ m: 0.5, px: 1, py: 0.5 }} // Added margins and paddings
-                        />
-                      ))}
-                    </Box>
-                  );
-                }}
-              >
-                {Array.isArray(courses) && courses.length === 0 ? (
-                  <MenuItem disabled value="">
-                    No courses available
-                  </MenuItem>
-                ) : (
-                  courses.map(course => (
-                    <MenuItem key={course.id} value={course.id}>
-                      {/* Display detailed info about each course */}
-                      <Box>
-                        <Typography variant="subtitle1">{course.name}</Typography>
-                        <Typography variant="caption">
-                          {course.courseCode} | Session : {course.session} | Semester : {course.semester}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-              <Button 
+      {openDialog && (
+        <div className="fixed h-full w-full top-0 left-0 flex items-center justify-center rounded-tl-2xl z-50 poppins-regular backdrop-brightness-50 dark:backdrop-brightness-50 backdrop-blur-sm">
+          <form className="max-w-md bg-white dark:bg-neutral-950 rounded-xl mx-4 p-2 w-full md:w-1/3 h-auto border-2 border-neutral-300 dark:border-neutral-700" onSubmit={handleCreateQuiz}>
+            <div className="p-4">
+              <div 
+                className="flex justify-end text-white cursor-pointer"
                 onClick={() => setOpenDialog(false)}
-                sx={{ borderRadius: 2, textTransform: 'none' }}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="contained" 
-                onClick={handleCreateQuiz}
-                sx={{ borderRadius: 2, textTransform: 'none' }}
+              >❌</div>
+              
+              <div className="relative z-0 w-full mb-5 group">
+                <input
+                  type="text"
+                  name="title"
+                  className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  placeholder=" "
+                  value={newQuiz.title}
+                  onChange={(e) => setNewQuiz({ ...newQuiz, title: e.target.value })}
+                  required
+                />
+                <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                  Quiz Title
+                </label>
+              </div>
+
+              <div className="relative z-0 w-full mb-5 group">
+                <textarea
+                  name="description"
+                  className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  placeholder=" "
+                  value={newQuiz.description}
+                  onChange={(e) => setNewQuiz({ ...newQuiz, description: e.target.value })}
+                  required
+                ></textarea>
+                <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                  Description
+                </label>
+              </div>
+
+              <div className="relative z-0 w-full mb-5 group">
+                <input
+                  type="number"
+                  name="timeLimit"
+                  className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  placeholder=" "
+                  value={newQuiz.timeLimit}
+                  onChange={(e) => setNewQuiz({ ...newQuiz, timeLimit: parseInt(e.target.value) })}
+                  required
+                />
+                <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                  Time Limit (minutes)
+                </label>
+              </div>
+
+              <div className="relative z-0 w-full mb-5 group">
+                <select
+                  name="courseIds"
+                  className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  value={newQuiz.courseIds}
+                  onChange={(e) => setNewQuiz({ ...newQuiz, courseIds: [e.target.value] })}
+                  required
+                >
+                  <option value="" disabled>Select a course</option>
+                  {Array.isArray(courses) && courses.length === 0 ? (
+                    <option disabled>No courses available</option>
+                  ) : (
+                    courses.map(course => (
+                      <option key={course.id} value={course.id}>
+                        {course.name} ({course.courseCode} | Session: {course.session} | Semester: {course.semester})
+                      </option>
+                    ))
+                  )}
+                </select>
+                <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                  Assign to Course
+                </label>
+              </div>
+
+              {error && <div className="text-red-500 mb-3">{error}</div>}
+              
+              <button
+                type="submit"
+                className="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-lg w-full sm:w-auto px-5 py-2.5 mt-5 text-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800"
               >
                 Create Quiz
-              </Button>
-            </Box>
-          </Stack>
-        </Box>
-      </Dialog>
-    </Box>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
   );
 };
 

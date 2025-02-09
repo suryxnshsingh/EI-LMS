@@ -463,7 +463,7 @@ const Attendance = () => {
         )}
 
         {scanning && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
+          <div className="fixed -inset-10 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
             <div style={scannerStyles.container} className="bg-white dark:bg-neutral-800 shadow-lg">
               <div style={scannerStyles.header} className="border-b border-gray-200 dark:border-neutral-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">

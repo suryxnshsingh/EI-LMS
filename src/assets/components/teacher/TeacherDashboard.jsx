@@ -44,7 +44,7 @@ const TeacherDashbard = () => {
             Authorization: `Bearer ${Cookies.get("token")}`
           }
         });
-        setSubjects(response.data);
+        setSubjects(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
       } catch (err) {
         console.error('Error details:', err.response?.data || err);
