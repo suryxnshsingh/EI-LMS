@@ -27,22 +27,23 @@ function UpdateTest() {
   const teacherFname = Cookies.get("firstName");
   const teacherLname = Cookies.get("lastName");
 
+  const fetchQuiz = async () => {
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/quiz/${id}`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      setQuiz(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch quiz:', err);
+      setError('Failed to load quiz');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchQuiz = async () => {
-      try {
-        const token = Cookies.get("token");
-        const response = await axios.get(`${BASE_URL}/api/quiz/teacher/quiz/${id}`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        });
-        setQuiz(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch quiz:', err);
-        setError('Failed to load quiz');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchQuiz();
   }, [id]);
 
@@ -102,6 +103,7 @@ function UpdateTest() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingQuestion(null);
+    fetchQuiz(); // Trigger a refresh
   };
 
   const handleUpdateQuestion = async (formData) => {
@@ -125,7 +127,9 @@ function UpdateTest() {
         )
       }));
       
-      handleCloseDialog();
+      setIsDialogOpen(false); // Close the dialog
+      setEditingQuestion(null);
+      fetchQuiz(); // Trigger a refresh
     } catch (err) {
       console.error('Failed to update question:', err);
       setError('Failed to update question');
@@ -151,7 +155,7 @@ function UpdateTest() {
           title: quiz.title,
           description: quiz.description,
           timeLimit: parseInt(quiz.timeLimit),
-          courseIds: quiz.Course?.map(c => c.id) || []
+          courseIds: quiz.Course ? quiz.Course.map(c => c.id) : [] // Ensure Course is defined
         },
         {
           headers: { 
@@ -176,6 +180,7 @@ function UpdateTest() {
 
   const handleCloseEditDialog = () => {
     setIsEditDialogOpen(false);
+    fetchQuiz(); // Trigger a refresh
   };
 
   const handleSaveEditDetails = async () => {
@@ -187,7 +192,8 @@ function UpdateTest() {
         {
           title: quiz.title,
           description: quiz.description,
-          timeLimit: parseInt(quiz.timeLimit)
+          timeLimit: parseInt(quiz.timeLimit),
+          courseIds: quiz.Course ? quiz.Course.map(c => c.id) : [] // Ensure Course is defined
         },
         {
           headers: { 
@@ -197,9 +203,10 @@ function UpdateTest() {
         }
       );
       setQuiz(response.data); // Update the state with the new quiz details
-      setIsEditDialogOpen(false);
+      setIsEditDialogOpen(false); // Close the dialog on successful save
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 2000);
+      fetchQuiz(); // Trigger a refresh to ensure questions are updated
     } catch (err) {
       console.error('Failed to save changes:', err);
       setSaveStatus('error');
@@ -308,7 +315,7 @@ function UpdateTest() {
       </div>
 
       {/* Right Column: Questions List */}
-      <div className="w-3/4 ml-auto overflow-y-auto h-screen" style={{ marginLeft: '30%' }}>
+      <div className="w-3/4 ml-auto overflow-y-auto h-screen" style={{ marginLeft: '29%' }}>
         {quiz.questions?.length > 0 ? (
           <div className="mt-3">
             <div className="flex justify-between items-center mb-2">
