@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { ArrowLeft, Edit, Trash2, ClipboardList, X } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ClipboardList, X, Settings } from 'lucide-react';
 import AddQuestionDialog from './AddQuestionDialog';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
@@ -229,9 +229,15 @@ function UpdateTest() {
             <ArrowLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
           <h1 className="text-2xl font-semibold ml-3 dark:text-white">Edit Quiz</h1>
+          <button
+            className="ml-auto p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+            onClick={handleEditDetails}
+          >
+            <Settings className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+          </button>
         </div>
 
-        <div className="p-6 bg-white dark:bg-gray-800 rounded-md shadow-md mb-6">
+        <div className="p-6 bg-white dark:bg-neutral-800 rounded-md shadow-md mb-6">
           <div className="space-y-4">
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -291,16 +297,26 @@ function UpdateTest() {
               </p>
             </div>
 
-            {/* Edit Details Button */}
-            <div className="flex justify-center mt-4">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                onClick={handleEditDetails}
-              >
-                Edit Details
-              </button>
-            </div>
+do             {/* New Card for Questions Count and Total Marks */}
+            <div className=" mb-6">
+              <div className="space-y-4">
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Number of Questions
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{quiz.questions.length}</p>
+                </div>
 
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Total Marks
+                  </label>
+                  <p className="text-gray-900 dark:text-white">
+                    {quiz.questions.reduce((total, question) => total + question.marks, 0)}
+                  </p>
+                </div>
+              </div>
+            </div>
             {/* Add Question Button */}
             <div className="flex justify-center mt-4">
               <button
@@ -327,7 +343,7 @@ function UpdateTest() {
               {quiz.questions.map((question, index) => (
                 <div 
                   key={question.id} 
-                  className="p-4 mb-3 bg-white dark:bg-gray-800 dark:text-white rounded-md shadow"
+                  className="p-4 mb-3 bg-white dark:bg-neutral-800 dark:text-white rounded-md shadow"
                 >
                   <div className="flex justify-between">
                     <div className="w-full">
@@ -342,12 +358,17 @@ function UpdateTest() {
                           />
                         </div>
                       )}
+                      <div className="flex items-center mb-2">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                          {question.type}
+                        </span>
+                        <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                          Marks: {question.marks}
+                        </span>
+                      </div>
                       <h3 className="font-medium">
                         {index + 1}. {question.text}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        Type: {question.type} • Marks: {question.marks}
-                      </p>
                       
                       {/* Show options for MCQ questions */}
                       {question.type.includes('MCQ') && question.options && (
@@ -399,7 +420,7 @@ function UpdateTest() {
           </div>
         ) : (
           <div
-            className="p-2 mt-2 flex flex-col items-center bg-gray-50 dark:bg-gray-800 rounded-md shadow"
+            className="p-2 mt-2 flex flex-col items-center bg-gray-50 dark:bg-neutral-800 rounded-md shadow"
           >
             <ClipboardList size={40} className="mb-4 text-gray-400" />
             <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-300">
@@ -429,7 +450,7 @@ function UpdateTest() {
       {/* Edit Details Dialog */}
       {isEditDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-md w-1/3">
+          <div className="bg-white dark:bg-neutral-800 p-6 rounded-md shadow-md w-1/3">
             <h2 className="text-xl font-semibold mb-4 dark:text-white">Edit Quiz Details</h2>
             <div className="space-y-4">
               <div className="flex flex-col">
@@ -442,7 +463,7 @@ function UpdateTest() {
                   value={quiz.title}
                   onChange={handleChange}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                           bg-white dark:bg-gray-800 
+                           bg-white dark:bg-neutral-800 
                            text-gray-900 dark:text-white
                            focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                            focus:border-transparent outline-none
@@ -460,7 +481,7 @@ function UpdateTest() {
                   onChange={handleChange}
                   rows={3}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                           bg-white dark:bg-gray-800 
+                           bg-white dark:bg-neutral-800 
                            text-gray-900 dark:text-white
                            focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                            focus:border-transparent outline-none
@@ -478,7 +499,7 @@ function UpdateTest() {
                   value={quiz.timeLimit}
                   onChange={handleChange}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                           bg-white dark:bg-gray-800 
+                           bg-white dark:bg-neutral-800 
                            text-gray-900 dark:text-white
                            focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                            focus:border-transparent outline-none

@@ -12,7 +12,7 @@ const questionTypes = [
 function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'add' }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [question, setQuestion] = useState({
-    type: '',
+    type: 'SINGLE_MCQ',  // Default to Single Choice Question
     text: '',
     marks: 1,
     options: [],          // For MCQ types
@@ -34,7 +34,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
       });
     } else if (!open) {
       setQuestion({
-        type: '',
+        type: 'SINGLE_MCQ',  // Default to Single Choice Question
         text: '',
         marks: 1,
         options: [],
@@ -117,26 +117,26 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
               Options
             </label>
             {question.options.map((option, index) => (
-              <div key={index} className="flex gap-1 mb-1">
-                <input
-                  type="text"
-                  placeholder={`Option ${index + 1}`}
-                  value={option.text}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                             bg-white dark:bg-gray-800 
-                             text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
-                             focus:border-transparent outline-none
-                             transition-colors duration-200"
-                />
+              <div key={index} className="flex gap-1 mb-1 items-center">
                 <input
                   type="checkbox"
                   checked={option.isCorrect}
                   onChange={(e) => handleCorrectOptionChange(index, e.target.checked)}
                   disabled={question.type === 'SINGLE_MCQ' && 
                           question.options.some((opt, i) => i !== index && opt.isCorrect)}
-                  className="mt-2"
+                  className="w-6 h-6 text-green-600 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <input
+                  type="text"
+                  placeholder={`Option ${index + 1}`}
+                  value={option.text}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                             bg-white dark:bg-neutral-800 
+                             text-gray-900 dark:text-white
+                             focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                             focus:border-transparent outline-none
+                             transition-colors duration-200"
                 />
                 <button onClick={() => handleRemoveOption(index)} className="text-red-500 hover:text-red-700">
                   <Trash size={20} />
@@ -160,7 +160,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
               value={question.correctAnswer || ''}
               onChange={handleChange}
               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
+                         bg-white dark:bg-neutral-800 
                          text-gray-900 dark:text-white
                          focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                          focus:border-transparent outline-none
@@ -173,7 +173,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
               value={question.tolerance || ''}
               onChange={handleChange}
               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
+                         bg-white dark:bg-neutral-800 
                          text-gray-900 dark:text-white
                          focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                          focus:border-transparent outline-none
@@ -192,7 +192,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
               value={question.keywords || ''} // Direct value binding
               onChange={handleKeywordsChange}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
+                         bg-white dark:bg-neutral-800 
                          text-gray-900 dark:text-white
                          focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                          focus:border-transparent outline-none
@@ -208,7 +208,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
               value={question.threshold || ''}
               onChange={handleChange}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
+                         bg-white dark:bg-neutral-800 
                          text-gray-900 dark:text-white
                          focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                          focus:border-transparent outline-none
@@ -265,114 +265,120 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${open ? '' : 'hidden'}`}>
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full p-6">
-        <h2 className="text-xl font-semibold dark:text-white">
-          {mode === 'edit' ? 'Edit Question' : 'Add New Question'}
-        </h2>
-        <div className="mt-4 space-y-4">
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-              Question Type
-            </label>
-            <select
-              name="type"
-              value={question.type}
-              onChange={handleChange}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
-                         text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
-                         focus:border-transparent outline-none
-                         transition-colors duration-200"
-            >
-              {questionTypes.map(type => (
-                <option key={type.value} value={type.value} className="dark:text-white dark:bg-gray-800">
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="relative bg-white dark:bg-neutral-800 rounded-lg shadow-lg max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-3xl">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+              {mode === 'edit' ? 'Edit Question' : 'Add New Question'}
+            </h2>
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Question Type
+                </label>
+                <select
+                  name="type"
+                  value={question.type}
+                  onChange={handleChange}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                             bg-white dark:bg-neutral-800 
+                             text-gray-900 dark:text-white
+                             transition-colors duration-200"
+                >
+                  {questionTypes.map(type => (
+                    <option key={type.value} value={type.value} className="dark:text-white dark:bg-neutral-800">
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Add image upload button before question text */}
-          <div className="flex items-center gap-2">
-            <button
-              className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
-                         text-gray-900 dark:text-white
-                         hover:bg-gray-100 dark:hover:bg-gray-700
-                         transition-colors duration-200"
-              onClick={() => document.getElementById('image-upload').click()}
-            >
-              <ImagePlus className="mr-2" />
-              {selectedImage ? 'Change Image' : 'Add Image'}
-            </button>
-            <input
-              type="file"
-              id="image-upload"
-              hidden
-              accept="image/jpeg,image/png,image/jpg"
-              onChange={handleImageChange}
-            />
-            {selectedImage && (
-              <span className="text-gray-600 dark:text-gray-300">
-                {selectedImage.name}
-              </span>
-            )}
-          </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col flex-1">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Marks
+                  </label>
+                  <input
+                    type="number"
+                    name="marks"
+                    value={question.marks}
+                    onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                               bg-white dark:bg-neutral-800 
+                               text-gray-900 dark:text-white
+                               focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                               focus:border-transparent outline-none
+                               transition-colors duration-200"
+                  />
+                </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-              Question Text
-            </label>
-            <textarea
-              name="text"
-              value={question.text}
-              onChange={handleChange}
-              rows={3}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
-                         text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
-                         focus:border-transparent outline-none
-                         transition-colors duration-200 resize-none"
-            />
-          </div>
+                <div className="flex flex-col flex-1">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Add Image
+                  </label>
+                  <button
+                    className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                               bg-white dark:bg-neutral-800 
+                               text-gray-900 dark:text-white
+                               hover:bg-gray-100 dark:hover:bg-neutral-700
+                               transition-colors duration-200"
+                    onClick={() => document.getElementById('image-upload').click()}
+                  >
+                    <ImagePlus className="mr-2" />
+                    {selectedImage ? 'Change Image' : 'Add Image'}
+                  </button>
+                  <input
+                    type="file"
+                    id="image-upload"
+                    hidden
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageChange}
+                  />
+                  {selectedImage && (
+                    <span className="text-gray-600 dark:text-gray-300">
+                      {selectedImage.name}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-              Marks
-            </label>
-            <input
-              type="number"
-              name="marks"
-              value={question.marks}
-              onChange={handleChange}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                         bg-white dark:bg-gray-800 
-                         text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
-                         focus:border-transparent outline-none
-                         transition-colors duration-200"
-            />
-          </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Question Text
+                </label>
+                <textarea
+                  name="text"
+                  value={question.text}
+                  onChange={handleChange}
+                  rows={3}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                             bg-white dark:bg-neutral-800 
+                             text-gray-900 dark:text-white
+                             focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                             focus:border-transparent outline-none
+                             transition-colors duration-200 resize-none"
+                />
+              </div>
 
-          {renderAdditionalFields()}
-        </div>
-        <div className="mt-6 flex justify-end space-x-2">
-          <button className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md" onClick={onClose}>
-            Cancel
-          </button>
-          <button 
-            onClick={handleSubmit} 
-            className={`px-4 py-2 rounded-md text-white transition-colors duration-200
-              ${!question.type || !question.text 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}
-            `}
-            disabled={!question.type || !question.text}
-          >
-            {mode === 'edit' ? 'Update Question' : 'Add Question'}
-          </button>
+              {renderAdditionalFields()}
+            </div>
+            <div className="mt-6 flex justify-end space-x-2">
+              <button className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md" onClick={onClose}>
+                Cancel
+              </button>
+              <button 
+                onClick={handleSubmit} 
+                className={`px-4 py-2 rounded-md text-white transition-colors duration-200
+                  ${!question.type || !question.text 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}
+                `}
+                disabled={!question.type || !question.text}
+              >
+                {mode === 'edit' ? 'Update Question' : 'Add Question'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
