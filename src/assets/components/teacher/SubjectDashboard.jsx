@@ -19,7 +19,7 @@ const SubjectDashboard = () => {
         const fetchCourseDetails = async () => {
             try {
                 const token = Cookies.get('token');
-                const response = await axios.get(`http://localhost:8080/api/courses/course-details/${courseId}`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/courses/course-details/${courseId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

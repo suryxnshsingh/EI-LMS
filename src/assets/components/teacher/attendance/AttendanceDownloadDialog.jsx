@@ -3,7 +3,7 @@ import { Loader2, Calendar, Clock } from 'lucide-react';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const AttendanceDownloadDialog = ({ courseId, courseName, onClose }) => {
   const [activeTab, setActiveTab] = useState('month'); // 'month' or 'range'

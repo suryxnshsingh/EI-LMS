@@ -72,7 +72,7 @@ const Signup = () => {
       }
 
       // Send the signup request to the backend
-      const response = await axios.post(`http://localhost:8080/api/auth/register`, formData);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
       
       // Store the JWT token and user info in cookies
       Cookies.set('token', response.data.token, { expires: 1 });

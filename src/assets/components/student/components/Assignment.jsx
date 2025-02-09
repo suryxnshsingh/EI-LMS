@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import SubmitAssignmentDialog from './SubmitAssignmentDialog';
 import { ArchiveX, BadgeCheck, FileUp } from 'lucide-react';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = '${import.meta.env.VITE_API_URL}';
 
 const Assignment = () => {
 	const { courseId } = useParams();

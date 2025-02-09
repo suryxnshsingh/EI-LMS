@@ -8,7 +8,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useTheme } from '@mui/material/styles';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const Tests = () => {
   const theme = useTheme();
@@ -307,7 +307,7 @@ const Tests = () => {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Edit quiz" arrow>
-                      <IconButton onClick={() => navigate(`/teacher/test/${quiz.id}`)} color="primary" size="small">
+                      <IconButton onClick={() => navigate(`/teachers/test/${quiz.id}`)} color="primary" size="small">
                         <Pencil size={18} />
                       </IconButton>
                     </Tooltip>

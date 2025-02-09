@@ -4,7 +4,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const StudentAttendanceDownloadDialog = ({ onClose }) => {
   const [loading, setLoading] = useState(false);

@@ -8,7 +8,7 @@ import Responses from './Responses';
 import AttendanceDownloadDialog from './AttendanceDownloadDialog';
 import CryptoJS from 'crypto-js'; // Import CryptoJS
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const Attendance = () => {
   const [courses, setCourses] = useState([]);
