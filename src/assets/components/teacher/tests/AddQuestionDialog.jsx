@@ -1,21 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@mui/material/styles';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Typography,
-  Checkbox,
-  IconButton
-} from '@mui/material';
 import { Plus, Trash, ImagePlus } from 'lucide-react';  // Add ImagePlus icon
 
 const questionTypes = [
@@ -27,7 +10,6 @@ const questionTypes = [
 ];
 
 function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'add' }) {
-  const theme = useTheme();
   const [selectedImage, setSelectedImage] = useState(null);
   const [question, setQuestion] = useState({
     type: '',
@@ -41,33 +23,6 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
     order: 0,
     imageUrl: null       // Optional image for any question type
   });
-
-  const [inputStyles, setInputStyles] = useState({});
-
-  useEffect(() => {
-    setInputStyles({
-      '& .MuiInputBase-root': {
-        color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000'
-      },
-      '& label': {
-        color: theme.palette.mode === 'dark' ? '#FFFFFF' : 'rgba(0, 0, 0, 0.6)'
-      },
-      '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: theme.palette.mode === 'dark' ? '#FFFFFF' : 'rgba(0, 0, 0, 0.23)'
-        },
-        '&:hover fieldset': {
-          borderColor: theme.palette.mode === 'dark' ? '#4dabf5' : 'rgba(0, 0, 0, 0.87)'
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: theme.palette.mode === 'dark' ? '#90caf9' : theme.palette.primary.main
-        }
-      },
-      '& .MuiSelect-icon': {
-        color: theme.palette.mode === 'dark' ? '#FFFFFF' : 'rgba(0, 0, 0, 0.54)'
-      }
-    });
-  }, [theme.palette.mode]);
 
   useEffect(() => {
     if (initialQuestion && open) {
@@ -156,96 +111,113 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
       case 'SINGLE_MCQ':
       case 'MULTI_MCQ':
         return (
-          <Box sx={{ mt: 2 }}>
+          <div className="mt-2">
             {/* MCQ options management */}
-            <Typography 
-              variant="subtitle2" 
-              sx={{ 
-                mb: 1, 
-                color: theme.palette.mode === 'dark' ? '#FFFFFF' : undefined 
-              }}
-            >
+            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
               Options
-            </Typography>
+            </label>
             {question.options.map((option, index) => (
-              <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  fullWidth
-                  label={`Option ${index + 1}`}
+              <div key={index} className="flex gap-1 mb-1">
+                <input
+                  type="text"
+                  placeholder={`Option ${index + 1}`}
                   value={option.text}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
-                  sx={inputStyles}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                             bg-white dark:bg-gray-800 
+                             text-gray-900 dark:text-white
+                             focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                             focus:border-transparent outline-none
+                             transition-colors duration-200"
                 />
-                <Checkbox
+                <input
+                  type="checkbox"
                   checked={option.isCorrect}
                   onChange={(e) => handleCorrectOptionChange(index, e.target.checked)}
                   disabled={question.type === 'SINGLE_MCQ' && 
                           question.options.some((opt, i) => i !== index && opt.isCorrect)}
+                  className="mt-2"
                 />
-                <IconButton onClick={() => handleRemoveOption(index)}>
-                  <Trash size={20} />  {/* Changed from Trash2 to Trash */}
-                </IconButton>
-              </Box>
+                <button onClick={() => handleRemoveOption(index)} className="text-red-500 hover:text-red-700">
+                  <Trash size={20} />
+                </button>
+              </div>
             ))}
-            <Button startIcon={<Plus size={18} />} onClick={handleAddOption}>  {/* Added explicit size */}
+            <button onClick={handleAddOption} className="flex items-center mt-2 text-blue-500 hover:text-blue-700">
+              <Plus size={18} className="mr-1" />
               Add Option
-            </Button>
-          </Box>
+            </button>
+          </div>
         );
       
       case 'NUMERICAL':
         return (
-          <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-            <TextField
-              label="Correct Answer"
-              name="correctAnswer"
+          <div className="mt-2 flex gap-2">
+            <input
               type="number"
+              placeholder="Correct Answer"
+              name="correctAnswer"
               value={question.correctAnswer || ''}
               onChange={handleChange}
-              fullWidth
-              sx={inputStyles}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
             />
-            <TextField
-              label="Tolerance (±)"
-              name="tolerance"
+            <input
               type="number"
+              placeholder="Tolerance (±)"
+              name="tolerance"
               value={question.tolerance || ''}
               onChange={handleChange}
-              fullWidth
-              sx={inputStyles}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
             />
-          </Box>
+          </div>
         );
       
       case 'DESCRIPTIVE':
         return (
-          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Keywords (comma separated)"
+          <div className="mt-2 flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="Keywords (comma separated)"
               name="keywords"
               value={question.keywords || ''} // Direct value binding
               onChange={handleKeywordsChange}
-              helperText="Add keywords for auto-grading (separate with commas)"
-              fullWidth
-              className="bg-transparent dark:text-white dark:border-gray-200"
-              InputProps={{
-                className: 'dark:text-white'
-              }}
-              InputLabelProps={{
-                className: 'dark:text-gray-200'
-              }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
             />
-            <TextField
-              label="Threshold (%)"
-              name="threshold"
+            <small className="text-gray-600 dark:text-gray-300">
+              Add keywords for auto-grading (separate with commas)
+            </small>
+            <input
               type="number"
+              placeholder="Threshold (%)"
+              name="threshold"
               value={question.threshold || ''}
               onChange={handleChange}
-              helperText="Minimum percentage of keywords needed for full marks"
-              fullWidth
-              sx={inputStyles}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
             />
-          </Box>
+            <small className="text-gray-600 dark:text-gray-300">
+              Minimum percentage of keywords needed for full marks
+            </small>
+          </div>
         );
       
       default:
@@ -291,118 +263,119 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = 'a
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="sm" 
-      fullWidth
-      PaperProps={{
-        className: "dark:bg-gray-800"
-      }}
-    >
-      <DialogTitle className="dark:text-white">
-        {mode === 'edit' ? 'Edit Question' : 'Add New Question'}
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel className="dark:text-white">Question Type</InputLabel>
-            <Select
+    <div className={`fixed inset-0 z-50 flex items-center justify-center ${open ? '' : 'hidden'}`}>
+      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full p-6">
+        <h2 className="text-xl font-semibold dark:text-white">
+          {mode === 'edit' ? 'Edit Question' : 'Add New Question'}
+        </h2>
+        <div className="mt-4 space-y-4">
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+              Question Type
+            </label>
+            <select
               name="type"
               value={question.type}
               onChange={handleChange}
-              label="Question Type"
-              className="dark:text-white dark:border-gray-200"
-              MenuProps={{
-                PaperProps: {
-                  className: "dark:bg-gray-800 dark:text-white"
-                }
-              }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
             >
               {questionTypes.map(type => (
-                <MenuItem 
-                  key={type.value} 
-                  value={type.value}
-                  className="dark:text-white dark:hover:bg-gray-700"
-                >
+                <option key={type.value} value={type.value} className="dark:text-white dark:bg-gray-800">
                   {type.label}
-                </MenuItem>
+                </option>
               ))}
-            </Select>
-          </FormControl>
+            </select>
+          </div>
 
           {/* Add image upload button before question text */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              component="label"
-              variant="outlined"
-              startIcon={<ImagePlus />}
-              className="dark:text-white dark:border-gray-200"
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         hover:bg-gray-100 dark:hover:bg-gray-700
+                         transition-colors duration-200"
+              onClick={() => document.getElementById('image-upload').click()}
             >
+              <ImagePlus className="mr-2" />
               {selectedImage ? 'Change Image' : 'Add Image'}
-              <input
-                type="file"
-                hidden
-                accept="image/jpeg,image/png,image/jpg"
-                onChange={handleImageChange}
-              />
-            </Button>
+            </button>
+            <input
+              type="file"
+              id="image-upload"
+              hidden
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={handleImageChange}
+            />
             {selectedImage && (
-              <Typography className="dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-300">
                 {selectedImage.name}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
 
-          <TextField
-            label="Question Text"
-            name="text"
-            value={question.text}
-            onChange={handleChange}
-            multiline
-            rows={3}
-            fullWidth
-            className="bg-transparent dark:text-white dark:border-gray-200"
-            InputProps={{
-              className: 'dark:text-white'
-            }}
-            InputLabelProps={{
-              className: 'dark:text-gray-200'
-            }}
-          />
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+              Question Text
+            </label>
+            <textarea
+              name="text"
+              value={question.text}
+              onChange={handleChange}
+              rows={3}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200 resize-none"
+            />
+          </div>
 
-          <TextField
-            label="Marks"
-            name="marks"
-            type="number"
-            value={question.marks}
-            onChange={handleChange}
-            fullWidth
-            className="bg-transparent dark:text-white dark:border-gray-200"
-            InputProps={{
-              className: 'dark:text-white'
-            }}
-            InputLabelProps={{
-              className: 'dark:text-gray-200'
-            }}
-          />
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+              Marks
+            </label>
+            <input
+              type="number"
+              name="marks"
+              value={question.marks}
+              onChange={handleChange}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         bg-white dark:bg-gray-800 
+                         text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                         focus:border-transparent outline-none
+                         transition-colors duration-200"
+            />
+          </div>
 
           {renderAdditionalFields()}
-        </Box>
-      </DialogContent>
-      <DialogActions className="dark:bg-gray-800">
-        <Button className="dark:text-gray-200" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          disabled={!question.type || !question.text}
-        >
-          {mode === 'edit' ? 'Update Question' : 'Add Question'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </div>
+        <div className="mt-6 flex justify-end space-x-2">
+          <button className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md" onClick={onClose}>
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            className={`px-4 py-2 rounded-md text-white transition-colors duration-200
+              ${!question.type || !question.text 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}
+            `}
+            disabled={!question.type || !question.text}
+          >
+            {mode === 'edit' ? 'Update Question' : 'Add Question'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

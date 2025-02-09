@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Box, TextField, Button, Typography, Alert, Paper, useTheme, IconButton, Dialog } from '@mui/material';
-import { ClipboardList, Trash2, Edit, X, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ClipboardList, X } from 'lucide-react';
 import AddQuestionDialog from './AddQuestionDialog';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 function UpdateTest() {
-  const theme = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState({ 
@@ -25,31 +23,6 @@ function UpdateTest() {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
-
-  const textFieldSx = {
-    mb: 2,
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-        borderWidth: 1,
-        borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-      },
-      '&:hover fieldset': {
-        borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.palette.primary.main,
-      },
-      '& input, & textarea': {
-        color: theme.palette.mode === 'dark' ? theme.palette.text.primary : 'inherit',
-      }
-    },
-    '& .MuiInputLabel-root': {
-      color: theme.palette.mode === 'dark' ? theme.palette.text.secondary : 'rgba(0, 0, 0, 0.6)',
-      '&.Mui-focused': {
-        color: theme.palette.primary.main,
-      }
-    }
-  };
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -194,10 +167,10 @@ function UpdateTest() {
     }
   };
 
-  if (loading) return <Typography>Loading...</Typography>;
+  if (loading) return <div className="text-center text-xl">Loading...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="w-full pr-32 p-10">
       {/* Header */}
       <div className="flex items-center mb-6">
         <button 
@@ -297,29 +270,28 @@ function UpdateTest() {
       </div>
 
       {quiz.questions?.length > 0 ? (
-        <Box sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" className="dark:text-white">Questions</Typography>
-            <Button
-              variant="contained"
-              color="primary"
+        <div className="mt-3">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-xl font-semibold dark:text-white">Questions</h2>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
               onClick={() => setIsDialogOpen(true)}
             >
               Add Question
-            </Button>
-          </Box>
+            </button>
+          </div>
           
           {/* Questions List */}
-          <Box sx={{ mb: 3 }}>
+          <div className="mb-3">
             {quiz.questions.map((question, index) => (
-              <Paper 
+              <div 
                 key={question.id} 
-                className="p-4 mb-3 dark:bg-gray-800 dark:text-white"
+                className="p-4 mb-3 bg-white dark:bg-gray-800 dark:text-white rounded-md shadow"
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Box sx={{ width: '100%' }}>
+                <div className="flex justify-between">
+                  <div className="w-full">
                     {question.imageUrl && (
-                      <Box sx={{ mb: 2, maxWidth: '100%' }}>
+                      <div className="mb-2 max-w-full">
                         <img
                           src={`${BASE_URL}${question.imageUrl}`}
                           alt="Question"
@@ -327,91 +299,81 @@ function UpdateTest() {
                           loading="lazy"
                           onClick={() => handleImageClick(`${BASE_URL}${question.imageUrl}`)}
                         />
-                      </Box>
+                      </div>
                     )}
-                    <Typography variant="subtitle1" className="font-medium">
+                    <h3 className="font-medium">
                       {index + 1}. {question.text}
-                    </Typography>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-300">
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
                       Type: {question.type} • Marks: {question.marks}
-                    </Typography>
+                    </p>
                     
                     {/* Show options for MCQ questions */}
                     {question.type.includes('MCQ') && question.options && (
-                      <Box sx={{ mt: 1, ml: 3 }}>
+                      <div className="mt-1 ml-3">
                         {question.options.map((option, idx) => (
-                          <Typography 
+                          <p 
                             key={idx} 
-                            variant="body2" 
                             className={`${option.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}
                           >
                             {String.fromCharCode(65 + idx)}. {option.text}
-                          </Typography>
+                          </p>
                         ))}
-                      </Box>
+                      </div>
                     )}
 
                     {/* Show correct answer for numerical questions */}
                     {question.type === 'NUMERICAL' && (
-                      <Typography variant="body2" className="text-gray-600 dark:text-gray-300">
+                      <p className="text-gray-600 dark:text-gray-300">
                         Answer: {question.correctAnswer} ± {question.tolerance}
-                      </Typography>
+                      </p>
                     )}
 
                     {/* Show keywords for descriptive questions */}
                     {question.type === 'DESCRIPTIVE' && (
-                      <Typography variant="body2" className="text-gray-600 dark:text-gray-300">
+                      <p className="text-gray-600 dark:text-gray-300">
                         Keywords: {question.keywords.join(', ')}
-                      </Typography>
+                      </p>
                     )}
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton 
+                  <div className="flex gap-1">
+                    <button 
                       onClick={() => handleEditQuestion(question)}
                       className="text-blue-500 hover:text-blue-700"
                     >
                       <Edit size={18} />
-                    </IconButton>
-                    <IconButton 
+                    </button>
+                    <button 
                       onClick={() => handleDeleteQuestion(question.id)}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 size={18} />
-                    </IconButton>
-                  </Box>
-                </Box>
-              </Paper>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ) : (
-        <Paper
-          sx={{
-            p: 2,
-            mt: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            bgcolor: 'grey.50'
-          }}
+        <div
+          className="p-2 mt-2 flex flex-col items-center bg-gray-50 dark:bg-gray-800 rounded-md shadow"
         >
-          <ClipboardList size={40} style={{ marginBottom: 16, color: '#9e9e9e' }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <ClipboardList size={40} className="mb-4 text-gray-400" />
+          <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-300">
             No Questions Added Yet
-          </Typography>
-          <Typography color="text.secondary" align="center">
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 text-center">
             Start adding questions to create your quiz.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
+          </p>
+          <button
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
             onClick={() => setIsDialogOpen(true)}
           >
             Add First Question
-          </Button>
-        </Paper>
+          </button>
+        </div>
       )}
 
       <AddQuestionDialog
@@ -423,52 +385,28 @@ function UpdateTest() {
       />
 
       {/* Image Modal */}
-      <Dialog 
-        open={!!selectedImage} 
-        onClose={handleCloseImage}
-        maxWidth="xl"
-        fullWidth
-        onClick={handleCloseImage}  // Close on backdrop click
-        PaperProps={{
-          sx: { 
-            bgcolor: 'transparent',
-            boxShadow: 'none',
-            height: '90vh',
-            m: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative'  // For positioning close button
-          }
-        }}
-      >
-        <IconButton 
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
           onClick={handleCloseImage}
-          sx={{ 
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            color: 'white',
-            bgcolor: 'rgba(0, 0, 0, 0.5)',
-            '&:hover': {
-              bgcolor: 'rgba(0, 0, 0, 0.7)'
-            }
-          }}
         >
-          <X size={24} />
-        </IconButton>
-        {selectedImage && (
+          <button 
+            onClick={handleCloseImage}
+            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 p-2 rounded-full hover:bg-opacity-75"
+          >
+            <X size={24} />
+          </button>
           <img
             src={selectedImage}
             alt="Question Full Size"
             className="max-h-[90vh] max-w-[90vw] object-contain"
             onClick={(e) => e.stopPropagation()}  // Prevent image click from closing
           />
-        )}
-      </Dialog>
+        </div>
+      )}
 
       {/* Remove the bottom buttons Box and replace with empty space */}
-      <Box sx={{ height: 40 }} /> {/* Spacer at bottom */}
+      <div className="h-10" /> {/* Spacer at bottom */}
     </div>
   );
 }
