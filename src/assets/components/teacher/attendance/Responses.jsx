@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const Responses = ({ courseId, attendanceId }) => {
   const [responses, setResponses] = useState([]);

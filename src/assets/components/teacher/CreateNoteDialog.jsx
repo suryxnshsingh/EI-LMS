@@ -3,7 +3,7 @@ import { X, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 const CreateNoteDialog = ({ courseId, onClose, onCreate }) => {
   const [title, setTitle] = useState('');

@@ -24,6 +24,7 @@ import SubjectDashboard from './SubjectDashboard';
 import Reports from './reports/Reports';
 import ManageStudents from './students/ManageStudents';
 import { Simulator } from '../simulators/Simulator';
+import UpdateTest from './tests/UpdateTest';
 import Profile from './Profile';
 import Tests from './tests/Tests';
 import Cookies from 'js-cookie';
@@ -198,6 +199,7 @@ const Dashboard = () => {
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/simulators" element={<Simulator/>} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/test/:id" element={<UpdateTest />} />
           </Routes>
           </div>
           </div>
