@@ -332,7 +332,7 @@ function UpdateTest() {
             {/* Add Question Button */}
             <div className="flex justify-center mt-4">
               <button
-                className="flex items-center px-3 py-2 text-lg  text-white border-2 border-neutral-200 dark:border-neutral-700 rounded-md bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 transition-colors duration-800"
+                className="flex items-center justify-center w-full px-3 py-2 text-lg  text-white border-2 border-neutral-200 dark:border-neutral-700 rounded-md bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 transition-colors duration-800"
                 onClick={() => setIsDialogOpen(true)}
               >
                 <ClipboardPlus size={24} className="mr-2" />
