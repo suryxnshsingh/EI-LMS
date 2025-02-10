@@ -17,6 +17,7 @@ const Tests = () => {
     title: '',
     description: '',
     timeLimit: 30,
+    maxMarks: 0,
     courseIds: []
   });
 
@@ -90,7 +91,7 @@ const Tests = () => {
 
       console.log('Quiz created:', response.data);
       setOpenDialog(false);
-      setNewQuiz({ title: '', description: '', timeLimit: 30, courseIds: [] });
+      setNewQuiz({ title: '', description: '', timeLimit: 30, maxMarks: 0, courseIds: [] });
       fetchQuizzes();
     } catch (error) {
       console.error('Failed to create quiz:', error.response?.data || error.message);
@@ -210,8 +211,8 @@ const Tests = () => {
                   <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => { e.stopPropagation(); handleToggleStatus(quiz.id, quiz.isActive); }}>
                     {quiz.isActive ? 'Active' : 'Inactive'}
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 px-2 py-1 rounded text-red-600">
-                    <Trash2 size={18} /> Delete
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600">
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </div>
@@ -277,6 +278,21 @@ const Tests = () => {
                 />
                 <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
                   Time Limit (minutes)
+                </label>
+              </div>
+
+              <div className="relative z-0 w-full mb-5 group">
+                <input
+                  type="number"
+                  name="maxMarks"
+                  className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  placeholder=" "
+                  value={newQuiz.maxMarks}
+                  onChange={(e) => setNewQuiz({ ...newQuiz, maxMarks: parseFloat(e.target.value) })}
+                  required
+                />
+                <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                  Maximum Marks
                 </label>
               </div>
 

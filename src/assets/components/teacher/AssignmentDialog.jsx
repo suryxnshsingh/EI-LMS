@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Loader2, Calendar, FileText, Paperclip, Edit3, Trash2, Eye } from 'lucide-react';
+import { X, Loader2, Calendar, FileText, Paperclip, Edit3, Trash2, Eye, Download } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -25,6 +25,15 @@ const SubmissionsDialog = ({ submissions, onClose, loading }) => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download error:', error);
+    }
+  };
+
+  const viewFile = (fileUrl) => {
+    try {
+      const filename = fileUrl.split('/').pop();
+      window.open(`${BASE_URL}/uploads/submissions/${filename}`, '_blank');
+    } catch (error) {
+      console.error('View error:', error);
     }
   };
 
@@ -83,12 +92,20 @@ const SubmissionsDialog = ({ submissions, onClose, loading }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {submission.fileUrl ? (
-                        <button 
-                          onClick={() => downloadFile(submission.fileUrl)} 
-                          className="text-blue-600 dark:text-blue-400"
-                        >
-                          Download File
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => viewFile(submission.fileUrl)} 
+                            className="text-blue-600 dark:text-blue-400 mr-2 hover:underline"
+                          >
+                            View File
+                          </button>
+                          <button 
+                            onClick={() => downloadFile(submission.fileUrl)} 
+                            className="text-blue-600 dark:text-blue-400 p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-950 transition"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                        </div>
                       ) : (
                         'No file uploaded'
                       )}
