@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Timer, Loader2, Send, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { Timer, Loader2, Send, ArrowLeft, ArrowRight, X, AlertTriangle, Maximize2 } from 'lucide-react';
 import QuizQuestion from './QuizQuestion';
 import QuizNav from './QuizNav';
 import ConfirmDialog from './ConfirmDialog';
@@ -24,6 +24,8 @@ function QuizAttempt() {
   const [theme, setTheme] = useState(document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showFullScreenWarning, setShowFullScreenWarning] = useState(false);
+  const [countdown, setCountdown] = useState(15);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -72,7 +74,42 @@ function QuizAttempt() {
     };
 
     fetchQuiz();
+
+    const handleFullScreenChange = () => {
+      if (!document.fullscreenElement) {
+        setShowFullScreenWarning(true);
+        setCountdown(15);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
+    document.addEventListener('msfullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullScreenChange);
+    };
   }, [quizId, navigate]); // Ensure dependencies are correct
+
+  useEffect(() => {
+    if (showFullScreenWarning && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [showFullScreenWarning, countdown]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      requestFullScreen();
+    }
+  }, [countdown]);
 
   // Timer effect
   useEffect(() => {
@@ -171,6 +208,20 @@ function QuizAttempt() {
     setSelectedImage(null);
   };
 
+  const requestFullScreen = () => {
+    const docElm = document.documentElement;
+    if (docElm.requestFullscreen) {
+      docElm.requestFullscreen();
+    } else if (docElm.mozRequestFullScreen) { // Firefox
+      docElm.mozRequestFullScreen();
+    } else if (docElm.webkitRequestFullScreen) { // Chrome, Safari and Opera
+      docElm.webkitRequestFullScreen();
+    } else if (docElm.msRequestFullscreen) { // IE/Edge
+      docElm.msRequestFullscreen();
+    }
+    setShowFullScreenWarning(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -181,6 +232,26 @@ function QuizAttempt() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {showFullScreenWarning && (
+        <div className="fixed inset-0 bg-red-600 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+            <AlertTriangle className="w-12 h-12 mx-auto text-red-600 mb-4" />
+            <h3 className="text-xl font-semibold mb-4 dark:text-white">Full Screen Mode Required</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Please re-enter full screen mode to continue the quiz. You have <span className="text-2xl font-bold text-red-600">{countdown}</span> seconds to comply.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={requestFullScreen}
+                className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-500 hover:to-red-700 transition-colors duration-200 flex items-center justify-center"
+              >
+                <Maximize2 className="w-5 h-5 mr-2" />
+                Re-enter Full Screen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="w-4/5 pr-4">
         <div className="max-w-4xl mx-auto py-8 px-6">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
