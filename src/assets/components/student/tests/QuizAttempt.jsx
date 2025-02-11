@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Timer, AlertCircle, ArrowLeft, ArrowRight, Send, Loader2, Menu, XCircle, Sun, Moon } from 'lucide-react';
+import { Timer, AlertCircle, ArrowLeft, ArrowRight, Send, Loader2, Menu, XCircle, Sun, Moon, X } from 'lucide-react';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +20,7 @@ function QuizAttempt() {
   const [showNav, setShowNav] = useState(false);
   const [theme, setTheme] = useState(document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -158,6 +159,14 @@ function QuizAttempt() {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+  };
+
+  const handleCloseImage = () => {
+    setSelectedImage(null);
   };
 
   const renderQuestion = () => {
@@ -455,7 +464,8 @@ function QuizAttempt() {
                   <img
                     src={`${BASE_URL}${quiz.questions[currentQuestion].imageUrl}`}
                     alt="Question"
-                    className="mb-6 max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
+                    className="mb-6 max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+                    onClick={() => handleImageClick(`${BASE_URL}${quiz.questions[currentQuestion].imageUrl}`)}
                   />
                 )}
                 {renderQuestion()}
@@ -510,6 +520,27 @@ function QuizAttempt() {
       {/* Fixed sidebar - takes up 1/5 of the screen */}
       {renderQuestionNav()}
       {renderConfirmDialog()}
+
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={handleCloseImage}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selectedImage}
+              alt="Enlarged"
+              className="max-w-full max-h-full"
+            />
+            <button
+              onClick={handleCloseImage}
+              className="absolute top-2 right-2 text-white bg-black bg-opacity-75 hover:bg-opacity-25 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
