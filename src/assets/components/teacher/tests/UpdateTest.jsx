@@ -28,31 +28,32 @@ function UpdateTest() {
   const teacherFname = Cookies.get("firstName");
   const teacherLname = Cookies.get("lastName");
 
-  useEffect(() => {
-    const fetchQuiz = async () => {
-      try {
-        const token = Cookies.get("token");
-        const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        });
-        
-        // Find the specific quiz from all quizzes
-        const quizData = response.data.find(q => q.id === id);
-        if (!quizData) {
-          throw new Error('Quiz not found');
-        }
-        
-        setQuiz(quizData);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch quiz:', err);
-        setError('Failed to load quiz');
-        navigate('/teachers/tests');
-      } finally {
-        setLoading(false);
+  // Move fetchQuiz to component scope
+  const fetchQuiz = async () => {
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      // Find the specific quiz from all quizzes
+      const quizData = response.data.find(q => q.id === id);
+      if (!quizData) {
+        throw new Error('Quiz not found');
       }
-    };
+      
+      setQuiz(quizData);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch quiz:', err);
+      setError('Failed to load quiz');
+      navigate('/teachers/tests');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchQuiz();
   }, [id, navigate]);
 
@@ -204,7 +205,8 @@ function UpdateTest() {
           description: quiz.description,
           timeLimit: parseInt(quiz.timeLimit),
           maxMarks: parseFloat(quiz.maxMarks),
-          courseIds: quiz.Course ? quiz.Course.map(c => c.id) : [] // Ensure Course is defined
+          courseIds: quiz.Course ? quiz.Course.map(c => c.id) : [],
+          scheduledFor: quiz.scheduledFor  // New field added
         },
         {
           headers: { 
@@ -213,11 +215,11 @@ function UpdateTest() {
           }
         }
       );
-      setQuiz(response.data); // Update the state with the new quiz details
-      setIsEditDialogOpen(false); // Close the dialog on successful save
+      setQuiz(response.data);
+      setIsEditDialogOpen(false);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 2000);
-      fetchQuiz(); // Trigger a refresh to ensure questions are updated
+      fetchQuiz();
     } catch (err) {
       console.error('Failed to save changes:', err);
       setSaveStatus('error');
@@ -398,12 +400,12 @@ function UpdateTest() {
 
                     {/* Show correct answer for numerical questions */}
                     {question.type === 'NUMERICAL' && (
-                      <p className='flex gap-2 text-gray-600 dark:text-gray-300 text-lg'>
-                        Ans:  
-                        <p className="text-green-600 dark:text-green-400 text-lg">
-                          {question.correctAnswer} 
-                        </p>
-                        ± {question.tolerance}
+                      <p className="flex gap-2 text-gray-600 dark:text-gray-300 text-lg">
+                        Ans:&nbsp;
+                        <span className="text-green-600 dark:text-green-400 text-lg">
+                          {question.correctAnswer}
+                        </span>
+                        &nbsp;± {question.tolerance}
                       </p>
                     )}
 
@@ -542,6 +544,25 @@ function UpdateTest() {
                   type="number"
                   name="maxMarks"
                   value={quiz.maxMarks || ''}
+                  onChange={handleChange}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                           bg-white dark:bg-neutral-800 
+                           text-gray-900 dark:text-white
+                           focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                           focus:border-transparent outline-none
+                           transition-colors duration-200"
+                />
+              </div>
+
+              {/* NEW: Scheduled For input */}
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Scheduled For
+                </label>
+                <input
+                  type="datetime-local"
+                  name="scheduledFor"
+                  value={quiz.scheduledFor ? new Date(quiz.scheduledFor).toISOString().slice(0,16) : ''}
                   onChange={handleChange}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                            bg-white dark:bg-neutral-800 

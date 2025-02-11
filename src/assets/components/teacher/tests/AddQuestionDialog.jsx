@@ -121,7 +121,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
           >
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Options</label>
             <AnimatePresence>
-              {question.options.map((option, index) => (
+              {(question.options || []).map((option, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -281,7 +281,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
   const handleAddOption = () => {
     setQuestion((prev) => ({
       ...prev,
-      options: [...prev.options, { text: "", isCorrect: false }],
+      options: [...(Array.isArray(prev.options) ? prev.options : []), { text: "", isCorrect: false }],
     }))
   }
 
@@ -302,8 +302,9 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
   const isFormValid = () => {
     if (!question.type || !question.text || !question.marks) return false
     if (question.type.includes("MCQ")) {
-      if (question.options.some(option => !option.text)) return false
-      if (!question.options.some(option => option.isCorrect)) return false
+      const options = question.options || []
+      if (options.some(option => !option.text)) return false
+      if (!options.some(option => option.isCorrect)) return false
     }
     if (question.type === "NUMERICAL" && (!question.correctAnswer || !question.tolerance)) return false
     if (question.type === "DESCRIPTIVE" && (!question.keywords || !question.threshold)) return false

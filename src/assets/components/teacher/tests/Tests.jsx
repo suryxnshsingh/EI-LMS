@@ -18,7 +18,8 @@ const Tests = () => {
     description: '',
     timeLimit: 30,
     maxMarks: 0,
-    courseIds: []
+    courseIds: [],
+    scheduledFor: ''  // new scheduledFor field (datetime-local string)
   });
   const [validationError, setValidationError] = useState(null);
 
@@ -33,18 +34,18 @@ const Tests = () => {
     return () => observer.disconnect();
   }, []);
 
-  const fetchQuizzes = async () => {
+  const fetchTests = async () => {
     try {
-      setLoading(true);
+      const token = Cookies.get("token");
+      // Updated endpoint as per server routes: use /api/quiz/teacher/my-quizzes
       const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, {
-        headers: { Authorization: `Bearer ${Cookies.get("token")}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setQuizzes(response.data || []);
+      setQuizzes(response.data);
       setError(null);
-    } catch (error) {
-      console.error('Failed to fetch quizzes:', error);
-      setError('Failed to load quizzes');
-      setQuizzes([]);
+    } catch (err) {
+      console.error('Failed to fetch tests:', err);
+      setError('Failed to load tests');
     } finally {
       setLoading(false);
     }
@@ -64,9 +65,9 @@ const Tests = () => {
   };
 
   useEffect(() => {
-    fetchQuizzes();
+    fetchTests();
     fetchCourses();
-  }, []);
+  }, [navigate]);
 
   const handleCreateQuiz = async (e) => {
     e.preventDefault();
@@ -92,8 +93,8 @@ const Tests = () => {
 
       console.log('Quiz created:', response.data);
       setOpenDialog(false);
-      setNewQuiz({ title: '', description: '', timeLimit: 30, maxMarks: 0, courseIds: [] });
-      fetchQuizzes();
+      setNewQuiz({ title: '', description: '', timeLimit: 30, maxMarks: 0, courseIds: [], scheduledFor: '' });
+      fetchTests();
     } catch (error) {
       console.error('Failed to create quiz:', error.response?.data || error.message);
       setError(error.response?.data?.error || 'Failed to create quiz');
@@ -123,7 +124,7 @@ const Tests = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setValidationError(null);
-      fetchQuizzes();
+      fetchTests();
     } catch (error) {
       console.error('Failed to toggle quiz status:', error);
     }
@@ -147,7 +148,7 @@ const Tests = () => {
           }
         );
         
-        fetchQuizzes();
+        fetchTests();
       } catch (error) {
         console.error('Failed to delete quiz:', error.response?.data || error.message);
         setError(error.response?.data?.error || 'Failed to delete quiz');
@@ -335,6 +336,24 @@ const Tests = () => {
                 <label className="peer-focus:font-medium absolute text-lg text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
                   Assign to Course
                 </label>
+              </div>
+
+              <div className="flex flex-col mb-4">
+                <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Scheduled For
+                </label>
+                <input
+                  type="datetime-local"
+                  name="scheduledFor"
+                  value={newQuiz.scheduledFor}
+                  onChange={(e) => setNewQuiz(prev => ({ ...prev, scheduledFor: e.target.value }))}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                           bg-white dark:bg-neutral-800 
+                           text-gray-900 dark:text-white
+                           focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                           focus:border-transparent outline-none
+                           transition-colors duration-200"
+                />
               </div>
 
               {error && <div className="text-red-500 mb-3">{error}</div>}
