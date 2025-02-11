@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import {  GraduationCap, ArrowRight, Loader2, Clock, Hourglass, FlaskConical } from 'lucide-react';
+import { GraduationCap, ArrowRight, Loader2, Clock, Hourglass, FlaskConical } from 'lucide-react';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -65,6 +65,19 @@ function QuizList() {
     };
   };
 
+  const requestFullScreen = () => {
+    const docElm = document.documentElement;
+    if (docElm.requestFullscreen) {
+      docElm.requestFullscreen();
+    } else if (docElm.mozRequestFullScreen) { // Firefox
+      docElm.mozRequestFullScreen();
+    } else if (docElm.webkitRequestFullScreen) { // Chrome, Safari and Opera
+      docElm.webkitRequestFullScreen();
+    } else if (docElm.msRequestFullscreen) { // IE/Edge
+      docElm.msRequestFullscreen();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -125,7 +138,10 @@ function QuizList() {
                 </div>
 
                 <button
-                  onClick={() => navigate(`/student/quiz/${quiz.id}`)}
+                  onClick={() => {
+                    requestFullScreen();
+                    navigate(`/student/quiz/${quiz.id}`);
+                  }}
                   className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
                 >
                   Start Test
