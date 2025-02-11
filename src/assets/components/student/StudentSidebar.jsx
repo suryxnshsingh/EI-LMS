@@ -16,6 +16,8 @@ import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
 import Dash from './Dash';
 import Tests from './tests/Tests';
+import QuizHistory from './tests/QuizHistory';
+import QuizList from './tests/QuizList';
 import Profile from './Profile';
 import SubjectDashboard from './SubjectDashboard';
 import ManageCourses from './courses/ManageCourses';
@@ -180,6 +182,8 @@ const Dashboard = () => {
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/simulators" element={<Simulator/>} />
+            <Route path="/tests/history" element={<QuizHistory />} />
+            <Route path="/tests/available" element={<QuizList />} />
           </Routes>
           </div>
           </div>

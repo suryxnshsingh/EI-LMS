@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Clock, Book, FlaskConical, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Clock, Book, FlaskConical, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -20,6 +20,7 @@ const Tests = () => {
     maxMarks: 0,
     courseIds: []
   });
+  const [validationError, setValidationError] = useState(null);
 
   const initialTheme = Cookies.get("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [localTheme, setLocalTheme] = useState(initialTheme);
@@ -99,28 +100,32 @@ const Tests = () => {
     }
   };
 
-  const handleToggleStatus = async (quizId, currentStatus) => {
+  const handleToggleStatus = async (quiz, e) => {
+    e.stopPropagation();
+
+    if (!quiz.isActive) {
+      const totalQuestionMarks = quiz.questions.reduce((sum, q) => sum + q.marks, 0);
+      
+      if (totalQuestionMarks !== quiz.maxMarks) {
+        setValidationError({
+          quizId: quiz.id,
+          message: `Cannot activate quiz: Sum of question marks (${totalQuestionMarks}) does not match quiz total marks (${quiz.maxMarks})`
+        });
+        return;
+      }
+    }
+
     try {
       const token = Cookies.get("token");
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
       await axios.patch(
-        `${BASE_URL}/api/quiz/teacher/${quizId}/toggle-status`,
+        `${BASE_URL}/api/quiz/teacher/${quiz.id}/toggle-status`,
         {},
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+      setValidationError(null);
       fetchQuizzes();
     } catch (error) {
-      console.error('Failed to toggle quiz status:', error.response?.data || error.message);
-      setError(error.response?.data?.error || 'Failed to toggle quiz status');
+      console.error('Failed to toggle quiz status:', error);
     }
   };
 
@@ -190,30 +195,42 @@ const Tests = () => {
           {Array.isArray(quizzes) && quizzes.map((quiz) => (
             <div 
               key={quiz.id} 
-              className='w-96 p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
-              onClick={() => navigate(`/teachers/test/${quiz.id}`)}
+              className="relative"
             >
-              <div className="poppins-regular">
-                <div className="mb-4">
-                  <h6 className="text-2xl font-bold mb-2">{quiz.title}</h6>
-                  <p className="text-gray-600 dark:text-gray-300">{quiz.description}</p>
-                </div>
-                <div className="flex flex-col gap-0 mb-4">
-                  <div className="chip flex items-center gap-2 py-1">
-                    <Clock size={16} /> {quiz.timeLimit} mins
-                  </div>
-                  <div className="flex items-center w-fit gap-2 py-1">
-                    <Book size={16} /> {getCoursesDisplay(quiz.Course)}
+              {validationError?.quizId === quiz.id && (
+                <div className="absolute -top-16 left-0 right-0 p-3 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg text-sm shadow-lg border border-red-200 dark:border-red-800">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{validationError.message}</span>
                   </div>
                 </div>
-                <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
-                <div className="flex justify-between items-center p-1">
-                  <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => { e.stopPropagation(); handleToggleStatus(quiz.id, quiz.isActive); }}>
-                    {quiz.isActive ? 'Active' : 'Inactive'}
+              )}
+              <div 
+                className='w-96 p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
+                onClick={() => navigate(`/teachers/test/${quiz.id}`)}
+              >
+                <div className="poppins-regular">
+                  <div className="mb-4">
+                    <h6 className="text-2xl font-bold mb-2">{quiz.title}</h6>
+                    <p className="text-gray-600 dark:text-gray-300">{quiz.description}</p>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600">
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex flex-col gap-0 mb-4">
+                    <div className="chip flex items-center gap-2 py-1">
+                      <Clock size={16} /> {quiz.timeLimit} mins
+                    </div>
+                    <div className="flex items-center w-fit gap-2 py-1">
+                      <Book size={16} /> {getCoursesDisplay(quiz.Course)}
+                    </div>
+                  </div>
+                  <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
+                  <div className="flex justify-between items-center p-1">
+                    <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => handleToggleStatus(quiz, e)}>
+                      {quiz.isActive ? 'Active' : 'Inactive'}
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

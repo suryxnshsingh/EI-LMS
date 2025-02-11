@@ -28,25 +28,33 @@ function UpdateTest() {
   const teacherFname = Cookies.get("firstName");
   const teacherLname = Cookies.get("lastName");
 
-  const fetchQuiz = async () => {
-    try {
-      const token = Cookies.get("token");
-      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/quiz/${id}`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      setQuiz(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch quiz:', err);
-      setError('Failed to load quiz');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, { 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        
+        // Find the specific quiz from all quizzes
+        const quizData = response.data.find(q => q.id === id);
+        if (!quizData) {
+          throw new Error('Quiz not found');
+        }
+        
+        setQuiz(quizData);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch quiz:', err);
+        setError('Failed to load quiz');
+        navigate('/teachers/tests');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchQuiz();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -295,19 +303,10 @@ function UpdateTest() {
 
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Created At
+                Scheduled For
               </label>
               <p className="text-gray-900 dark:text-white">
-                {new Date(quiz.createdAt).toLocaleString() || 'N/A'}
-              </p>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Updated At
-              </label>
-              <p className="text-gray-900 dark:text-white">
-                {new Date(quiz.updatedAt).toLocaleString() || 'N/A'}
+                {quiz.scheduledFor ? new Date(quiz.scheduledFor).toLocaleString() : 'Not scheduled'}
               </p>
             </div>
 
@@ -329,6 +328,16 @@ function UpdateTest() {
                   </p>
                 </div>
             </div>
+
+            <div className="flex flex-col">
+              <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+                Status
+              </label>
+              <p className={`text-${quiz.isActive ? 'green' : 'red'}-600 dark:text-${quiz.isActive ? 'green' : 'red'}-400`}>
+                {quiz.isActive ? 'Active' : 'Inactive'}
+              </p>
+            </div>
+
             {/* Add Question Button */}
             <div className="flex justify-center mt-4">
               <button
