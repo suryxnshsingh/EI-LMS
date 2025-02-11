@@ -68,7 +68,7 @@ function QuizAttempt() {
     };
 
     fetchQuiz();
-  }, [quizId, navigate]);
+  }, [quizId, navigate]); // Ensure dependencies are correct
 
   // Timer effect
   useEffect(() => {
