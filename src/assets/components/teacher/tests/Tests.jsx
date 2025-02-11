@@ -171,8 +171,8 @@ const Tests = () => {
   };
 
   return (
-    <div className="w-full p-5 md:p-10">
-      <div className="mb-10 flex flex-col md:flex-row justify-between w-full pr-20">
+    <div className="p-5 md:p-10 w-full mr-0 md:mr-16">
+      <div className="mb-10 flex flex-col md:flex-row justify-between">
           <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-2">
             Manage Tests
           </h1>
@@ -192,7 +192,7 @@ const Tests = () => {
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <div className="flex flex-wrap gap-4 w-full">
+        <div className="grid grid-cols-3 gap-4 w-full">
           {Array.isArray(quizzes) && quizzes.map((quiz) => (
             <div 
               key={quiz.id} 
@@ -207,7 +207,7 @@ const Tests = () => {
                 </div>
               )}
               <div 
-                className='w-96 p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
+                className='w-auto p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
                 onClick={() => navigate(`/teachers/test/${quiz.id}`)}
               >
                 <div className="poppins-regular">

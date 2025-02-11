@@ -206,7 +206,7 @@ function QuizAttempt() {
                   }}
                   className="w-5 h-5 mr-4 accent-violet-500"
                 />
-                <span className="text-lg font-medium">{option.text}</span>
+                <span className="text-lg font-medium dark:text-white">{option.text}</span>
               </label>
             ))}
           </div>
@@ -231,7 +231,7 @@ function QuizAttempt() {
               value={answers[question.id]?.textAnswer || ''}
               onChange={(e) => handleAnswer({ textAnswer: e.target.value })}
               className="w-full p-4 text-lg bg-transparent border-b-2 border-gray-200 dark:border-gray-600 
-                       focus:border-violet-500 dark:focus:border-violet-400 outline-none transition-colors"
+                       focus:border-violet-500 dark:focus:border-violet-400 outline-none transition-colors dark:text-white"
               placeholder="Enter your numerical answer"
             />
           </div>
@@ -255,7 +255,7 @@ function QuizAttempt() {
               onChange={(e) => handleAnswer({ textAnswer: e.target.value })}
               className="w-full p-4 text-lg bg-transparent border-2 border-gray-200 dark:border-gray-600 rounded-lg
                        focus:border-violet-500 dark:focus:border-violet-400 outline-none transition-colors
-                       resize-none min-h-[200px]"
+                       resize-none min-h-[200px] dark:text-white"
               placeholder="Enter your answer"
             />
           </div>
@@ -283,6 +283,30 @@ function QuizAttempt() {
               Remaining: {quiz?.questions.length - attemptedQuestions.size}
             </p>
           </div>
+        </div>
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h4 className="font-medium mb-2 dark:text-white">Quiz Info</h4>
+          <div className="space-y-2 text-sm">
+            <p className="text-gray-600 dark:text-gray-300">
+              Title: {quiz?.title}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Description: {quiz?.description}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Max Marks: {quiz?.maxMarks}
+            </p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="mt-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-5 h-5 text-yellow-500" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -385,31 +409,6 @@ function QuizAttempt() {
       {/* Main content area - takes up 4/5 of the screen */}
       <div className="w-4/5 pr-4">
         <div className="max-w-4xl mx-auto py-8 px-6">
-          {/* Quiz Header */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{quiz.title}</h1>
-                <p className="text-gray-600 dark:text-gray-400">{quiz.description}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                  Total Marks: {quiz.maxMarks}
-                </div>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  {theme === "dark" ? (
-                    <Sun className="w-5 h-5 text-yellow-500" />
-                  ) : (
-                    <Moon className="w-5 h-5 text-gray-600" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* Progress and Timer Bar */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
             <div className="flex justify-between items-center mb-4">
@@ -447,7 +446,7 @@ function QuizAttempt() {
                   <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                     {quiz.questions[currentQuestion].text}
                   </h2>
-                  <span className="ml-4 px-3 py-1 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium">
+                  <span className="ml-4 px-3 py-1 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-sm whitespace-nowrap font-medium">
                     {quiz.questions[currentQuestion].marks} marks
                   </span>
                 </div>
