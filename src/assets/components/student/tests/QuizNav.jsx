@@ -1,86 +1,83 @@
 import React from 'react';
 import { Sun, Moon, Loader2, Send } from 'lucide-react';
 
-const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions, handleSubmitClick, submitting, theme, toggleTheme }) => {
-  const getQuestionStatus = (index) => {
-    const questionId = quiz.questions[index].id;
-    if (attemptedQuestions.has(questionId)) {
-      return "bg-green-500 text-white";
-    }
-    return "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
-  };
-
+function Stat({ label, value }) {
   return (
-    <div className="w-1/4 h-screen fixed right-0 top-0 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col justify-between">
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-4 dark:text-white">Quiz Details</h3>
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <h4 className="font-medium mb-2 dark:text-white">Quiz Summary</h4>
-          <div className="space-y-2 text-sm">
-            <p className="text-gray-600 dark:text-gray-300">
-              Questions: {quiz?.questions.length}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Answered: {attemptedQuestions.size}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Remaining: {quiz?.questions.length - attemptedQuestions.size}
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <h4 className="font-medium mb-2 dark:text-white">Quiz Info</h4>
-          <div className="space-y-2 text-sm">
-            <p className="text-gray-600 dark:text-gray-300">
-              Title: {quiz?.title}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Description: {quiz?.description}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Max Marks: {quiz?.maxMarks}
-            </p>
-          </div>
-          <button
-            onClick={toggleTheme}
-            className="mt-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5 text-yellow-500" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600" />
-            )}
-          </button>
+    <div>
+      <dt className="text-sm text-gray-500 dark:text-gray-400">{label}</dt>
+      <dd className="text-base font-medium text-gray-900 dark:text-gray-100">{value}</dd>
+    </div>
+  );
+}
+
+const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions, handleSubmitClick, submitting, theme, toggleTheme }) => {
+  return (
+    <aside className="fixed right-0 top-0 flex h-screen w-80 flex-col border-l border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto">
+        <div className="space-y-6 p-4">
+          {/* Quiz Info Section */}
+          <section className="rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 py-2 px-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Test Info</h2>
+              <button
+                onClick={toggleTheme}
+                className="rounded-full p-2 text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+            </div>
+            <dl className="space-y-2 px-4 py-2">
+              <Stat label="Title" value={quiz.title} />
+              <Stat label="Description" value={quiz.description} />
+              <Stat label="Max Marks" value={quiz.maxMarks} />
+            </dl>
+          </section>
+
+          {/* Progress Section */}
+          <section className='bg-gray-50 dark:bg-gray-800 rounded-lg divide-y divide-gray-200 dark:divide-gray-700'>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-4 py-2">Test Progress</h2>
+            <dl className="grid grid-cols-3 gap-4 px-4 py-2">
+              <Stat label="Questions" value={quiz.questions.length} />
+              <Stat label="Answered" value={attemptedQuestions.size} />
+              <Stat label="Remaining" value={quiz.questions.length - attemptedQuestions.size} />
+            </dl>
+          </section>
         </div>
       </div>
 
-      <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+      {/* Navigation Section */}
+      <div className="space-y-4 p-4">
+        <div className="flex justify-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-violet-500" />
             <span className="text-sm text-gray-600 dark:text-gray-400">Attempted</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded-full"></div>
+            <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-700" />
             <span className="text-sm text-gray-600 dark:text-gray-400">Not attempted</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {quiz?.questions.map((question, index) => (
+        <div className="grid grid-cols-5 gap-2">
+          {quiz.questions.map((question, index) => (
             <button
-              key={index}
+              key={question.id}
               onClick={() => setCurrentQuestion(index)}
-              className={`w-10 h-10 rounded-lg flex items-center justify-center text-base font-medium transition-all duration-200
-                ${currentQuestion === index 
-                  ? 'ring-2 ring-violet-500 dark:ring-violet-400' 
-                  : ''
+              className={`
+                flex h-10 w-10 items-center justify-center rounded-lg text-base font-medium transition-all duration-200
+                ${
+                  currentQuestion === index
+                    ? "ring-2 ring-violet-500 ring-offset-2 dark:ring-violet-400 dark:ring-offset-gray-900"
+                    : ""
                 }
-                ${attemptedQuestions.has(question.id)
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                ${
+                  attemptedQuestions.has(question.id)
+                    ? "bg-violet-500 text-white hover:bg-violet-600 dark:bg-violet-600 dark:hover:bg-violet-700"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 }
-                hover:bg-opacity-90`}
+              `}
+              aria-label={`Question ${index + 1}${attemptedQuestions.has(question.id) ? " (Attempted)" : ""}`}
             >
               {index + 1}
             </button>
@@ -90,20 +87,19 @@ const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions
         <button
           onClick={handleSubmitClick}
           disabled={submitting}
-          className="w-full px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
-                   text-white font-medium rounded-lg shadow-lg shadow-indigo-200 dark:shadow-none
-                   disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-medium text-white shadow-lg shadow-indigo-200/50 transition-all duration-200 hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-none"
         >
           {submitting ? (
-            <Loader2 className="w-5 h-5 mx-auto animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            <span className="flex items-center justify-center gap-2">
-              <Send className="w-4 h-4" />
-            </span>
+            <>
+              <Send className="h-4 w-4" />
+              <span>Submit Quiz</span>
+            </>
           )}
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 
