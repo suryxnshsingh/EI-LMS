@@ -16,10 +16,26 @@ function QuizList() {
     const fetchQuizzes = async () => {
       try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BASE_URL}/api/quiz/student/available`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setQuizzes(response.data);
+        const [quizzesResponse, attemptsResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/api/quiz/student/available`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${BASE_URL}/api/quiz/student/history`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        // Get array of attempted quiz IDs
+        const attemptedQuizIds = new Set(
+          attemptsResponse.data.attempts.map(attempt => attempt.quizId)
+        );
+
+        // Filter out quizzes that have been attempted
+        const availableQuizzes = quizzesResponse.data.filter(
+          quiz => !attemptedQuizIds.has(quiz.id)
+        );
+
+        setQuizzes(availableQuizzes);
       } catch (err) {
         setError('Failed to load quizzes');
         console.error(err);

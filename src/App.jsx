@@ -9,6 +9,7 @@ import ForgotPassword from './assets/components/auth/ForgotPassword';
 import ChangePassword from './assets/components/auth/ChangePassword';
 import QuizAttempt from './assets/components/student/tests/QuizAttempt'
 import {Spice, CircuitSim} from './assets/components/simulators/sims'
+import ThankYou from './assets/components/student/tests/ThankYou';
 
 function App() {
 
@@ -56,6 +57,7 @@ function App() {
             <Route path='/spice' element={<Spice />} />
             <Route path='/circuit' element={<CircuitSim />} />
             <Route path='/student/quiz/:quizId' element={<QuizAttempt />} />
+            <Route path="/students/tests/thank-you" element={<ThankYou />} />
           </Routes>
         </BrowserRouter>
       </div>

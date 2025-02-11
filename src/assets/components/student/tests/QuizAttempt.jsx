@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Timer, AlertCircle, ArrowLeft, ArrowRight, Send, Loader2, Menu, XCircle } from 'lucide-react';
+import { Timer, AlertCircle, ArrowLeft, ArrowRight, Send, Loader2, Menu, XCircle, Sun, Moon } from 'lucide-react';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -18,6 +18,29 @@ function QuizAttempt() {
   const [attemptId, setAttemptId] = useState(null);
   const [attemptedQuestions, setAttemptedQuestions] = useState(new Set());
   const [showNav, setShowNav] = useState(false);
+  const [theme, setTheme] = useState(document.documentElement.classList.contains("dark") ? "dark" : "light");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      Cookies.set("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      Cookies.set("theme", "light");
+    }
+  };
+
+  // Add effect to sync with app theme
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -101,13 +124,12 @@ function QuizAttempt() {
       setSubmitting(true);
       const token = Cookies.get("token");
       
-      // Format answers for submission
       const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
         questionId,
         ...answer
       }));
 
-      const response = await axios.post(
+      await axios.post(
         `${BASE_URL}/api/quiz/student/${quizId}/submit`,
         {
           attemptId,
@@ -116,10 +138,20 @@ function QuizAttempt() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      navigate(`/students/tests/result/${response.data.id}`);
+      navigate('/students/tests/thank-you'); // Changed navigation to thank you page
     } catch (error) {
       console.error('Error submitting quiz:', error);
     }
+  };
+
+  const handleSubmitClick = () => {
+    // Show confirmation dialog instead of submitting directly
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowConfirmDialog(false);
+    handleSubmit();
   };
 
   const formatTime = (seconds) => {
@@ -234,6 +266,112 @@ function QuizAttempt() {
     }
   };
 
+  const renderQuestionNav = () => (
+    <div className="w-1/5 h-screen fixed right-0 top-0 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col justify-between">
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-4 dark:text-white">Quiz Details</h3>
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h4 className="font-medium mb-2 dark:text-white">Quiz Summary</h4>
+          <div className="space-y-2 text-sm">
+            <p className="text-gray-600 dark:text-gray-300">
+              Questions: {quiz?.questions.length}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Answered: {attemptedQuestions.size}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Remaining: {quiz?.questions.length - attemptedQuestions.size}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Question Grid Section - Now at bottom */}
+      <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Attempted</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded-full"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Not attempted</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {quiz?.questions.map((question, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentQuestion(index)}
+              className={`w-10 h-10 rounded-lg flex items-center justify-center text-base font-medium transition-all duration-200
+                ${currentQuestion === index 
+                  ? 'ring-2 ring-violet-500 dark:ring-violet-400' 
+                  : ''
+                }
+                ${attemptedQuestions.has(question.id)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }
+                hover:bg-opacity-90`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={handleSubmitClick}  // Changed from handleSubmit to handleSubmitClick
+          disabled={submitting}
+          className="w-full px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                   text-white font-medium rounded-lg shadow-lg shadow-indigo-200 dark:shadow-none
+                   disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          {submitting ? (
+            <Loader2 className="w-5 h-5 mx-auto animate-spin" />
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <Send className="w-4 h-4" />
+              Submit Quiz
+            </span>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderConfirmDialog = () => (
+    showConfirmDialog && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <h3 className="text-xl font-semibold mb-4 dark:text-white">Confirm Submission</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Are you sure you want to submit this quiz? 
+            {attemptedQuestions.size < quiz.questions.length && (
+              <span className="text-red-500 block mt-2">
+                Warning: You have {quiz.questions.length - attemptedQuestions.size} unanswered questions.
+              </span>
+            )}
+          </p>
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setShowConfirmDialog(false)}
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmSubmit}
+              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded hover:from-violet-500 hover:to-indigo-500"
+            >
+              Yes, Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -243,119 +381,136 @@ function QuizAttempt() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-4xl mx-auto px-6">
-        {/* Quiz Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{quiz.title}</h1>
-              <p className="text-gray-600 dark:text-gray-400">{quiz.description}</p>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                Total Marks: {quiz.maxMarks}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Main content area - takes up 4/5 of the screen */}
+      <div className="w-4/5 pr-4">
+        <div className="max-w-4xl mx-auto py-8 px-6">
+          {/* Quiz Header */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{quiz.title}</h1>
+                <p className="text-gray-600 dark:text-gray-400">{quiz.description}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                  Total Marks: {quiz.maxMarks}
+                </div>
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="w-5 h-5 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-600" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Progress and Timer Bar */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 ${
-                timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-violet-600 dark:text-violet-400'
-              }`}>
-                <Timer className="w-6 h-6" />
-                <span className="text-2xl font-bold">{formatTime(timeLeft)}</span>
+          {/* Progress and Timer Bar */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-4">
+                <div className={`flex items-center gap-2 ${
+                  timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-violet-600 dark:text-violet-400'
+                }`}>
+                  <Timer className="w-6 h-6" />
+                  <span className="text-2xl font-bold">{formatTime(timeLeft)}</span>
+                </div>
+                <div className="text-gray-600 dark:text-gray-400">
+                  Question {currentQuestion + 1} of {quiz.questions.length}
+                </div>
               </div>
               <div className="text-gray-600 dark:text-gray-400">
-                Question {currentQuestion + 1} of {quiz.questions.length}
+                {attemptedQuestions.size} answered
               </div>
             </div>
-            <div className="text-gray-600 dark:text-gray-400">
-              {attemptedQuestions.size} answered
+            <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="absolute h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300"
+                style={{ width: `${(attemptedQuestions.size / quiz.questions.length) * 100}%` }}
+              />
             </div>
           </div>
-          <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div 
-              className="absolute h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300"
-              style={{ width: `${(attemptedQuestions.size / quiz.questions.length) * 100}%` }}
-            />
-          </div>
-        </div>
 
-        {/* Question Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-8">
-          <div className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 font-bold">
-              {currentQuestion + 1}
-            </span>
-            <div className="flex-1">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {quiz.questions[currentQuestion].text}
-                </h2>
-                <span className="ml-4 px-3 py-1 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium">
-                  {quiz.questions[currentQuestion].marks} marks
-                </span>
+          {/* Question Content */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-8">
+            <div className="flex items-start gap-4">
+              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 font-bold">
+                {currentQuestion + 1}
+              </span>
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {quiz.questions[currentQuestion].text}
+                  </h2>
+                  <span className="ml-4 px-3 py-1 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium">
+                    {quiz.questions[currentQuestion].marks} marks
+                  </span>
+                </div>
+                
+                {quiz.questions[currentQuestion].imageUrl && (
+                  <img
+                    src={`${BASE_URL}${quiz.questions[currentQuestion].imageUrl}`}
+                    alt="Question"
+                    className="mb-6 max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
+                  />
+                )}
+                {renderQuestion()}
               </div>
-              
-              {quiz.questions[currentQuestion].imageUrl && (
-                <img
-                  src={`${BASE_URL}${quiz.questions[currentQuestion].imageUrl}`}
-                  alt="Question"
-                  className="mb-6 max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
-                />
-              )}
-              {renderQuestion()}
             </div>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <button
-            onClick={() => setCurrentQuestion(prev => prev - 1)}
-            disabled={currentQuestion === 0}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-              currentQuestion === 0
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-violet-600 hover:bg-violet-50 dark:bg-gray-800 dark:text-violet-400 dark:hover:bg-gray-700'
-            }`}
-          >
-            <ArrowLeft className="w-5 h-5 inline mr-2" />
-            Previous
-          </button>
+          {/* Navigation */}
+          <div className="flex justify-between">
+            <button
+              onClick={() => setCurrentQuestion(prev => prev - 1)}
+              disabled={currentQuestion === 0}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                currentQuestion === 0
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-violet-600 hover:bg-violet-50 dark:bg-gray-800 dark:text-violet-400 dark:hover:bg-gray-700'
+              }`}
+            >
+              <ArrowLeft className="w-5 h-5 inline mr-2" />
+              Previous
+            </button>
 
-          {currentQuestion === quiz.questions.length - 1 ? (
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
-                       text-white font-medium rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              {submitting ? (
-                <Loader2 className="w-5 h-5 inline mr-2 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5 inline mr-2" />
-              )}
-              Submit Quiz
-            </button>
-          ) : (
-            <button
-              onClick={() => setCurrentQuestion(prev => prev + 1)}
-              className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
-                       text-white font-medium rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-200"
-            >
-              Next
-              <ArrowRight className="w-5 h-5 inline ml-2" />
-            </button>
-          )}
+            {currentQuestion === quiz.questions.length - 1 ? (
+              <button
+                onClick={handleSubmitClick}  // Changed from handleSubmit to handleSubmitClick
+                disabled={submitting}
+                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                         text-white font-medium rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {submitting ? (
+                  <Loader2 className="w-5 h-5 inline mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5 inline mr-2" />
+                )}
+                Submit Quiz
+              </button>
+            ) : (
+              <button
+                onClick={() => setCurrentQuestion(prev => prev + 1)}
+                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                         text-white font-medium rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-200"
+              >
+                Next
+                <ArrowRight className="w-5 h-5 inline ml-2" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Fixed sidebar - takes up 1/5 of the screen */}
+      {renderQuestionNav()}
+      {renderConfirmDialog()}
     </div>
   );
 }
