@@ -479,7 +479,7 @@ function UpdateTest() {
       {/* Edit Details Dialog */}
       {isEditDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-neutral-800 p-6 rounded-md shadow-md w-1/3">
+          <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-6 rounded-md shadow-md w-1/3">
             <h2 className="text-xl font-semibold mb-4 dark:text-white">Edit Quiz Details</h2>
             <div className="space-y-4">
               <div className="flex flex-col">
@@ -576,7 +576,7 @@ function UpdateTest() {
               <div className="flex justify-end space-x-2 mt-4">
                 <button
                   onClick={handleCloseEditDialog}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700"
+                  className="px-4 py-2 text-black dark:text-white rounded-md hover:bg-gray-300  dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>

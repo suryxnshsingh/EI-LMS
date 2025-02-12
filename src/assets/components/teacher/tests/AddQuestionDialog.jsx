@@ -324,9 +324,9 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-neutral-800 shadow-lg border border-gray-400 dark:border-neutral-700 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center border-b border-gray-200 dark:border-neutral-700 px-4 py-2">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {mode === "edit" ? "Edit Question" : "Add New Question"}
               </h2>
@@ -337,7 +337,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
                 <X size={24} />
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 p-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Question Type</label>
                 <select
@@ -416,7 +416,7 @@ function AddQuestionDialog({ open, onClose, onSubmit, initialQuestion, mode = "a
 
               {renderAdditionalFields()}
             </div>
-            <div className="mt-6 flex justify-end space-x-2">
+            <div className="mt-6 flex justify-end space-x-2 p-4">
               <button
                 className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
                 onClick={onClose}
