@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Timer, AlertCircle, ArrowLeft, ArrowRight, Send, Loader2, Menu, XCircle, Sun, Moon } from 'lucide-react';
+import { Timer, Loader2, Send, ArrowLeft, ArrowRight, X, AlertTriangle, Maximize2 } from 'lucide-react';
+import QuizQuestion from './QuizQuestion';
+import QuizNav from './QuizNav';
+import ConfirmDialog from './ConfirmDialog';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +23,9 @@ function QuizAttempt() {
   const [showNav, setShowNav] = useState(false);
   const [theme, setTheme] = useState(document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showFullScreenWarning, setShowFullScreenWarning] = useState(false);
+  const [countdown, setCountdown] = useState(15);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -68,7 +74,42 @@ function QuizAttempt() {
     };
 
     fetchQuiz();
-  }, [quizId, navigate]);
+
+    const handleFullScreenChange = () => {
+      if (!document.fullscreenElement) {
+        setShowFullScreenWarning(true);
+        setCountdown(15);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
+    document.addEventListener('msfullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullScreenChange);
+    };
+  }, [quizId, navigate]); // Ensure dependencies are correct
+
+  useEffect(() => {
+    if (showFullScreenWarning && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [showFullScreenWarning, countdown]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      requestFullScreen();
+    }
+  }, [countdown]);
 
   // Timer effect
   useEffect(() => {
@@ -145,7 +186,6 @@ function QuizAttempt() {
   };
 
   const handleSubmitClick = () => {
-    // Show confirmation dialog instead of submitting directly
     setShowConfirmDialog(true);
   };
 
@@ -160,217 +200,27 @@ function QuizAttempt() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const renderQuestion = () => {
-    if (!quiz || !quiz.questions || !quiz.questions[currentQuestion]) return null;
-
-    const question = quiz.questions[currentQuestion];
-    
-    switch (question.type) {
-      case 'SINGLE_MCQ':
-      case 'MULTI_MCQ':
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-end mb-2">
-              <button
-                onClick={handleClearAnswer}
-                className="flex items-center px-3 py-1 text-sm text-red-500 hover:text-red-700 
-                         dark:text-red-400 dark:hover:text-red-300 transition-colors"
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Clear Selection
-              </button>
-            </div>
-            {question.options && question.options.map((option) => (
-              <label 
-                key={option.id} 
-                className={`flex items-center p-6 rounded-xl transition-all duration-200 
-                  ${(answers[question.id]?.selectedOptions || []).includes(option.id)
-                    ? 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-none transform scale-[1.02]'
-                    : 'bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 hover:border-violet-200 dark:hover:border-violet-900'
-                  } cursor-pointer`}
-              >
-                <input
-                  type={question.type === 'SINGLE_MCQ' ? 'radio' : 'checkbox'}
-                  name={`question-${question.id}`}
-                  checked={(answers[question.id]?.selectedOptions || []).includes(option.id)}
-                  onChange={(e) => {
-                    if (question.type === 'SINGLE_MCQ') {
-                      handleAnswer({ selectedOptions: [option.id] });
-                    } else {
-                      const currentSelected = answers[question.id]?.selectedOptions || [];
-                      const newSelected = e.target.checked
-                        ? [...currentSelected, option.id]
-                        : currentSelected.filter(id => id !== option.id);
-                      handleAnswer({ selectedOptions: newSelected });
-                    }
-                  }}
-                  className="w-5 h-5 mr-4 accent-violet-500"
-                />
-                <span className="text-lg font-medium">{option.text}</span>
-              </label>
-            ))}
-          </div>
-        );
-
-      case 'NUMERICAL':
-        return (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-gray-100 dark:border-gray-700">
-            <div className="flex justify-end mb-2">
-              <button
-                onClick={handleClearAnswer}
-                className="flex items-center px-3 py-1 text-sm text-red-500 hover:text-red-700 
-                         dark:text-red-400 dark:hover:text-red-300 transition-colors"
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Clear Input
-              </button>
-            </div>
-            <input
-              type="number"
-              step="any"
-              value={answers[question.id]?.textAnswer || ''}
-              onChange={(e) => handleAnswer({ textAnswer: e.target.value })}
-              className="w-full p-4 text-lg bg-transparent border-b-2 border-gray-200 dark:border-gray-600 
-                       focus:border-violet-500 dark:focus:border-violet-400 outline-none transition-colors"
-              placeholder="Enter your numerical answer"
-            />
-          </div>
-        );
-
-      case 'DESCRIPTIVE':
-        return (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-gray-100 dark:border-gray-700">
-            <div className="flex justify-end mb-2">
-              <button
-                onClick={handleClearAnswer}
-                className="flex items-center px-3 py-1 text-sm text-red-500 hover:text-red-700 
-                         dark:text-red-400 dark:hover:text-red-300 transition-colors"
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Clear Text
-              </button>
-            </div>
-            <textarea
-              value={answers[question.id]?.textAnswer || ''}
-              onChange={(e) => handleAnswer({ textAnswer: e.target.value })}
-              className="w-full p-4 text-lg bg-transparent border-2 border-gray-200 dark:border-gray-600 rounded-lg
-                       focus:border-violet-500 dark:focus:border-violet-400 outline-none transition-colors
-                       resize-none min-h-[200px]"
-              placeholder="Enter your answer"
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
   };
 
-  const renderQuestionNav = () => (
-    <div className="w-1/5 h-screen fixed right-0 top-0 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col justify-between">
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-4 dark:text-white">Quiz Details</h3>
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <h4 className="font-medium mb-2 dark:text-white">Quiz Summary</h4>
-          <div className="space-y-2 text-sm">
-            <p className="text-gray-600 dark:text-gray-300">
-              Questions: {quiz?.questions.length}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Answered: {attemptedQuestions.size}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              Remaining: {quiz?.questions.length - attemptedQuestions.size}
-            </p>
-          </div>
-        </div>
-      </div>
+  const handleCloseImage = () => {
+    setSelectedImage(null);
+  };
 
-      {/* Question Grid Section - Now at bottom */}
-      <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">Attempted</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">Not attempted</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {quiz?.questions.map((question, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentQuestion(index)}
-              className={`w-10 h-10 rounded-lg flex items-center justify-center text-base font-medium transition-all duration-200
-                ${currentQuestion === index 
-                  ? 'ring-2 ring-violet-500 dark:ring-violet-400' 
-                  : ''
-                }
-                ${attemptedQuestions.has(question.id)
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }
-                hover:bg-opacity-90`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={handleSubmitClick}  // Changed from handleSubmit to handleSubmitClick
-          disabled={submitting}
-          className="w-full px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
-                   text-white font-medium rounded-lg shadow-lg shadow-indigo-200 dark:shadow-none
-                   disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-        >
-          {submitting ? (
-            <Loader2 className="w-5 h-5 mx-auto animate-spin" />
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <Send className="w-4 h-4" />
-              Submit Quiz
-            </span>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderConfirmDialog = () => (
-    showConfirmDialog && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-          <h3 className="text-xl font-semibold mb-4 dark:text-white">Confirm Submission</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Are you sure you want to submit this quiz? 
-            {attemptedQuestions.size < quiz.questions.length && (
-              <span className="text-red-500 block mt-2">
-                Warning: You have {quiz.questions.length - attemptedQuestions.size} unanswered questions.
-              </span>
-            )}
-          </p>
-          <div className="flex justify-end gap-4">
-            <button
-              onClick={() => setShowConfirmDialog(false)}
-              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmSubmit}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded hover:from-violet-500 hover:to-indigo-500"
-            >
-              Yes, Submit
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  );
+  const requestFullScreen = () => {
+    const docElm = document.documentElement;
+    if (docElm.requestFullscreen) {
+      docElm.requestFullscreen();
+    } else if (docElm.mozRequestFullScreen) { // Firefox
+      docElm.mozRequestFullScreen();
+    } else if (docElm.webkitRequestFullScreen) { // Chrome, Safari and Opera
+      docElm.webkitRequestFullScreen();
+    } else if (docElm.msRequestFullscreen) { // IE/Edge
+      docElm.msRequestFullscreen();
+    }
+    setShowFullScreenWarning(false);
+  };
 
   if (loading) {
     return (
@@ -382,35 +232,28 @@ function QuizAttempt() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Main content area - takes up 4/5 of the screen */}
-      <div className="w-4/5 pr-4">
-        <div className="max-w-4xl mx-auto py-8 px-6">
-          {/* Quiz Header */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{quiz.title}</h1>
-                <p className="text-gray-600 dark:text-gray-400">{quiz.description}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                  Total Marks: {quiz.maxMarks}
-                </div>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  {theme === "dark" ? (
-                    <Sun className="w-5 h-5 text-yellow-500" />
-                  ) : (
-                    <Moon className="w-5 h-5 text-gray-600" />
-                  )}
-                </button>
-              </div>
+      {showFullScreenWarning && (
+        <div className="fixed inset-0 bg-red-600 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+            <AlertTriangle className="w-12 h-12 mx-auto text-red-600 mb-4" />
+            <h3 className="text-xl font-semibold mb-4 dark:text-white">Full Screen Mode Required</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Please re-enter full screen mode to continue the quiz. You have <span className="text-2xl font-bold text-red-600">{countdown}</span> seconds to comply.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={requestFullScreen}
+                className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-500 hover:to-red-700 transition-colors duration-200 flex items-center justify-center"
+              >
+                <Maximize2 className="w-5 h-5 mr-2" />
+                Re-enter Full Screen
+              </button>
             </div>
           </div>
-
-          {/* Progress and Timer Bar */}
+        </div>
+      )}
+      <div className="w-4/5 pr-4">
+        <div className="max-w-4xl mx-auto py-8 px-6">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-4">
@@ -436,35 +279,15 @@ function QuizAttempt() {
             </div>
           </div>
 
-          {/* Question Content */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-8">
-            <div className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 font-bold">
-                {currentQuestion + 1}
-              </span>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {quiz.questions[currentQuestion].text}
-                  </h2>
-                  <span className="ml-4 px-3 py-1 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium">
-                    {quiz.questions[currentQuestion].marks} marks
-                  </span>
-                </div>
-                
-                {quiz.questions[currentQuestion].imageUrl && (
-                  <img
-                    src={`${BASE_URL}${quiz.questions[currentQuestion].imageUrl}`}
-                    alt="Question"
-                    className="mb-6 max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
-                  />
-                )}
-                {renderQuestion()}
-              </div>
-            </div>
-          </div>
+          <QuizQuestion
+            quiz={quiz}
+            currentQuestion={currentQuestion}
+            answers={answers}
+            handleAnswer={handleAnswer}
+            handleClearAnswer={handleClearAnswer}
+            handleImageClick={handleImageClick}
+          />
 
-          {/* Navigation */}
           <div className="flex justify-between">
             <button
               onClick={() => setCurrentQuestion(prev => prev - 1)}
@@ -481,7 +304,7 @@ function QuizAttempt() {
 
             {currentQuestion === quiz.questions.length - 1 ? (
               <button
-                onClick={handleSubmitClick}  // Changed from handleSubmit to handleSubmitClick
+                onClick={handleSubmitClick}
                 disabled={submitting}
                 className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
                          text-white font-medium rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none
@@ -508,9 +331,45 @@ function QuizAttempt() {
         </div>
       </div>
 
-      {/* Fixed sidebar - takes up 1/5 of the screen */}
-      {renderQuestionNav()}
-      {renderConfirmDialog()}
+      <QuizNav
+        quiz={quiz}
+        currentQuestion={currentQuestion}
+        setCurrentQuestion={setCurrentQuestion}
+        attemptedQuestions={attemptedQuestions}
+        handleSubmitClick={handleSubmitClick}
+        submitting={submitting}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
+
+      <ConfirmDialog
+        showConfirmDialog={showConfirmDialog}
+        setShowConfirmDialog={setShowConfirmDialog}
+        handleConfirmSubmit={handleConfirmSubmit}
+        attemptedQuestions={attemptedQuestions}
+        quiz={quiz}
+      />
+
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={handleCloseImage}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selectedImage}
+              alt="Enlarged"
+              className="max-w-full max-h-full"
+            />
+            <button
+              onClick={handleCloseImage}
+              className="absolute top-2 right-2 text-white bg-black bg-opacity-75 hover:bg-opacity-25 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

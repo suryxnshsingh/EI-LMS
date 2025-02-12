@@ -181,15 +181,17 @@ const Attendance = () => {
           scannerRef.current = scanner;
           setHtml5QrCode(scanner);
           setIsScanning(true);
-          
+
           await scanner.start(
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: { width: 200, height: 200 },
-              aspectRatio: 1
+              qrbox: { width: 250, height: 250 }, // Increased QR box size
+              aspectRatio: 1,
+              disableFlip: true // Disable flipping for mobile devices
             },
             async (decodedText) => {
+              console.log("QR Code detected:", decodedText); // Add logging
               setQrId(decodedText);
               if (scannerRef.current) {
                 try {
@@ -202,7 +204,10 @@ const Attendance = () => {
                 setScanning(false);
               }
             },
-            () => {} // Ignore errors during scanning
+            (errorMessage) => {
+              console.error("QR Code scanning error:", errorMessage);
+              // toast.error("QR Code scanning error: " + errorMessage);
+            }
           );
         } catch (err) {
           console.error("Error starting QR Code scanning", err);
