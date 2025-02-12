@@ -27,35 +27,52 @@ function UpdateTest() {
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
   const teacherFname = Cookies.get("firstName");
   const teacherLname = Cookies.get("lastName");
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [courses, setCourses] = useState([]);
 
-  // Move fetchQuiz to component scope
   const fetchQuiz = async () => {
     try {
       const token = Cookies.get("token");
-      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes`, { 
-        headers: { Authorization: `Bearer ${token}` } 
+      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Find the specific quiz from all quizzes
-      const quizData = response.data.find(q => q.id === id);
-      if (!quizData) {
-        throw new Error('Quiz not found');
-      }
+      // Process quiz data consistently
+      const quizData = {
+        ...response.data,
+        questions: response.data.questions.map(q => ({
+          ...q,
+          options: q.options || []
+        })).sort((a, b) => a.order - b.order)
+      };
       
       setQuiz(quizData);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch quiz:', err);
-      setError('Failed to load quiz');
-      navigate('/teachers/tests');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      setError('Failed to fetch quiz details');
     }
   };
 
   useEffect(() => {
-    fetchQuiz();
-  }, [id, navigate]);
+    const fetchQuizAndCourses = async () => {
+      try {
+        const token = Cookies.get("token");
+        const coursesResponse = await axios.get(`${BASE_URL}/api/courses/teacher-courses`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setCourses(coursesResponse.data);
+        await fetchQuiz(); // Use fetchQuiz here
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch quiz details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizAndCourses();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -198,14 +215,14 @@ function UpdateTest() {
     try {
       setIsSaving(true);
       const token = Cookies.get("token");
-      const response = await axios.put(
+      await axios.put(
         `${BASE_URL}/api/quiz/teacher/${id}`,
         {
           title: quiz.title,
           description: quiz.description,
           timeLimit: parseInt(quiz.timeLimit),
           maxMarks: parseFloat(quiz.maxMarks),
-          courseIds: quiz.Course ? quiz.Course.map(c => c.id) : [],
+          courseIds: [selectedCourse], // Use selectedCourse directly
           scheduledFor: quiz.scheduledFor  // New field added
         },
         {
@@ -215,11 +232,11 @@ function UpdateTest() {
           }
         }
       );
-      setQuiz(response.data);
+
       setIsEditDialogOpen(false);
       setSaveStatus('saved');
+      await fetchQuiz(); // Await the quiz refresh
       setTimeout(() => setSaveStatus(null), 2000);
-      fetchQuiz();
     } catch (err) {
       console.error('Failed to save changes:', err);
       setSaveStatus('error');
@@ -227,6 +244,42 @@ function UpdateTest() {
       setIsSaving(false);
     }
   };
+
+  const CourseDetails = () => (
+    <div className="flex flex-col">
+      <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+        Course
+      </label>
+      <p className="text-gray-900 dark:text-white">
+        {quiz.course ? `${quiz.course.name} (${quiz.course.courseCode})` : 'No course assigned'}
+      </p>
+    </div>
+  );
+
+  const EditCourseSection = () => (
+    <div className="flex flex-col">
+      <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+        Course
+      </label>
+      <select
+        value={selectedCourse}
+        onChange={(e) => setSelectedCourse(e.target.value)}
+        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                  bg-white dark:bg-neutral-800 
+                  text-gray-900 dark:text-white
+                  focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                  focus:border-transparent outline-none
+                  transition-colors duration-200"
+      >
+        <option value="">Select a course</option>
+        {courses.map(course => (
+          <option key={course.id} value={course.id}>
+            {course.name} ({course.courseCode} | Session: {course.session} | Semester: {course.semester})
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
@@ -285,14 +338,7 @@ function UpdateTest() {
             </div>
 
             {/* Additional Quiz Details */}
-            <div className="flex flex-col">
-              <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Course
-              </label>
-              <p className="text-gray-900 dark:text-white">
-                {quiz.Course?.map(c => c.name).join(', ') || 'N/A'}
-              </p>
-            </div>
+            <CourseDetails />
 
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -572,6 +618,8 @@ function UpdateTest() {
                            transition-colors duration-200"
                 />
               </div>
+
+              <EditCourseSection />
 
               <div className="flex justify-end space-x-2 mt-4">
                 <button

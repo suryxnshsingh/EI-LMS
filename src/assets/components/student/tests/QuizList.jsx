@@ -64,6 +64,12 @@ function QuizList() {
     }
   };
 
+  const getQuizCourse = (quiz) => {
+    // Handle both course and Course for backward compatibility
+    const course = quiz.course || (quiz.Course && quiz.Course[0]);
+    return course ? `${course.name}` : 'No course specified';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -113,7 +119,7 @@ function QuizList() {
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <GraduationCap className="w-4 h-4 mr-2" />
-                    <span>{quiz.Course[0]?.name || 'No course specified'}</span>
+                    <span>{getQuizCourse(quiz)}</span>
                   </div>
                   {quiz.scheduledFor && (
                     <div className="flex items-center text-gray-600 dark:text-gray-300">
