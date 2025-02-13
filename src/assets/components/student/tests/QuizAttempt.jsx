@@ -25,7 +25,9 @@ function QuizAttempt() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showFullScreenWarning, setShowFullScreenWarning] = useState(false);
-  const [countdown, setCountdown] = useState(15);
+  const [countdown, setCountdown] = useState(10); // Changed from 15 to 10
+  const [warningCount, setWarningCount] = useState(0);
+  const [isWindowFocused, setIsWindowFocused] = useState(true);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -77,8 +79,7 @@ function QuizAttempt() {
 
     const handleFullScreenChange = () => {
       if (!document.fullscreenElement) {
-        setShowFullScreenWarning(true);
-        setCountdown(15);
+        handleSecurityViolation();
       }
     };
 
@@ -93,7 +94,7 @@ function QuizAttempt() {
       document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
       document.removeEventListener('msfullscreenchange', handleFullScreenChange);
     };
-  }, [quizId, navigate]); // Ensure dependencies are correct
+  }, [quizId, navigate, warningCount]); // Ensure dependencies are correct
 
   useEffect(() => {
     if (showFullScreenWarning && countdown > 0) {
@@ -129,6 +130,72 @@ function QuizAttempt() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  // Centralize the violation check
+  const checkViolationAndSubmit = (newCount) => {
+    console.log(`Checking violation count: ${newCount}`);
+    if (newCount >= 3) {
+      console.log('Third violation - force submitting');
+      const token = Cookies.get("token");
+      const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId,
+        ...answer
+      }));
+
+      // Submit synchronously
+      axios.post(
+        `${BASE_URL}/api/quiz/student/${quizId}/submit`,
+        {
+          attemptId,
+          answers: formattedAnswers
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).then(() => {
+        navigate('/students/tests/thank-you');
+      }).catch(error => {
+        console.error('Force submit failed:', error);
+      });
+
+      return true; // Indicates quiz was submitted
+    }
+    return false; // Indicates quiz continues
+  };
+
+  // Update security violation handler
+  const handleSecurityViolation = () => {
+    const newWarningCount = warningCount + 1;
+    setWarningCount(newWarningCount);
+    console.log(`Security violation #${newWarningCount}`);
+
+    if (!checkViolationAndSubmit(newWarningCount)) {
+      setShowFullScreenWarning(true);
+      setCountdown(10);
+    }
+  };
+
+  // Update focus/blur handler
+  useEffect(() => {
+    const handleFocus = () => setIsWindowFocused(true);
+    const handleBlur = () => {
+      setIsWindowFocused(false);
+      const newCount = warningCount + 1;
+      console.log(`Blur violation #${newCount}`);
+      
+      if (!checkViolationAndSubmit(newCount)) {
+        setWarningCount(newCount);
+        setShowFullScreenWarning(true);
+        setCountdown(10);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [warningCount, answers, attemptId, navigate]);
+
   const handleAnswer = (answer) => {
     const questionId = quiz.questions[currentQuestion].id;
     setAnswers(prev => ({
@@ -162,6 +229,7 @@ function QuizAttempt() {
 
   const handleSubmit = async () => {
     try {
+      console.log('Submitting quiz...'); // Debug log
       setSubmitting(true);
       const token = Cookies.get("token");
       
@@ -170,6 +238,7 @@ function QuizAttempt() {
         ...answer
       }));
 
+      console.log('Sending submission request...'); // Debug log
       await axios.post(
         `${BASE_URL}/api/quiz/student/${quizId}/submit`,
         {
@@ -179,6 +248,7 @@ function QuizAttempt() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log('Submission successful, navigating...'); // Debug log
       navigate('/students/tests/thank-you'); // Changed navigation to thank you page
     } catch (error) {
       console.error('Error submitting quiz:', error);
@@ -222,6 +292,15 @@ function QuizAttempt() {
     setShowFullScreenWarning(false);
   };
 
+  // Update warning dialog content
+  const getWarningMessage = () => {
+    const remainingWarnings = 2 - warningCount;
+    if (remainingWarnings > 0) {
+      return `Please re-enter full screen mode to continue the quiz. You have ${countdown} seconds to comply.\n\nWarning ${warningCount + 1}/3 - ${remainingWarnings} ${remainingWarnings === 1 ? 'warning' : 'warnings'} remaining`;
+    }
+    return `Final warning! Quiz will be automatically submitted if you exit full-screen mode again.\nYou have ${countdown} seconds to return to full-screen mode.`;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -236,9 +315,9 @@ function QuizAttempt() {
         <div className="fixed inset-0 bg-red-600 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
             <AlertTriangle className="w-12 h-12 mx-auto text-red-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-4 dark:text-white">Full Screen Mode Required</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Please re-enter full screen mode to continue the quiz. You have <span className="text-2xl font-bold text-red-600">{countdown}</span> seconds to comply.
+            <h3 className="text-xl font-semibold mb-4 dark:text-white">Security Warning</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 whitespace-pre-line">
+              {getWarningMessage()}
             </p>
             <div className="flex justify-center">
               <button
