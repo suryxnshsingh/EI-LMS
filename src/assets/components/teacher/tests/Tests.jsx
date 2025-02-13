@@ -156,10 +156,9 @@ const Tests = () => {
     }
   };
 
-  const getCoursesDisplay = (courses) => {
-    if (!courses || courses.length === 0) return 'No courses';
-    if (courses.length === 1) return courses[0].name;
-    return `${courses[0].name} +${courses.length - 1}`;
+  const getCoursesDisplay = (quiz) => {
+    if (!quiz.course) return 'No course assigned';
+    return `${quiz.course.name} (${quiz.course.courseCode})`;
   };
 
   const LoadingSpinner = () => {
@@ -220,7 +219,7 @@ const Tests = () => {
                       <Clock size={16} /> {quiz.timeLimit} mins
                     </div>
                     <div className="flex items-center w-fit gap-2 py-1">
-                      <Book size={16} /> {getCoursesDisplay(quiz.Course)}
+                      <Book size={16} /> {getCoursesDisplay(quiz)}
                     </div>
                   </div>
                   <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
