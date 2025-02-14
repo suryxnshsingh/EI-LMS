@@ -81,7 +81,7 @@ if (loading) {
 if (error) return <div>Error: {error}</div>;
 
 return (
-  <div className='p-10 mb-10 w-max'>
+  <div className='p-5 md:p-10 w-full mr-0 md:mr-16'>
       <div className="mb-10 flex flex-col md:flex-row justify-between items-start">
         <div>
           <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-2">
