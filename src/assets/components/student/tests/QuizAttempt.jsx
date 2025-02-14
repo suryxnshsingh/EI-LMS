@@ -103,6 +103,9 @@ function QuizAttempt() {
       }, 1000);
 
       return () => clearInterval(timer);
+    } else if (showFullScreenWarning && countdown === 0) {
+      // Auto-submit when countdown reaches zero
+      handleForcedSubmit();
     }
   }, [showFullScreenWarning, countdown]);
 
@@ -135,29 +138,34 @@ function QuizAttempt() {
     console.log(`Checking violation count: ${newCount}`);
     if (newCount >= 3) {
       console.log('Third violation - force submitting');
-      const token = Cookies.get("token");
-      const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
-        questionId,
-        ...answer
-      }));
-
-      // Submit synchronously
-      axios.post(
-        `${BASE_URL}/api/quiz/student/${quizId}/submit`,
-        {
-          attemptId,
-          answers: formattedAnswers
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      ).then(() => {
-        navigate('/students/tests/thank-you');
-      }).catch(error => {
-        console.error('Force submit failed:', error);
-      });
-
+      handleForcedSubmit();
       return true; // Indicates quiz was submitted
     }
     return false; // Indicates quiz continues
+  };
+
+  // Add this new function to handle forced submission
+  const handleForcedSubmit = () => {
+    console.log('Forcing quiz submission...');
+    const token = Cookies.get("token");
+    const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
+      questionId,
+      ...answer
+    }));
+
+    // Submit synchronously
+    axios.post(
+      `${BASE_URL}/api/quiz/student/${quizId}/submit`,
+      {
+        attemptId,
+        answers: formattedAnswers
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).then(() => {
+      navigate('/students/tests/thank-you');
+    }).catch(error => {
+      console.error('Force submit failed:', error);
+    });
   };
 
   // Update security violation handler
