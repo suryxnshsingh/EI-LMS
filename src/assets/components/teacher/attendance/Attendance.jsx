@@ -316,10 +316,7 @@ const Attendance = () => {
                         </button>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => {
-                              setQrCodeSession(encrypt(session.id.toString())); // Encrypt the QR code session ID
-                              setShowAttendanceId(false);
-                            }} // Set QR code session
+                            onClick={() => setQrCodeSession(session.id) && setShowAttendanceId(false)} // Set QR code session
                             disabled={!session.isActive} // Disable if session is not active
                             className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
