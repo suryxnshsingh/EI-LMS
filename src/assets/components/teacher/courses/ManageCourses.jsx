@@ -240,7 +240,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
             <input
               type="text"
               name="name"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.name}
               onChange={handleChange}
@@ -255,7 +255,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
             <input
               type="text"
               name="code"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.code}
               onChange={handleChange}
@@ -270,7 +270,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
             <input
               type="text"
               name="session"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.session}
               onChange={handleChange}
@@ -285,7 +285,7 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
             <input
               type="text"
               name="semester"
-              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text:white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
               placeholder=" "
               value={formData.semester}
               onChange={handleChange}
@@ -321,6 +321,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -329,6 +330,7 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsCreating(true);
 
     try {
       await axios.post(
@@ -357,6 +359,8 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
       console.error('Error:', error);
       setError(error.response?.data?.message || 'Failed to create course. Please try again.');
       toast.error(error.response?.data?.message || 'Failed to create course. Please try again.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -435,8 +439,9 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
           <button
             type="submit"
             className="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-lg w-full sm:w-auto px-5 py-2.5 mt-5 text-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800"
+            disabled={isCreating}
           >
-            Create Course
+            {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Create Course'}
           </button>
         </div>
       </form>
