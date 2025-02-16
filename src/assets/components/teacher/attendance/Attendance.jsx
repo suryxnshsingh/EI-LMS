@@ -189,7 +189,7 @@ const Attendance = () => {
   }
 
   return (
-    <div className="w-full m-2 md:m-10">
+    <div className="p-5 md:p-10 w-full">
       <div className="container p-4 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
@@ -316,7 +316,10 @@ const Attendance = () => {
                         </button>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setQrCodeSession(session.id) && setShowAttendanceId(false)} // Set QR code session
+                            onClick={() => {
+                              setQrCodeSession(encrypt(session.id.toString())); // Encrypt the QR code session ID
+                              setShowAttendanceId(false);
+                            }} // Set QR code session
                             disabled={!session.isActive} // Disable if session is not active
                             className="inline-flex items-center p-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -368,26 +371,26 @@ const Attendance = () => {
 
       {qrCodeSession && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
-          <div className="bg-white rounded-lg shadow-lg dark:bg-neutral-800 px-6 pb-6 pt-2">
-            <div className="flex justify-between items-center mb-3 pb-1 border-b-2 border-gray-200 dark:border-neutral-700">
+          <div className="bg-white rounded-lg shadow-lg px-6 pb-6 pt-2">
+            <div className="flex justify-between items-center mb-3 pb-1 border-b-2 border-gray-200">
               <div className="flex items-center gap-2">
               
-                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center`}>
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 text-center`}>
                     Attendance ID :
                 </h2>
-                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 dark:text-white text-center ${!showAttendanceId && 'blur-[5px]'}`}>
+                <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 text-center ${!showAttendanceId && 'blur-[5px]'}`}>
                    {decrypt(qrCodeSession)}
                 </h2>
                 <button
                   onClick={() => setShowAttendanceId(!showAttendanceId)}
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  className="text-gray-600 hover:text-gray-900 "
                 >
                   {showAttendanceId ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
                 </button>
               </div>
               <button
               onClick={() => setQrCodeSession(null)}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex w-full justify-end"
+              className="text-gray-600 hover:text-gray-900 flex w-full justify-end"
             >
               ❌
             </button>
