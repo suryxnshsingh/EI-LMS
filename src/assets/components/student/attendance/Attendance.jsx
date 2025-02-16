@@ -186,9 +186,10 @@ const Attendance = () => {
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: { width: 250, height: 250 }, // Increased QR box size
+              qrbox: { width: 1280, height: 720 }, // Increased QR box size
               aspectRatio: 1,
-              disableFlip: true // Disable flipping for mobile devices
+              disableFlip: true, // Disable flipping for mobile devices
+              useBarCodeDetectorIfSupported: true // Use barcode detector if supported
             },
             async (decodedText) => {
               console.log("QR Code detected:", decodedText); // Add logging
@@ -468,14 +469,14 @@ const Attendance = () => {
         )}
 
         {scanning && (
-          <div className="fixed -inset-10 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
-            <div style={scannerStyles.container} className="bg-white dark:bg-neutral-800 shadow-lg">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
+            <div style={scannerStyles.container} className="bg-white dark:bg-neutral-800 shadow-lg border-4 border-blue-500">
               <div style={scannerStyles.header} className="border-b border-gray-200 dark:border-neutral-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   Scan QR Code
                 </h3>
               </div>
-              <div style={scannerStyles.readerContainer}>
+              <div style={scannerStyles.readerContainer} className="border-t border-b border-gray-200 dark:border-neutral-700">
                 <div 
                   id="reader" 
                   className="relative"
