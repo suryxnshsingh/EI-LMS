@@ -13,9 +13,10 @@ const StudentAttendanceDialog = ({ student, courseId, courseName, session, onClo
         <div className="flex justify-between items-center mb-6">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Details of {student.firstName} {student.lastName} - {courseName}
+             Details of {student.firstName} {student.lastName}
             </h2>
             <div className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="mr-3">Course: {courseName}</span>
               <span className="mr-3">Enrollment: {student.enrollmentNumber || 'N/A'}</span>
               <span>Session: {session}</span>
             </div>

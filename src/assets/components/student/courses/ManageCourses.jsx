@@ -50,7 +50,7 @@ const CourseCard = ({ course, onEnroll, status }) => {
             onClick={() => setShowAttendance(true)}
             className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
           >
-            See Attendance
+            Check Details
           </button>
         </div>
       ) : status === 'PENDING' ? (
