@@ -261,9 +261,9 @@ const ManageStudentsPage = () => {
                               lastName: enrollment.student.lastName,
                               enrollmentNumber: enrollment.student.enrollmentNumber
                             })}
-                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-gray-300 hover:dark:bg-neutral-800 rounded"
                           >
-                            See Attendance
+                            Check Details
                           </button>
                         </div>
                       ))}

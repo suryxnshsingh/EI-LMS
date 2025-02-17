@@ -22,6 +22,8 @@ const Tests = () => {
     scheduledFor: ''  // new scheduledFor field (datetime-local string)
   });
   const [validationError, setValidationError] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [deletingQuizId, setDeletingQuizId] = useState(null);
 
   const initialTheme = Cookies.get("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [localTheme, setLocalTheme] = useState(initialTheme);
@@ -71,6 +73,7 @@ const Tests = () => {
 
   const handleCreateQuiz = async (e) => {
     e.preventDefault();
+    setIsCreating(true);
     try {
       const token = Cookies.get("token");
       if (!token) {
@@ -98,6 +101,8 @@ const Tests = () => {
     } catch (error) {
       console.error('Failed to create quiz:', error.response?.data || error.message);
       setError(error.response?.data?.error || 'Failed to create quiz');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -132,6 +137,7 @@ const Tests = () => {
 
   const handleDeleteQuiz = async (quizId) => {
     if (window.confirm('Are you sure you want to delete this quiz?')) {
+      setDeletingQuizId(quizId);
       try {
         const token = Cookies.get("token");
         if (!token) {
@@ -152,6 +158,8 @@ const Tests = () => {
       } catch (error) {
         console.error('Failed to delete quiz:', error.response?.data || error.message);
         setError(error.response?.data?.error || 'Failed to delete quiz');
+      } finally {
+        setDeletingQuizId(null);
       }
     }
   };
@@ -227,8 +235,12 @@ const Tests = () => {
                     <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => handleToggleStatus(quiz, e)}>
                       {quiz.isActive ? 'Active' : 'Inactive'}
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }} className="flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600">
-                      <Trash2 size={18} />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }}
+                      className={`flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600 ${deletingQuizId === quiz.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={deletingQuizId === quiz.id}
+                    >
+                      {deletingQuizId === quiz.id ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={18} />}
                     </button>
                   </div>
                 </div>
@@ -360,8 +372,9 @@ const Tests = () => {
               <button
                 type="submit"
                 className="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-lg w-full sm:w-auto px-5 py-2.5 mt-5 text-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800"
+                disabled={isCreating}
               >
-                Create Quiz
+                {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Create Quiz'}
               </button>
             </div>
           </form>

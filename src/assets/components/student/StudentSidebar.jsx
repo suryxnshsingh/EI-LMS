@@ -151,7 +151,7 @@ const Logo = () => {
     >
       <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
       <span className="font-medium text-black dark:text-white whitespace-pre opacity-0 animate-fadeIn">
-        EI Classroom
+        EI - LMS
       </span>
     </a>
   );
