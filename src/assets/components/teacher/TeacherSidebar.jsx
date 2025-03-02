@@ -27,6 +27,7 @@ import { Simulator } from '../simulators/Simulator';
 import UpdateTest from './tests/UpdateTest';
 import Profile from './Profile';
 import Tests from './tests/Tests';
+import Responses from './tests/Responses';
 import Cookies from 'js-cookie';
 
 const TeacherSidebar = () => {
@@ -199,7 +200,8 @@ const Dashboard = () => {
             <Route path="/managecourses" element={<ManageCourses />} />
             <Route path="/simulators" element={<Simulator/>} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/test/:id" element={<UpdateTest />} />
+            <Route path="/test/:quizId" element={<UpdateTest />} />
+            <Route path="/test/:quizId/responses" element={<Responses />} />
           </Routes>
           </div>
           </div>
