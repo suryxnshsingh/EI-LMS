@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Clock, Book, FlaskConical, Loader2, AlertCircle } from 'lucide-react';
+import { FlaskConical, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import TestCard from './TestCard';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -106,8 +107,8 @@ const Tests = () => {
     }
   };
 
-  const handleToggleStatus = async (quiz, e) => {
-    e.stopPropagation();
+  const handleToggleStatus = async (quizId) => {
+    const quiz = quizzes.find(q => q.id === quizId);
 
     if (!quiz.isActive) {
       const totalQuestionMarks = quiz.questions.reduce((sum, q) => sum + q.marks, 0);
@@ -124,7 +125,7 @@ const Tests = () => {
     try {
       const token = Cookies.get("token");
       await axios.patch(
-        `${BASE_URL}/api/quiz/teacher/${quiz.id}/toggle-status`,
+        `${BASE_URL}/api/quiz/teacher/${quizId}/toggle-status`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -201,51 +202,20 @@ const Tests = () => {
       ) : (
         <div className="grid grid-cols-3 gap-4 w-full">
           {Array.isArray(quizzes) && quizzes.map((quiz) => (
-            <div 
-              key={quiz.id} 
-              className="relative"
-            >
-              {validationError?.quizId === quiz.id && (
-                <div className="absolute -top-16 left-0 right-0 p-3 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg text-sm shadow-lg border border-red-200 dark:border-red-800">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span>{validationError.message}</span>
-                  </div>
-                </div>
-              )}
-              <div 
-                className='w-auto p-4 bg-gray-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md cursor-pointer transition-shadow hover:shadow-lg hover:shadow-gray-400 dark:hover:shadow-neutral-800'
-                onClick={() => navigate(`/teachers/test/${quiz.id}`)}
-              >
-                <div className="poppins-regular">
-                  <div className="mb-4">
-                    <h6 className="text-2xl font-bold mb-2">{quiz.title}</h6>
-                    <p className="text-gray-600 dark:text-gray-300">{quiz.description}</p>
-                  </div>
-                  <div className="flex flex-col gap-0 mb-4">
-                    <div className="chip flex items-center gap-2 py-1">
-                      <Clock size={16} /> {quiz.timeLimit} mins
-                    </div>
-                    <div className="flex items-center w-fit gap-2 py-1">
-                      <Book size={16} /> {getCoursesDisplay(quiz)}
-                    </div>
-                  </div>
-                  <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2"></div>
-                  <div className="flex justify-between items-center p-1">
-                    <div className={`p-0.5 px-2 rounded-full cursor-pointer ${quiz.isActive ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`} onClick={(e) => handleToggleStatus(quiz, e)}>
-                      {quiz.isActive ? 'Active' : 'Inactive'}
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }}
-                      className={`flex items-center gap-1 hover:bg-gray-300 hover:dark:bg-neutral-900 p-2 rounded text-red-600 ${deletingQuizId === quiz.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={deletingQuizId === quiz.id}
-                    >
-                      {deletingQuizId === quiz.id ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={18} />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TestCard
+              key={quiz.id}
+              id={quiz.id}
+              title={quiz.title}
+              description={quiz.description}
+              timeLimit={quiz.timeLimit}
+              subjectName={quiz.course?.name || 'No course assigned'}
+              subjectCode={quiz.course?.courseCode || ''}
+              isActive={quiz.isActive}
+              onStatusToggle={handleToggleStatus}
+              onEdit={(id) => navigate(`/teachers/test/${id}`)}
+              onViewResponses={(id) => navigate(`/teachers/test/${id}/responses`)}
+              onDelete={handleDeleteQuiz}
+            />
           ))}
         </div>
       )}

@@ -8,7 +8,7 @@ import AddQuestionDialog from './AddQuestionDialog';
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 function UpdateTest() {
-  const { id } = useParams();
+  const { quizId } = useParams(); // Ensure the parameter name matches the route definition
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState({ 
     title: '', 
@@ -33,7 +33,7 @@ function UpdateTest() {
   const fetchQuiz = async () => {
     try {
       const token = Cookies.get("token");
-      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes/${id}`, {
+      const response = await axios.get(`${BASE_URL}/api/quiz/teacher/my-quizzes/${quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -72,7 +72,7 @@ function UpdateTest() {
     };
 
     fetchQuizAndCourses();
-  }, [id]);
+  }, [quizId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,7 +83,7 @@ function UpdateTest() {
     try {
       const token = Cookies.get("token");
       const response = await axios.post(
-        `${BASE_URL}/api/quiz/teacher/${id}/questions`,
+        `${BASE_URL}/api/quiz/teacher/${quizId}/questions`,
         formData,
         {
           headers: { 
@@ -108,7 +108,7 @@ function UpdateTest() {
   const handleDeleteQuestion = async (questionId) => {
     try {
       const token = Cookies.get("token");
-      await axios.delete(`${BASE_URL}/api/quiz/teacher/${id}/questions/${questionId}`, {
+      await axios.delete(`${BASE_URL}/api/quiz/teacher/${quizId}/questions/${questionId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -137,7 +137,7 @@ function UpdateTest() {
     try {
       const token = Cookies.get("token");
       const response = await axios.put(
-        `${BASE_URL}/api/quiz/teacher/${id}/questions/${editingQuestion.id}`,
+        `${BASE_URL}/api/quiz/teacher/${quizId}/questions/${editingQuestion.id}`,
         formData,
         {
           headers: { 
@@ -177,7 +177,7 @@ function UpdateTest() {
       setSaveStatus('saving');
       const token = Cookies.get("token");
       await axios.put(
-        `${BASE_URL}/api/quiz/teacher/${id}`,  // Fixed URL - removed extra 'quiz'
+        `${BASE_URL}/api/quiz/teacher/${quizId}`,  // Fixed URL - removed extra 'quiz'
         {
           title: quiz.title,
           description: quiz.description,
@@ -216,7 +216,7 @@ function UpdateTest() {
       setIsSaving(true);
       const token = Cookies.get("token");
       await axios.put(
-        `${BASE_URL}/api/quiz/teacher/${id}`,
+        `${BASE_URL}/api/quiz/teacher/${quizId}`,
         {
           title: quiz.title,
           description: quiz.description,
