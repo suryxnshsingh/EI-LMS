@@ -4,8 +4,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Loader2, Edit, Info } from 'lucide-react';
 import ResponseDialog from './ResponseDialog';
-import { IconDetails } from '@tabler/icons-react';
-import { saveAs } from 'file-saver';
+
 import { utils, writeFile } from 'xlsx';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
