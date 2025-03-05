@@ -65,7 +65,7 @@ function ResponseDialog({ response, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
       <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-6 rounded-md shadow-md w-1/2">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Response Details</h2>
