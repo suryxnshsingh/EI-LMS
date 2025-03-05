@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronUp, History, Moon, Sun } from 'lucide-react';
+import { X, History } from 'lucide-react';
 import * as math from 'mathjs';
 
 const ScientificCalculator = ({ onClose, theme }) => {
@@ -14,9 +14,11 @@ const ScientificCalculator = ({ onClose, theme }) => {
   const [expandKeypad, setExpandKeypad] = useState(true);
   const [inputHistory, setInputHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [error, setError] = useState(null);
 
   // Handle button clicks for basic and scientific functions
   const handleButtonClick = (value) => {
+    setError(null);
     if (value === 'Ans' && lastAnswer !== null) {
       setInput(prev => prev + 'ans');
       return;
@@ -24,54 +26,116 @@ const ScientificCalculator = ({ onClose, theme }) => {
     setInput(prev => prev + value);
   };
 
+  // Map function names to their math.js equivalents
+  const functionMappings = {
+    'ln': 'log',       // Natural logarithm (base e)
+    'log': 'log10',    // Common logarithm (base 10)
+    'x^2': 'square',   // Square function
+    'x^3': 'cube',     // Cube function 
+    '10^x': 'pow10',   // 10 to the power of x
+    '±': 'negate',     // Negation
+    'mod': 'mod',      // Modulo 
+    'rand': 'random',  // Random number
+  };
+
+  // Wrap expression with function calls properly
+  const wrapWithFunction = (func, expression) => {
+    // Get the mapped function name or use the original
+    const mappedFunc = functionMappings[func] || func;
+    
+    // Handle special cases
+    switch(func) {
+      case 'x^2':
+        return `(${expression || '0'})^2`;
+      case 'x^3':
+        return `(${expression || '0'})^3`;
+      case '10^x':
+        return `10^(${expression || '0'})`;
+      case '1/x':
+        return `1/(${expression || '0'})`;
+      case '±':
+        // If it already starts with a minus, remove it; otherwise, add it
+        return expression.startsWith('-') ? expression.substring(1) : `-${expression}`;
+      case 'π':
+        return expression + 'pi';
+      case 'e':
+        return expression + 'e';
+      default:
+        // Standard function wrapping
+        return `${mappedFunc}(${expression || '0'})`;
+    }
+  };
+
   // Handle scientific function calculations
   const handleFunction = (func) => {
     try {
-      // For functions that operate on the current expression
-      if (['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh',
-           'log', 'log10', 'ln', 'sqrt', 'abs', 'floor', 'ceil', 'exp'].includes(func)) {
-        setInput(prev => `${func}(${prev || ''})`);
+      setError(null);
+      
+      // Handle direct constants
+      if (func === 'π') {
+        setInput(prev => prev + 'pi');
         return;
       }
-
-      // For constants and other operations
-      switch (func) {
-        case 'π':
-          setInput(prev => prev + 'pi');
-          return;
-        case 'e':
-          setInput(prev => prev + 'e');
-          return;
-        case 'x^2':
-          setInput(prev => `(${prev || ''})^2`);
-          return;
-        case 'x^3':
-          setInput(prev => `(${prev || ''})^3`);
-          return;
-        case '10^x':
-          setInput(prev => `10^(${prev || ''})`);
-          return;
-        case '1/x':
-          setInput(prev => `1/(${prev || ''})`);
-          return;
-        case 'x!':
-          setInput(prev => `factorial(${prev || ''})`);
-          return;
-        case 'rand':
-          const result = math.random();
-          setInput(result.toString());
-          break;
-        default:
-          return;
+      
+      if (func === 'e') {
+        setInput(prev => prev + 'e');
+        return;
       }
+      
+      // Handle functions
+      if (func === 'DEL') {
+        handleBackspace();
+        return;
+      }
+      
+      if (func === '±') {
+        setInput(prev => prev.startsWith('-') ? prev.substring(1) : `-${prev}`);
+        return;
+      }
+      
+      // For standard functions
+      const standardFunctions = [
+        'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 
+        'sinh', 'cosh', 'tanh', 'sqrt', 'abs', 
+        'floor', 'ceil', 'exp'
+      ];
+      
+      if (standardFunctions.includes(func) || Object.keys(functionMappings).includes(func)) {
+        setInput(prev => wrapWithFunction(func, prev));
+        return;
+      }
+      
     } catch (error) {
-      setInput('Error');
+      setError(`Function error: ${error.message}`);
     }
   };
 
   // Clear the input field
   const handleClear = () => {
     setInput('');
+    setError(null);
+  };
+
+  // Get the proper scope for math.js evaluation
+  const getScope = () => {
+    // Create a basic scope with the previous answer if available
+    const baseScope = lastAnswer !== null ? { ans: lastAnswer } : {};
+    
+    // Add special functions
+    const customFunctions = {
+      // Add specific functions that need custom implementation
+      square: (x) => Math.pow(x, 2),
+      cube: (x) => Math.pow(x, 3),
+      pow10: (x) => Math.pow(10, x),
+      negate: (x) => -x,
+    };
+    
+    return {
+      ...baseScope,
+      ...customFunctions,
+      // Add config for angle mode
+      config: { angle: angleMode }
+    };
   };
 
   // Calculate the result using math.js
@@ -79,46 +143,63 @@ const ScientificCalculator = ({ onClose, theme }) => {
     if (!input) return;
     
     try {
-      // Create a scope with the lastAnswer and config
-      const scope = { 
-        ...((lastAnswer !== null) ? { ans: lastAnswer } : {}),
-        // Math.js requires config to be part of the scope object
-        config: { angle: angleMode }
-      };
+      setError(null);
       
-      // Evaluate the expression with math.js (only 2 arguments: expression and scope)
-      const result = math.evaluate(input, scope);
+      // Prepare the expression by replacing certain patterns
+      let processedInput = input
+        .replace(/(\d)(?=\()/g, '$1*') // Add implied multiplication: 2(3) -> 2*(3)
+        .replace(/\)([\d(])/g, ')*$1'); // Add implied multiplication: (2)(3) -> (2)*(3)
+      
+      // Get the scope with all necessary variables and functions
+      const scope = getScope();
+      
+      // Evaluate the expression with math.js
+      const result = math.evaluate(processedInput, scope);
       
       // Save to history
       setHistory(prev => [...prev, { expression: input, result: result }]);
       setInputHistory(prev => [...prev, input]);
       setHistoryIndex(-1);
       
-      // Format the result nicely
+      // Format and display the result
+      let formattedResult;
+      
       if (typeof result === 'number') {
-        // Format number to avoid excessive decimals
-        const formattedResult = math.format(result, { precision: 10 });
+        // Handle numbers: format to avoid excessive decimals
+        const precision = Math.abs(result) < 0.0001 || Math.abs(result) >= 10000 
+          ? { notation: 'exponential', precision: 6 } 
+          : { precision: 10 };
+        
+        formattedResult = math.format(result, precision);
+        setInput(formattedResult);
+        setLastAnswer(result);
+      } else if (result && typeof result === 'object' && result.hasOwnProperty('entries')) {
+        // Handle matrices or arrays
+        formattedResult = '[' + result.toArray().toString() + ']';
         setInput(formattedResult);
         setLastAnswer(result);
       } else {
-        // For non-numeric results (like matrices, etc.)
-        setInput(result.toString());
+        // For other types (like boolean, string, etc.)
+        formattedResult = result.toString();
+        setInput(formattedResult);
         setLastAnswer(result);
       }
     } catch (error) {
-      setInput('Error');
+      setError(`Calculation error: ${error.message}`);
+      console.error("Calculation error:", error);
     }
   };
 
   // Memory functions
   const handleMemory = (action) => {
     try {
+      setError(null);
+      
       let currentValue;
       try {
-        // Create a scope with the lastAnswer if available
-        const scope = lastAnswer !== null ? { ans: lastAnswer } : {};
-        // Math.js only accepts two parameters
-        currentValue = math.evaluate(input || '0', scope);
+        // Get current value if input is not empty
+        const scope = getScope();
+        currentValue = input ? math.evaluate(input, scope) : 0;
       } catch (e) {
         currentValue = 0;
       }
@@ -141,9 +222,11 @@ const ScientificCalculator = ({ onClose, theme }) => {
         case 'M-': // Memory Subtract
           setMemory((memory || 0) - currentValue);
           break;
+        default:
+          break;
       }
     } catch (error) {
-      // Silently fail for memory operations
+      setError(`Memory operation error: ${error.message}`);
     }
   };
 
@@ -155,6 +238,7 @@ const ScientificCalculator = ({ onClose, theme }) => {
   // Delete the last character
   const handleBackspace = () => {
     setInput(prev => prev.slice(0, -1));
+    setError(null);
   };
 
   // Navigate through input history
@@ -183,6 +267,7 @@ const ScientificCalculator = ({ onClose, theme }) => {
   const useHistoryItem = (item) => {
     setInput(item.expression);
     setShowHistory(false);
+    setError(null);
   };
 
   // Basic calculator buttons
@@ -200,18 +285,18 @@ const ScientificCalculator = ({ onClose, theme }) => {
 
   // Scientific calculator buttons - first tab
   const trigButtons = [
-    ['sin', 'cos', 'tan', 'log10'],
-    ['asin', 'acos', 'atan', 'ln'],
-    ['sinh', 'cosh', 'tanh', 'log'],
+    ['sin', 'cos', 'tan', 'log'],   // 'log' is actually log10 in the UI
+    ['asin', 'acos', 'atan', 'ln'],  // 'ln' is actually log in the UI
+    ['sinh', 'cosh', 'tanh', 'sqrt'],
     ['π', 'e', 'mod', 'Ans']
   ];
 
   // Scientific calculator buttons - second tab
   const advancedButtons = [
-    ['sqrt', 'x^2', 'x^3', '10^x'],
-    ['abs', 'floor', 'ceil', 'x!'],
-    ['1/x', 'exp', 'rand', '['],
-    [']', ',', '±', 'DEL']
+    ['abs', 'x^2', 'x^3', '10^x'],
+    ['floor', 'ceil', '1/x', 'exp'],
+    ['[', ']', ',', 'rand'],
+    ['±', 'DEL', '(', ')']
   ];
 
   // Memory buttons
@@ -279,7 +364,7 @@ const ScientificCalculator = ({ onClose, theme }) => {
         )}
         
         {/* Input display */}
-        <div className="mb-3 relative">
+        <div className="mb-1 relative">
           <input
             type="text"
             value={input}
@@ -306,6 +391,13 @@ const ScientificCalculator = ({ onClose, theme }) => {
             </button>
           )}
         </div>
+        
+        {/* Error display */}
+        {error && (
+          <div className={`text-xs px-2 py-1 mb-2 rounded ${isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-700'}`}>
+            {error}
+          </div>
+        )}
         
         {/* Mode indicators */}
         <div className="flex justify-between mb-2 text-xs">
@@ -439,26 +531,24 @@ const ScientificCalculator = ({ onClose, theme }) => {
           </div>
         )}
         
-        {/* Extended basic buttons - shown when expanded */}
-        {expandKeypad && (
-          <div className="grid grid-cols-4 gap-1 mb-2">
-            {extendedBasicButtons.map((row, rowIndex) => (
-              row.map((value, colIndex) => (
-                <button
-                  key={`extended-${rowIndex}-${colIndex}`}
-                  onClick={() => handleButtonClick(value)}
-                  className={`p-2 rounded text-lg font-medium transition-colors ${
-                    isDark 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                  }`}
-                >
-                  {value}
-                </button>
-              ))
-            ))}
-          </div>
-        )}
+        {/* Extended basic buttons - always shown */}
+        <div className="grid grid-cols-4 gap-1 mb-2">
+          {extendedBasicButtons.map((row, rowIndex) => (
+            row.map((value, colIndex) => (
+              <button
+                key={`extended-${rowIndex}-${colIndex}`}
+                onClick={() => handleButtonClick(value)}
+                className={`p-2 rounded text-lg font-medium transition-colors ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                }`}
+              >
+                {value}
+              </button>
+            ))
+          ))}
+        </div>
         
         {/* Basic calculator buttons - always shown */}
         <div className="grid grid-cols-4 gap-1">
