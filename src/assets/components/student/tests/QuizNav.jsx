@@ -1,5 +1,7 @@
-import React from 'react';
-import { Sun, Moon, Loader2, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sun, Moon, Loader2, Send, Calculator } from 'lucide-react';
+import Draggable from 'react-draggable';
+import ScientificCalculator from './ScientificCalculator'; // Import the new component
 
 function Stat({ label, value }) {
   return (
@@ -11,6 +13,8 @@ function Stat({ label, value }) {
 }
 
 const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions, handleSubmitClick, submitting, theme, toggleTheme }) => {
+  const [showCalculator, setShowCalculator] = useState(false);
+
   return (
     <aside className="fixed right-0 top-0 flex h-screen w-80 flex-col border-l border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
       <div className="flex-1 overflow-y-auto">
@@ -43,6 +47,15 @@ const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions
               <Stat label="Remaining" value={quiz.questions.length - attemptedQuestions.size} />
             </dl>
           </section>
+
+          {/* Calculator Button */}
+          <button
+            onClick={() => setShowCalculator(!showCalculator)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 px-4 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:from-green-500 hover:to-teal-500"
+          >
+            <Calculator className="h-4 w-4" />
+            <span>Calculator</span>
+          </button>
         </div>
       </div>
 
@@ -99,6 +112,14 @@ const QuizNav = ({ quiz, currentQuestion, setCurrentQuestion, attemptedQuestions
           )}
         </button>
       </div>
+
+      {showCalculator && (
+        <Draggable>
+          <div className="fixed bottom-4 right-4 z-50">
+            <ScientificCalculator onClose={() => setShowCalculator(false)} theme={theme} />
+          </div>
+        </Draggable>
+      )}
     </aside>
   );
 };

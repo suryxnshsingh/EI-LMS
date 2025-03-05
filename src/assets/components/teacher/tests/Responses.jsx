@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Loader2, Edit, Info } from 'lucide-react';
+import { Loader2, Edit, Info, FileDown } from 'lucide-react';
 import ResponseDialog from './ResponseDialog';
 
 import { utils, writeFile } from 'xlsx';
@@ -105,7 +105,7 @@ function Responses() {
           onClick={exportResults}
           className="flex items-center px-4 py-2 text-md dark:text-white text-gray-700 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-md"
         >
-          Export Results
+          <FileDown className="mr-2 w-5 h-5" /> Export Results
         </button>
       </div>
       {error && (
