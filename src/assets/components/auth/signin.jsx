@@ -70,7 +70,7 @@ const Signin = () => {
           navigate("/teachers");
           break;
         case 'ADMIN':
-          navigate("/admin");
+          navigate("/hod");
           break;
         default:
           navigate("/");
