@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -6,6 +6,7 @@ import { Timer, Loader2, Send, ArrowLeft, ArrowRight, X, AlertTriangle, Maximize
 import QuizQuestion from './QuizQuestion';
 import QuizNav from './QuizNav';
 import ConfirmDialog from './ConfirmDialog';
+import { useQuizTimer } from '../../../../hooks/useQuizTimer';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
@@ -15,7 +16,6 @@ function QuizAttempt() {
   const [quiz, setQuiz] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
@@ -58,7 +58,6 @@ function QuizAttempt() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setQuiz(response.data);
-        setTimeLeft(response.data.timeLimit * 60); // Convert minutes to seconds
         
         // Start the quiz attempt
         const attemptResponse = await axios.post(
@@ -115,23 +114,41 @@ function QuizAttempt() {
     }
   }, [countdown]);
 
-  // Timer effect
-  useEffect(() => {
-    if (!timeLeft) return;
+  // Move handleSubmit declaration before useQuizTimer hook
+  const handleSubmit = async () => {
+    try {
+      stopTimer(); // Stop the timer before submission
+      console.log('Submitting quiz...'); // Debug log
+      setSubmitting(true);
+      const token = Cookies.get("token");
+      
+      const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId,
+        ...answer
+      }));
 
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit(); // Auto-submit when time runs out
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      console.log('Sending submission request...'); // Debug log
+      await axios.post(
+        `${BASE_URL}/api/quiz/student/${quizId}/submit`,
+        {
+          attemptId,
+          answers: formattedAnswers
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+      console.log('Submission successful, navigating...'); // Debug log
+      navigate('/students/tests/thank-you'); // Changed navigation to thank you page
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+    }
+  };
+
+  // Now we can use handleSubmit in the hook
+  const { timeLeft, stopTimer } = useQuizTimer(
+    quiz?.timeLimit || 0,
+    handleSubmit
+  );
 
   // Centralize the violation check
   const checkViolationAndSubmit = (newCount) => {
@@ -147,6 +164,7 @@ function QuizAttempt() {
   // Add this new function to handle forced submission
   const handleForcedSubmit = () => {
     console.log('Forcing quiz submission...');
+    stopTimer(); // Stop the timer before forced submission
     const token = Cookies.get("token");
     const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
       questionId,
@@ -170,14 +188,16 @@ function QuizAttempt() {
 
   // Update security violation handler
   const handleSecurityViolation = () => {
-    const newWarningCount = warningCount + 1;
-    setWarningCount(newWarningCount);
-    console.log(`Security violation #${newWarningCount}`);
-
-    if (!checkViolationAndSubmit(newWarningCount)) {
-      setShowFullScreenWarning(true);
-      setCountdown(10);
+    // Check current warning count before incrementing
+    if (warningCount >= 2) { // Third violation (0-based count)
+      handleForcedSubmit();
+      return;
     }
+
+    // Show warning and increment count
+    setShowFullScreenWarning(true);
+    setCountdown(10);
+    setWarningCount(prev => prev + 1);
   };
 
   // Update focus/blur handler
@@ -235,34 +255,6 @@ function QuizAttempt() {
     return "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
   };
 
-  const handleSubmit = async () => {
-    try {
-      console.log('Submitting quiz...'); // Debug log
-      setSubmitting(true);
-      const token = Cookies.get("token");
-      
-      const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
-        questionId,
-        ...answer
-      }));
-
-      console.log('Sending submission request...'); // Debug log
-      await axios.post(
-        `${BASE_URL}/api/quiz/student/${quizId}/submit`,
-        {
-          attemptId,
-          answers: formattedAnswers
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      console.log('Submission successful, navigating...'); // Debug log
-      navigate('/students/tests/thank-you'); // Changed navigation to thank you page
-    } catch (error) {
-      console.error('Error submitting quiz:', error);
-    }
-  };
-
   const handleSubmitClick = () => {
     setShowConfirmDialog(true);
   };
@@ -302,11 +294,13 @@ function QuizAttempt() {
 
   // Update warning dialog content
   const getWarningMessage = () => {
+    // warningCount is now accurate (0, 1, or 2)
     const remainingWarnings = 2 - warningCount;
+    
     if (remainingWarnings > 0) {
-      return `Please re-enter full screen mode to continue the quiz. You have ${countdown} seconds to comply.\n\nWarning ${warningCount + 1}/3 - ${remainingWarnings} ${remainingWarnings === 1 ? 'warning' : 'warnings'} remaining`;
+      return `Please re-enter full screen mode to continue the quiz. You have ${countdown} seconds to comply.\n\nWarning 1/2 - 1 remaining before automatic submission`;
     }
-    return `Final warning! Quiz will be automatically submitted if you exit full-screen mode again.\nYou have ${countdown} seconds to return to full-screen mode.`;
+    return `Final warning! Quiz will be automatically submitted in ${countdown} seconds if you don't return to full-screen mode.`;
   };
 
   if (loading) {
