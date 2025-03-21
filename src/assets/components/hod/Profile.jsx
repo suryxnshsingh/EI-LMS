@@ -137,7 +137,7 @@ const Profile = () => {
                     name="email"
                     value={profile.email}
                     readOnly
-                    className="pl-10 block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 bg-gray-50 dark:bg-neutral-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="pl-10 block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 bg-gray-50 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
