@@ -88,7 +88,7 @@ const Signin = () => {
             errorMessage = "Invalid credentials.";
             break;
           case 403:
-            errorMessage = "Email not verified. Please check your email.";
+            errorMessage = "Account not verified. Please verify your email.";
             break;
           case 500:
             errorMessage = "Server error. Please try again later.";

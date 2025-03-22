@@ -121,6 +121,11 @@ const Signup = () => {
         id: loadingToast,
         duration: 3000,
       });
+
+      // Short delay before navigation to allow toast to be seen
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
     } catch (error) {
       toast.error('Error resending verification email. Please try again.', {
         id: loadingToast,
