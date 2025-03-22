@@ -20,7 +20,7 @@ const VerifyEmail = () => {
           setSuccess(true);
           setTimeout(() => {
             navigate("/signin");
-          }, 2000); // Redirect after 3 seconds
+          }, 1000); // Redirect after 3 seconds
         })
         .catch(error => {
           setMessage(error.response.data.message || 'Error verifying email');

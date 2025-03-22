@@ -6,7 +6,7 @@ import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import Cookies from 'js-cookie';
-import { Mail, UserPlus } from "lucide-react";
+import { Mail, KeyRound } from "lucide-react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -96,6 +96,11 @@ const Signup = () => {
             break;
           case 422:
             toast.error("Invalid input data. Please check your entries.", {
+              id: loadingToast,
+            });
+            break;
+          case 429:
+            toast.error("Verification email already sent. Please wait for some time to resend a new email.", {
               id: loadingToast,
             });
             break;
@@ -255,7 +260,7 @@ const Signup = () => {
             href="/signin"
             className="mt-2 relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
           >
-            <p className="flex gap-4 text-sm"><UserPlus size={20}/> Create New Account</p>
+            <p className="flex gap-4 text-sm"><KeyRound size={20}/> Already have an account</p>
             <BottomGradient />
           </a>
         </form>
