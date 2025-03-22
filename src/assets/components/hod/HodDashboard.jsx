@@ -41,12 +41,12 @@ const HodDashboard = () => {
           }
         });
         
-        // Make sure we're only counting accepted enrollments in the student count
-        const activeStudents = response.data.totalStudents || 120;
+        // Count all students, not just those with accepted enrollments
+        const allStudents = response.data.allStudents || 120;
         
         setStats({
-          // Students with accepted enrollments only
-          totalStudents: activeStudents,
+          // Include all students, not just those with accepted enrollments
+          totalStudents: allStudents,
           totalCourses: response.data.totalCourses || 8,
           activeAttendance: response.data.activeAttendance || 3,
           upcomingTests: response.data.upcomingTests || 5
