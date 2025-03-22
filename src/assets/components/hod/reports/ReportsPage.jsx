@@ -28,6 +28,7 @@ const ReportsPage = () => {
   const [selectedSession, setSelectedSession] = useState('');
   const [generating, setGenerating] = useState(false);
   const [mockMode, setMockMode] = useState(false); // Use mock data if API isn't ready yet
+  const [reportFormat, setReportFormat] = useState('dateRange'); // 'dateRange' or 'monthly' format
 
   // Fetch courses and students on component mount
   useEffect(() => {
@@ -118,19 +119,49 @@ const ReportsPage = () => {
           if (!selectedCourse) throw new Error('No course selected');
           
           if (reportType === 'attendance') {
-            endpoint = `${BASE_URL}/api/attendance/attendance/monthly-report/${selectedCourse.id}`;
-            params = { 
-              month: selectedMonth, 
-              year: selectedYear,
-              semester: selectedCourse.semester,
-              session: selectedCourse.session 
-            };
+            if (reportFormat === 'monthly') {
+              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-attendance`;
+              params = { 
+                month: selectedMonth, 
+                year: selectedYear,
+                semester: selectedCourse.semester,
+                session: selectedCourse.session 
+              };
+            } else {
+              endpoint = `${BASE_URL}/api/attendance/attendance/range-report/${selectedCourse.id}`;
+              params = { 
+                startDate: dateRange.startDate, 
+                endDate: dateRange.endDate,
+                semester: selectedCourse.semester,
+                session: selectedCourse.session 
+              };
+            }
           } else if (reportType === 'assignments') {
-            endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/assignments`;
-            params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+            if (reportFormat === 'monthly') {
+              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-assignments`;
+              params = { 
+                month: selectedMonth, 
+                year: selectedYear,
+                semester: selectedCourse.semester,
+                session: selectedCourse.session 
+              };
+            } else {
+              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/assignments`;
+              params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+            }
           } else if (reportType === 'tests') {
-            endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/tests`;
-            params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+            if (reportFormat === 'monthly') {
+              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-tests`;
+              params = { 
+                month: selectedMonth, 
+                year: selectedYear,
+                semester: selectedCourse.semester,
+                session: selectedCourse.session 
+              };
+            } else {
+              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/tests`;
+              params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+            }
           }
         } else if (activeTab === 'student') {
           if (!selectedStudent) throw new Error('No student selected');
@@ -165,7 +196,15 @@ const ReportsPage = () => {
         if (activeTab === 'department') {
           filename = `Department_${reportType}_Sem${selectedSemester}_${selectedSession}.xlsx`;
         } else if (activeTab === 'course') {
-          filename = `${selectedCourse.courseCode}_${reportType}_report.xlsx`;
+          if (reportType === 'attendance' && reportFormat === 'monthly') {
+            const monthNames = [
+              'January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            filename = `${selectedCourse.courseCode}_${monthNames[selectedMonth-1]}_${selectedYear}_${reportType}.xlsx`;
+          } else {
+            filename = `${selectedCourse.courseCode}_${reportType}_report.xlsx`;
+          }
         } else if (activeTab === 'student') {
           filename = `${selectedStudent.enrollmentNumber}_${reportType}_report.xlsx`;
         }
@@ -447,77 +486,215 @@ const ReportsPage = () => {
                             </div>
                           </div>
                           
-                          {reportType === 'attendance' ? (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  Month
-                                </label>
-                                <div className="relative">
-                                  <select
-                                    id="month"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                                    className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
-                                  >
-                                    {months.map((name, index) => (
-                                      <option key={index} value={index + 1}>{name}</option>
-                                    ))}
-                                  </select>
-                                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
-                                    <ChevronDown className="h-4 w-4" />
-                                  </div>
+                          {reportType === 'attendance' && (
+                            <div className="space-y-4">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id="monthlyReport"
+                                    name="reportFormat"
+                                    value="monthly"
+                                    checked={reportFormat === 'monthly'}
+                                    onChange={() => setReportFormat('monthly')}
+                                    className="h-4 w-4 text-blue-600"
+                                  />
+                                  <label htmlFor="monthlyReport" className="ml-2 text-gray-700 dark:text-gray-300">Monthly Report</label>
+                                </div>
+                                
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id="dateRangeReport"
+                                    name="reportFormat"
+                                    value="dateRange"
+                                    checked={reportFormat === 'dateRange'}
+                                    onChange={() => setReportFormat('dateRange')}
+                                    className="h-4 w-4 text-blue-600"
+                                  />
+                                  <label htmlFor="dateRangeReport" className="ml-2 text-gray-700 dark:text-gray-300">Date Range Report</label>
                                 </div>
                               </div>
                               
-                              <div>
-                                <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  Year
-                                </label>
-                                <div className="relative">
-                                  <select
-                                    id="year"
-                                    value={selectedYear}
-                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                    className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
-                                  >
-                                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-                                      <option key={year} value={year}>{year}</option>
-                                    ))}
-                                  </select>
-                                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
-                                    <ChevronDown className="h-4 w-4" />
+                              {reportFormat === 'monthly' ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Month
+                                    </label>
+                                    <div className="relative">
+                                      <select
+                                        id="month"
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                        className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                                      >
+                                        {months.map((name, index) => (
+                                          <option key={index} value={index + 1}>{name}</option>
+                                        ))}
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                                        <ChevronDown className="h-4 w-4" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Year
+                                    </label>
+                                    <div className="relative">
+                                      <select
+                                        id="year"
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                        className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                                      >
+                                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                                          <option key={year} value={year}>{year}</option>
+                                        ))}
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                                        <ChevronDown className="h-4 w-4" />
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
+                              ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Start Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      id="startDate"
+                                      value={dateRange.startDate}
+                                      onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                                      className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                  
+                                  <div>
+                                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      End Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      id="endDate"
+                                      value={dateRange.endDate}
+                                      onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                                      className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          ) : (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  Start Date
-                                </label>
-                                <input
-                                  type="date"
-                                  id="startDate"
-                                  value={dateRange.startDate}
-                                  onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                                  className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                          )}
+                          
+                          {reportType !== 'attendance' && (
+                            <div className="space-y-4">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id="monthlyReport"
+                                    name="reportFormat"
+                                    value="monthly"
+                                    checked={reportFormat === 'monthly'}
+                                    onChange={() => setReportFormat('monthly')}
+                                    className="h-4 w-4 text-blue-600"
+                                  />
+                                  <label htmlFor="monthlyReport" className="ml-2 text-gray-700 dark:text-gray-300">Monthly Report</label>
+                                </div>
+                                
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id="dateRangeReport"
+                                    name="reportFormat"
+                                    value="dateRange"
+                                    checked={reportFormat === 'dateRange'}
+                                    onChange={() => setReportFormat('dateRange')}
+                                    className="h-4 w-4 text-blue-600"
+                                  />
+                                  <label htmlFor="dateRangeReport" className="ml-2 text-gray-700 dark:text-gray-300">Date Range Report</label>
+                                </div>
                               </div>
                               
-                              <div>
-                                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  End Date
-                                </label>
-                                <input
-                                  type="date"
-                                  id="endDate"
-                                  value={dateRange.endDate}
-                                  onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                                  className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
-                              </div>
+                              {reportFormat === 'monthly' ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Month
+                                    </label>
+                                    <div className="relative">
+                                      <select
+                                        id="month"
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                        className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                                      >
+                                        {months.map((name, index) => (
+                                          <option key={index} value={index + 1}>{name}</option>
+                                        ))}
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                                        <ChevronDown className="h-4 w-4" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Year
+                                    </label>
+                                    <div className="relative">
+                                      <select
+                                        id="year"
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                        className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                                      >
+                                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                                          <option key={year} value={year}>{year}</option>
+                                        ))}
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                                        <ChevronDown className="h-4 w-4" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      Start Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      id="startDate"
+                                      value={dateRange.startDate}
+                                      onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                                      className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                  
+                                  <div>
+                                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      End Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      id="endDate"
+                                      value={dateRange.endDate}
+                                      onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                                      className="block w-full rounded-md border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
