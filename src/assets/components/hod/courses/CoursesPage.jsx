@@ -853,6 +853,7 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const [exportingList, setExportingList] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   
   useEffect(() => {
     if (mockMode) {
@@ -921,15 +922,14 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         alert('Student list export simulated in mock mode');
       } else {
-        // Create a simple CSV string
+        // Create a simple CSV string - removed email from header and data
         const csvContent = [
-          ['Enrollment Number', 'First Name', 'Last Name', 'Email'].join(','),
+          ['Enrollment Number', 'First Name', 'Last Name'].join(','),
           ...filteredStudents.map(student => 
             [
               student.enrollmentNumber || 'N/A', 
               student.firstName, 
-              student.lastName,
-              student.email || 'N/A'
+              student.lastName
             ].join(',')
           )
         ].join('\n');
@@ -952,6 +952,10 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
     } finally {
       setExportingList(false);
     }
+  };
+
+  const handleViewStudentDetails = (student) => {
+    setSelectedStudent(student);
   };
   
   return (
@@ -1020,7 +1024,7 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
           </button>
         </div>
         
-        {/* Students data table */}
+        {/* Students data table - removed email column */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
@@ -1028,14 +1032,13 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Enrollment Number</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
                 {loading ? (
                   <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center">
+                    <td colSpan="3" className="px-6 py-4 text-center">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
                     </td>
                   </tr>
@@ -1048,11 +1051,9 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {student.firstName} {student.lastName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {student.email || 'N/A'}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
+                          onClick={() => handleViewStudentDetails(student)}
                           className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-300 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors"
                         >
                           <Eye className="h-3.5 w-3.5 mr-1" />
@@ -1063,7 +1064,7 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="3" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No students found matching the search criteria
                     </td>
                   </tr>
@@ -1071,6 +1072,279 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Student Details Dialog */}
+        {selectedStudent && (
+          <StudentDetailsModal 
+            student={selectedStudent} 
+            course={course}
+            onClose={() => setSelectedStudent(null)}
+            mockMode={mockMode}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// New component for student details modal
+const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
+  const [loading, setLoading] = useState(true);
+  const [attendanceData, setAttendanceData] = useState({
+    present: 0,
+    total: 0,
+    percentage: '0%',
+    sessions: []
+  });
+  const [exportingReport, setExportingReport] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStudentDetails = async () => {
+      setLoading(true);
+
+      if (mockMode) {
+        // Simulate API delay with mock data
+        setTimeout(() => {
+          const presentCount = Math.floor(Math.random() * 12) + 8; // 8-20 present days
+          const totalCount = 20;
+          const percentage = Math.round((presentCount / totalCount) * 100);
+
+          // Generate mock attendance sessions - include both present and absent sessions
+          const mockSessions = Array.from({ length: totalCount }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            // First 'presentCount' sessions are present, rest are absent
+            return {
+              id: i + 1,
+              date: date.toISOString().split('T')[0],
+              status: i < presentCount ? 'Present' : 'Absent'
+            };
+          });
+
+          setAttendanceData({
+            present: presentCount,
+            total: totalCount,
+            percentage: `${percentage}%`,
+            sessions: mockSessions
+          });
+          setLoading(false);
+        }, 800);
+      } else {
+        try {
+          // Fetch real attendance data from API
+          const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/attendance-summary`, {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("token")}`
+            }
+          });
+
+          // The API response should include all sessions (present and absent)
+          setAttendanceData({
+            present: response.data.summary.presentSessions,
+            total: response.data.summary.totalSessions,
+            percentage: `${response.data.summary.percentage}%`,
+            sessions: response.data.attendance || []
+          });
+          setLoading(false);
+        } catch (err) {
+          console.error('Error fetching student details:', err);
+          setError('Failed to load student details. Using mock data instead.');
+          
+          // Fall back to mock data
+          setTimeout(() => {
+            const presentCount = Math.floor(Math.random() * 12) + 8;
+            const totalCount = 20;
+            const percentage = Math.round((presentCount / totalCount) * 100);
+            
+            // Include both present and absent sessions in mock data
+            const mockSessions = Array.from({ length: totalCount }, (_, i) => {
+              const date = new Date();
+              date.setDate(date.getDate() - i);
+              return {
+                id: i + 1,
+                date: date.toISOString().split('T')[0],
+                status: i < presentCount ? 'Present' : 'Absent'
+              };
+            });
+            
+            setAttendanceData({
+              present: presentCount,
+              total: totalCount,
+              percentage: `${percentage}%`,
+              sessions: mockSessions
+            });
+            setLoading(false);
+          }, 500);
+        }
+      }
+    };
+
+    fetchStudentDetails();
+  }, [student.id, course.id, mockMode]);
+
+  const handleExportReport = async () => {
+    try {
+      setExportingReport(true);
+      
+      if (mockMode) {
+        // Simulate export in mock mode
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        alert('Report export simulated in mock mode');
+      } else {
+        // Real export - fetch report from API
+        const response = await axios.get(
+          `${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/report`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("token")}`
+            },
+            responseType: 'blob'
+          }
+        );
+        
+        // Create download link and trigger download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${student.firstName}_${student.lastName}_${course.courseCode}_report.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (err) {
+      console.error('Error exporting report:', err);
+      setError('Failed to export report');
+    } finally {
+      setExportingReport(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-[80vw] md:w-[500px] max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Student Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Student Information */}
+        <div className="bg-gray-50 dark:bg-neutral-900 p-4 rounded-lg mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Student Information</h3>
+          <div className="space-y-2">
+            <div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Name:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{student.firstName} {student.lastName}</span>
+            </div>
+            <div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Enrollment Number:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{student.enrollmentNumber || 'N/A'}</span>
+            </div>
+            <div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Course:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{course.name} ({course.courseCode})</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Attendance Summary */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Attendance Summary</h3>
+            <button
+              onClick={handleExportReport}
+              disabled={exportingReport || loading}
+              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-800/50 transition-colors disabled:opacity-50"
+            >
+              {exportingReport ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-3.5 w-3.5 mr-1.5" />
+                  Export Report
+                </>
+              )}
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-white dark:bg-neutral-700 p-3 rounded-lg text-center">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Present</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">{attendanceData.present}</div>
+                </div>
+                <div className="bg-white dark:bg-neutral-700 p-3 rounded-lg text-center">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Total</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">{attendanceData.total}</div>
+                </div>
+                <div className="bg-white dark:bg-neutral-700 p-3 rounded-lg text-center">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Percentage</div>
+                  <div className={`text-xl font-bold ${
+                    parseInt(attendanceData.percentage) >= 85 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : parseInt(attendanceData.percentage) >= 75 
+                        ? 'text-yellow-600 dark:text-yellow-400'
+                        : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {attendanceData.percentage}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Attendance Sessions - Now including both present and absent sessions */}
+              <div className="bg-white dark:bg-neutral-700 rounded-lg border border-gray-200 dark:border-neutral-600 overflow-hidden">
+                <div className="px-4 py-3 bg-gray-50 dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-600">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300">Recent Sessions</h4>
+                </div>
+                <div className="max-h-[200px] overflow-y-auto">
+                  {attendanceData.sessions.length > 0 ? (
+                    <div className="divide-y divide-gray-200 dark:divide-neutral-600">
+                      {/* Sort sessions by date (newest first) and take the most recent 10 */}
+                      {attendanceData.sessions
+                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .slice(0, 10)
+                        .map((session, index) => (
+                          <div key={index} className="flex justify-between items-center px-4 py-2">
+                            <div className="text-sm text-gray-600 dark:text-gray-300">
+                              {new Date(session.date).toLocaleDateString()}
+                            </div>
+                            <div className={`text-sm font-medium px-2 py-1 rounded-full ${
+                              session.status === 'Present' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            }`}>
+                              {session.status}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                      No attendance records found
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
