@@ -6,6 +6,7 @@ import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import Cookies from 'js-cookie';
+import { Mail, KeyRound } from "lucide-react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -22,8 +23,8 @@ const Signup = () => {
   const navigate = useNavigate();
 
   // Secret keys for teacher and admin
-  const TEACHER_KEY = "teacher123";
-  const ADMIN_KEY = "admin123";
+  const TEACHER_KEY = "teacher_secret2025";
+  const ADMIN_KEY = "admin_secret2025";
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -74,13 +75,8 @@ const Signup = () => {
       // Send the signup request to the backend
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
       
-      // Store the JWT token and user info in cookies
-      Cookies.set('token', response.data.token, { expires: 1 });
-      Cookies.set('userId', response.data.user.id, { expires: 1 });
-      Cookies.set('userRole', response.data.user.role, { expires: 1 });
-      
       // Success toast
-      toast.success('Account created successfully!', {
+      toast.success('Account created successfully! Please check your email to verify your account.', {
         id: loadingToast,
         duration: 3000,
       });
@@ -103,6 +99,11 @@ const Signup = () => {
               id: loadingToast,
             });
             break;
+          case 429:
+            toast.error("Verification email already sent. Please wait for some time to resend a new email.", {
+              id: loadingToast,
+            });
+            break;
           default:
             toast.error("Something went wrong. Please try again.", {
               id: loadingToast,
@@ -113,6 +114,27 @@ const Signup = () => {
           id: loadingToast,
         });
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const loadingToast = toast.loading('Resending verification email...');
+
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/resend-verification`, { email: formData.email });
+      toast.success('Verification email resent successfully!', {
+        id: loadingToast,
+        duration: 3000,
+      });
+
+      // Short delay before navigation to allow toast to be seen
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
+    } catch (error) {
+      toast.error('Error resending verification email. Please try again.', {
+        id: loadingToast,
+      });
     }
   };
 
@@ -227,9 +249,20 @@ const Signup = () => {
           </button>
 
           <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-          <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300 text-center">
-            Already have an account? <a href="/signin" className="text-blue-500 underline">Sign In</a>
-          </p>
+          <div
+            className="mt-4 relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)] cursor-pointer"
+            onClick={handleResendVerification}
+          >
+            <p className="flex gap-4 text-sm"><Mail size={20}/>Resend Verification Email</p>
+            <BottomGradient />
+          </div>
+          <a
+            href="/signin"
+            className="mt-2 relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            <p className="flex gap-4 text-sm"><KeyRound size={20}/> Already have an account</p>
+            <BottomGradient />
+          </a>
         </form>
       </div>
     </div>

@@ -69,6 +69,19 @@ function QuizAttempt() {
         setAttemptId(attemptResponse.data.id);
       } catch (error) {
         console.error('Error fetching quiz:', error);
+        
+        // Handle specific error cases
+        if (error.response) {
+          if (error.response.status === 400 && error.response.data.error === 'Quiz already attempted') {
+            // Show a message to the user
+            alert("You have already submitted this quiz. Redirecting to results.");
+            // Could redirect to results page instead
+            navigate('/students/tests/available');
+            return;
+          }
+        }
+        
+        // General error handling
         navigate('/students/tests/available');
       } finally {
         setLoading(false);
