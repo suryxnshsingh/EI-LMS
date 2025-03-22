@@ -489,24 +489,26 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
             
             {student.enrollments && student.enrollments.length > 0 ? (
               <div className="space-y-2">
-                {student.enrollments.map((enrollment) => (
-                  <div 
-                    key={enrollment.id}
-                    onClick={() => setSelectedCourse(enrollment)}
-                    className={`p-3 rounded-lg cursor-pointer flex justify-between items-center ${
-                      selectedCourse && selectedCourse.id === enrollment.id
-                        ? 'bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-500'
-                        : 'bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">{enrollment.courseName}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{enrollment.courseCode}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Semester: {enrollment.semester}</div>
+                {student.enrollments
+                  .filter(enrollment => enrollment.status === 'ACCEPTED') // Only show ACCEPTED enrollments
+                  .map((enrollment) => (
+                    <div 
+                      key={enrollment.id}
+                      onClick={() => setSelectedCourse(enrollment)}
+                      className={`p-3 rounded-lg cursor-pointer flex justify-between items-center ${
+                        selectedCourse && selectedCourse.id === enrollment.id
+                          ? 'bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-500'
+                          : 'bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">{enrollment.courseName}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{enrollment.courseCode}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Semester: {enrollment.semester}</div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </div>
-                ))}
+                  ))}
               </div>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">No courses found.</p>

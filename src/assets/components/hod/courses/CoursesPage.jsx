@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Search, BookOpen, Users, Calendar, RefreshCw, FileDown, FileText, User } from 'lucide-react';
+import { Loader2, Search, BookOpen, Users, Calendar, RefreshCw, FileDown, FileText, User, Eye } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
@@ -20,6 +20,7 @@ const CoursesPage = () => {
   });
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [viewingAttendance, setViewingAttendance] = useState(false);
+  const [viewingStudents, setViewingStudents] = useState(false);
 
   const fetchCourses = async () => {
     try {
@@ -33,15 +34,33 @@ const CoursesPage = () => {
           }
         });
         
-        setCourses(response.data);
-        setFilteredCourses(response.data);
+        // Process the response to count only ACCEPTED enrollments
+        const processedCourses = response.data.map(course => {
+          // If the API includes acceptance status, filter by it
+          if (course.enrollments) {
+            const acceptedCount = course.enrollments.filter(e => e.status === 'ACCEPTED').length;
+            return {
+              ...course,
+              _count: {
+                ...course._count,
+                acceptedEnrollments: acceptedCount
+              }
+            };
+          }
+          // If API doesn't have detailed enrollment info, use the total count (will be fixed in backend)
+          return course;
+        });
         
-        // Get stats
-        const uniqueTeachers = new Set(response.data.map(course => course.teacherId));
-        const totalStudents = response.data.reduce((sum, course) => sum + (course._count?.enrollments || 0), 0);
+        setCourses(processedCourses);
+        setFilteredCourses(processedCourses);
+        
+        // Get stats with correct student counts
+        const uniqueTeachers = new Set(processedCourses.map(course => course.teacherId));
+        const totalStudents = processedCourses.reduce((sum, course) => 
+          sum + (course._count?.acceptedEnrollments || course._count?.enrollments || 0), 0);
         
         setStats({
-          totalCourses: response.data.length,
+          totalCourses: processedCourses.length,
           totalTeachers: uniqueTeachers.size,
           totalStudents
         });
@@ -60,7 +79,11 @@ const CoursesPage = () => {
             semester: '7',
             session: '2023-24',
             teacher: { firstName: 'Robert', lastName: 'Brown' },
-            _count: { enrollments: 45 }
+            _count: { 
+              enrollments: 45,
+              // For mock data, we'll assume 85% of enrollments are accepted
+              acceptedEnrollments: 38
+            }
           },
           { 
             id: 2, 
@@ -69,7 +92,10 @@ const CoursesPage = () => {
             semester: '5',
             session: '2023-24',
             teacher: { firstName: 'Sarah', lastName: 'Johnson' },
-            _count: { enrollments: 52 }
+            _count: { 
+              enrollments: 52,
+              acceptedEnrollments: 44
+            }
           },
           { 
             id: 3, 
@@ -78,7 +104,10 @@ const CoursesPage = () => {
             semester: '5',
             session: '2023-24',
             teacher: { firstName: 'John', lastName: 'Smith' },
-            _count: { enrollments: 48 }
+            _count: { 
+              enrollments: 48,
+              acceptedEnrollments: 41
+            }
           },
           { 
             id: 4, 
@@ -87,7 +116,10 @@ const CoursesPage = () => {
             semester: '5',
             session: '2023-24',
             teacher: { firstName: 'Emily', lastName: 'Davis' },
-            _count: { enrollments: 47 }
+            _count: { 
+              enrollments: 47,
+              acceptedEnrollments: 40
+            }
           },
           { 
             id: 5, 
@@ -96,7 +128,10 @@ const CoursesPage = () => {
             semester: '3',
             session: '2023-24',
             teacher: { firstName: 'Michael', lastName: 'Wilson' },
-            _count: { enrollments: 55 }
+            _count: { 
+              enrollments: 55,
+              acceptedEnrollments: 47
+            }
           },
           { 
             id: 6, 
@@ -105,7 +140,10 @@ const CoursesPage = () => {
             semester: '3',
             session: '2023-24',
             teacher: { firstName: 'Jessica', lastName: 'Martinez' },
-            _count: { enrollments: 51 }
+            _count: { 
+              enrollments: 51,
+              acceptedEnrollments: 43
+            }
           },
           { 
             id: 7, 
@@ -114,7 +152,10 @@ const CoursesPage = () => {
             semester: '1',
             session: '2023-24',
             teacher: { firstName: 'David', lastName: 'Anderson' },
-            _count: { enrollments: 22 }
+            _count: { 
+              enrollments: 22,
+              acceptedEnrollments: 19
+            }
           },
           { 
             id: 8, 
@@ -123,18 +164,31 @@ const CoursesPage = () => {
             semester: '1',
             session: '2023-24',
             teacher: { firstName: 'Lisa', lastName: 'Thompson' },
-            _count: { enrollments: 24 }
+            _count: { 
+              enrollments: 24,
+              acceptedEnrollments: 20
+            }
           }
         ];
 
-        setCourses(mockCourses);
-        setFilteredCourses(mockCourses);
+        // Make sure all mock courses have acceptedEnrollments
+        const processedMockCourses = mockCourses.map(course => ({
+          ...course,
+          _count: {
+            ...course._count,
+            // If not explicitly set above, assume 85% of enrollments are accepted
+            acceptedEnrollments: course._count.acceptedEnrollments || Math.floor(course._count.enrollments * 0.85)
+          }
+        }));
+
+        setCourses(processedMockCourses);
+        setFilteredCourses(processedMockCourses);
         
-        // Set mock stats
+        // Set mock stats with accepted enrollments
         setStats({
-          totalCourses: mockCourses.length,
-          totalTeachers: new Set(mockCourses.map(course => course.teacher.firstName + course.teacher.lastName)).size,
-          totalStudents: mockCourses.reduce((sum, course) => sum + course._count.enrollments, 0)
+          totalCourses: processedMockCourses.length,
+          totalTeachers: new Set(processedMockCourses.map(course => course.teacher.firstName + course.teacher.lastName)).size,
+          totalStudents: processedMockCourses.reduce((sum, course) => sum + course._count.acceptedEnrollments, 0)
         });
       }
       
@@ -278,6 +332,7 @@ const CoursesPage = () => {
           onClose={handleCloseModal} 
           mockMode={mockMode}
           onViewAttendance={() => setViewingAttendance(true)}
+          onViewStudents={() => setViewingStudents(true)}
         />
       )}
 
@@ -286,6 +341,15 @@ const CoursesPage = () => {
         <CourseAttendanceDialog
           course={selectedCourse}
           onClose={() => setViewingAttendance(false)}
+          mockMode={mockMode}
+        />
+      )}
+
+      {/* Students List Dialog */}
+      {viewingStudents && selectedCourse && (
+        <CourseStudentsDialog
+          course={selectedCourse}
+          onClose={() => setViewingStudents(false)}
           mockMode={mockMode}
         />
       )}
@@ -354,7 +418,7 @@ const CourseCard = ({ course, onClick }) => {
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-neutral-700">
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <Users className="h-4 w-4 mr-1.5" />
-            <span>{course._count.enrollments} students</span>
+            <span>{course._count.acceptedEnrollments || 0} students</span>
           </div>
           <div className="text-xs text-blue-600 dark:text-blue-400">
             View details →
@@ -365,7 +429,7 @@ const CourseCard = ({ course, onClick }) => {
   );
 };
 
-const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance }) => {
+const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance, onViewStudents }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-[90vw] md:w-[600px] max-h-[80vh] overflow-y-auto">
@@ -429,7 +493,10 @@ const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance }) => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-3 pt-4">
-            <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <button 
+              onClick={onViewStudents}
+              className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
               <Users className="h-4 w-4 mr-2" />
               View Student List
             </button>
@@ -767,6 +834,237 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
                   <tr>
                     <td colSpan="4" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No attendance records found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// New component for course students dialog
+const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
+  const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
+  const [exportingList, setExportingList] = useState(false);
+  
+  useEffect(() => {
+    if (mockMode) {
+      // Simulate API delay with mock data
+      setTimeout(() => {
+        const mockStudents = Array.from({ length: 30 }, (_, i) => ({
+          id: i + 1,
+          firstName: ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Mark', 'Lisa'][i % 8],
+          lastName: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson'][i % 8],
+          enrollmentNumber: `0901EI${22 - (i % 5)}${String(i+1).padStart(3, '0')}`,
+          email: `student${i+1}@example.com`,
+          attendance: `${75 + Math.floor(Math.random() * 25)}%`
+        }));
+        setStudents(mockStudents);
+        setLoading(false);
+      }, 1000);
+    } else {
+      // Fetch real student data from API
+      fetchStudents();
+    }
+  }, [course.id, mockMode]);
+  
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/api/hod/courses/${course.id}`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        }
+      });
+      
+      setStudents(response.data.students || []);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      setError('Failed to load students. Using mock data instead.');
+      
+      // Fall back to mock data if API fails
+      setTimeout(() => {
+        const mockStudents = Array.from({ length: 30 }, (_, i) => ({
+          id: i + 1,
+          firstName: ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Mark', 'Lisa'][i % 8],
+          lastName: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson'][i % 8],
+          enrollmentNumber: `0901EI${22 - (i % 5)}${String(i+1).padStart(3, '0')}`,
+          email: `student${i+1}@example.com`,
+          attendance: `${75 + Math.floor(Math.random() * 25)}%`
+        }));
+        setStudents(mockStudents);
+        setLoading(false);
+      }, 500);
+    }
+  };
+  
+  const filteredStudents = students.filter(student => 
+    student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (student.enrollmentNumber && student.enrollmentNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
+  const handleExportStudentList = async () => {
+    try {
+      setExportingList(true);
+      
+      if (mockMode) {
+        // Simulate export in mock mode
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        alert('Student list export simulated in mock mode');
+      } else {
+        // Create a simple CSV string
+        const csvContent = [
+          ['Enrollment Number', 'First Name', 'Last Name', 'Email'].join(','),
+          ...filteredStudents.map(student => 
+            [
+              student.enrollmentNumber || 'N/A', 
+              student.firstName, 
+              student.lastName,
+              student.email || 'N/A'
+            ].join(',')
+          )
+        ].join('\n');
+        
+        // Create a Blob from the CSV string
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create a link and click it to trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${course.courseCode}_student_list.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (err) {
+      console.error('Error exporting student list:', err);
+      setError('Failed to export student list');
+    } finally {
+      setExportingList(false);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-[90vw] md:w-[70vw] max-h-[85vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Students - {course.name} ({course.courseCode})
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {mockMode && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded p-4 mb-4 text-yellow-800 dark:text-yellow-200">
+            <p className="text-sm">
+              Showing mock student data. The actual API may not be available yet.
+            </p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/30 rounded p-4 mb-4 text-red-800 dark:text-red-200">
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
+        
+        <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
+          {/* Search bar */}
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name or enrollment number..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white"
+            />
+          </div>
+          
+          {/* Export button */}
+          <button
+            onClick={handleExportStudentList}
+            disabled={exportingList || filteredStudents.length === 0}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {exportingList ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <FileDown className="h-4 w-4 mr-2" />
+                Export Student List
+              </>
+            )}
+          </button>
+        </div>
+        
+        {/* Students data table */}
+        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <thead className="bg-gray-50 dark:bg-neutral-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Enrollment Number</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                {loading ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-4 text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
+                    </td>
+                  </tr>
+                ) : filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-neutral-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {student.enrollmentNumber || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {student.firstName} {student.lastName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {student.email || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-300 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors"
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                      No students found matching the search criteria
                     </td>
                   </tr>
                 )}
