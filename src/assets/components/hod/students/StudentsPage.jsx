@@ -16,6 +16,7 @@ const StudentsPage = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [mockMode, setMockMode] = useState(false); // Use mock data if API isn't ready yet
   const [loadingAttendance, setLoadingAttendance] = useState({});
+  const [exportingReport, setExportingReport] = useState({});
 
   const fetchStudents = async () => {
     try {
@@ -148,6 +149,41 @@ const StudentsPage = () => {
     }
   };
 
+  const handleExportReport = async (student) => {
+    try {
+      setExportingReport(prev => ({ ...prev, [student.id]: true }));
+      
+      if (!mockMode) {
+        // In real mode, request report from API
+        const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/report`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+          responseType: 'blob', // Important for file download
+        });
+        
+        // Create download link and click it
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${student.firstName}_${student.lastName}_attendance_report.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        // In mock mode, simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Export report for student:', student);
+        alert('Report export simulated in mock mode');
+      }
+    } catch (err) {
+      console.error('Error exporting report:', err);
+      alert('Failed to export report. Please try again.');
+    } finally {
+      setExportingReport(prev => ({ ...prev, [student.id]: false }));
+    }
+  };
+
   if (loading && !refreshing) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -263,10 +299,21 @@ const StudentsPage = () => {
                           )}
                         </button>
                         <button
-                          className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-800/50 transition-colors"
+                          onClick={() => handleExportReport(student)}
+                          disabled={exportingReport[student.id]}
+                          className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-800/50 transition-colors disabled:opacity-70"
                         >
-                          <Download className="h-3.5 w-3.5 mr-1" />
-                          Export Report
+                          {exportingReport[student.id] ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                              Exporting...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-3.5 w-3.5 mr-1" />
+                              Export Report
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>
@@ -297,6 +344,7 @@ const StudentsPage = () => {
 
 const StudentDetailDialog = ({ student, onClose, mockMode }) => {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [exportingCourseReport, setExportingCourseReport] = useState(false);
   
   // Calculate overall attendance across all courses
   const calculateOverallAttendance = () => {
@@ -318,6 +366,46 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
   };
   
   const overallAttendance = calculateOverallAttendance();
+
+  const handleExportCourseReport = async () => {
+    if (!selectedCourse) return;
+    
+    try {
+      setExportingCourseReport(true);
+      
+      if (!mockMode) {
+        // In real mode, request course-specific report from API
+        const response = await axios.get(
+          `${BASE_URL}/api/hod/students/${student.student.id}/courses/${selectedCourse.courseId}/report`, 
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+            responseType: 'blob', // Important for file download
+          }
+        );
+        
+        // Create download link and click it
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${student.student.firstName}_${student.student.lastName}_${selectedCourse.courseCode}_report.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        // In mock mode, simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Export course report:', {student: student.student, course: selectedCourse});
+        alert('Course report export simulated in mock mode');
+      }
+    } catch (err) {
+      console.error('Error exporting course report:', err);
+      alert('Failed to export course report. Please try again.');
+    } finally {
+      setExportingCourseReport(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
@@ -355,7 +443,16 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
         
         {/* Overall Attendance Summary */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg">
-          <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Overall Attendance</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Overall Attendance</h3>
+            <button
+              onClick={handleExportCourseReport}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-800/50 transition-colors"
+            >
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              Export Overall Report
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm">
               <div className="text-sm text-gray-500 dark:text-gray-400">Present</div>
@@ -420,9 +517,28 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
           <div className="md:col-span-2">
             {selectedCourse ? (
               <div>
-                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-                  Attendance for {selectedCourse.courseName}
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    Attendance for {selectedCourse.courseName}
+                  </h3>
+                  <button
+                    onClick={handleExportCourseReport}
+                    disabled={exportingCourseReport}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-800/50 transition-colors disabled:opacity-70"
+                  >
+                    {exportingCourseReport ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-3.5 w-3.5 mr-1.5" />
+                        Export Course Report
+                      </>
+                    )}
+                  </button>
+                </div>
                 
                 {/* Get attendance for this specific course */}
                 {(() => {
