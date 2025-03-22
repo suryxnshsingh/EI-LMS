@@ -49,6 +49,15 @@ const Signup = () => {
     // Loading toast
     const loadingToast = toast.loading('Creating your account...');
 
+    // Email validation
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@sgsits\.ac\.in$/;
+    if (!emailPattern.test(formData.email)) {
+      toast.error('Please use a valid @sgsits.ac.in email address', {
+        id: loadingToast,
+      });
+      return;
+    }
+
     // Verify secret key for teacher and admin roles
     if (formData.role === "TEACHER" && formData.secretKey !== TEACHER_KEY) {
       toast.error('Invalid teacher secret key', {
