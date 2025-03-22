@@ -11,6 +11,7 @@ import QuizAttempt from './assets/components/student/tests/QuizAttempt';
 import { Spice, CircuitSim } from './assets/components/simulators/sims';
 import ThankYou from './assets/components/student/tests/ThankYou';
 import Landnew from './assets/components/landnew/land';
+import VerifyEmail from './assets/components/auth/VerifyEmail';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="/land" element={<Landnew />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/students/*" element={<StudentSidebar />} />
