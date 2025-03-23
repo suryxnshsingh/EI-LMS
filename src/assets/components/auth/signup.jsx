@@ -22,6 +22,8 @@ const Signup = () => {
   });
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(Cookies.get("theme") || "dark");
+  const [lastResendTime, setLastResendTime] = useState(null);
+  const RESEND_LIMIT = 60 * 1000; // 1 minute
   const navigate = useNavigate();
 
   // Secret keys for teacher and admin
@@ -141,6 +143,12 @@ const Signup = () => {
   };
 
   const handleResendVerification = async () => {
+    const now = Date.now();
+    if (lastResendTime && now - lastResendTime < RESEND_LIMIT) {
+      toast.error('Please wait a minute before resending the verification email.');
+      return;
+    }
+
     const loadingToast = toast.loading('Resending verification email...');
 
     try {
@@ -149,6 +157,8 @@ const Signup = () => {
         id: loadingToast,
         duration: 3000,
       });
+
+      setLastResendTime(now);
 
       // Short delay before navigation to allow toast to be seen
       setTimeout(() => {
