@@ -14,7 +14,7 @@ export default function Faculty() {
             <Suspense fallback={<div>Loading...</div>}>
                 <motion.div className="grid md:grid-cols-3 gap-10 mb-10 place-items-center md:px-32" initial={{ opacity: 0, y: 100 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                     <Card
-                        name={"Rajesh Khatri"}
+                        name={"Dr. Rajesh Khatri"}
                         designation={"Associate Professor & Head"}
                         employeeId={"3300279"}
                         qualification={"M.E., Ph.D."}

@@ -83,7 +83,7 @@ const About = () => {
           </div>
           <div className="w-full md:w-1/3">
             <ProfileCard
-              name="Mr. Rajesh Khatri"
+              name="Dr. Rajesh Khatri"
               title="Head of Department"
               department="Electronics and Instrumentation Engineering"
               employeeCode="3300279"
