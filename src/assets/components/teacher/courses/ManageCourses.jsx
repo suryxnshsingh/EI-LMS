@@ -198,6 +198,11 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
     e.preventDefault();
     setError('');
 
+    if (formData.semester < 1 || formData.semester > 8) {
+      setError('Semester must be between 1 and 8');
+      return;
+    }
+
     try {
       const response = await axios.put(`${BASE_URL}/api/courses/courses/${course.id}`,
         {
@@ -331,6 +336,12 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
     e.preventDefault();
     setError('');
     setIsCreating(true);
+
+    if (formData.semester < 1 || formData.semester > 8) {
+      setError('Semester must be between 1 and 8');
+      setIsCreating(false);
+      return;
+    }
 
     try {
       await axios.post(
