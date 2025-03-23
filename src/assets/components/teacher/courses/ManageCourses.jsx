@@ -198,6 +198,12 @@ const EditCourse = ({ course, onClose, onSuccess }) => {
     e.preventDefault();
     setError('');
 
+    const sessionPattern = /^\d{4}-\d{2}$/;
+    if (!sessionPattern.test(formData.session)) {
+      setError('Session must be in the format YYYY-YY');
+      return;
+    }
+
     if (formData.semester < 1 || formData.semester > 8) {
       setError('Semester must be between 1 and 8');
       return;
@@ -336,6 +342,13 @@ const CreateCourse = ({ create, setCreate, onSuccess }) => {
     e.preventDefault();
     setError('');
     setIsCreating(true);
+
+    const sessionPattern = /^\d{4}-\d{2}$/;
+    if (!sessionPattern.test(formData.session)) {
+      setError('Session must be in the format YYYY-YY');
+      setIsCreating(false);
+      return;
+    }
 
     if (formData.semester < 1 || formData.semester > 8) {
       setError('Semester must be between 1 and 8');
