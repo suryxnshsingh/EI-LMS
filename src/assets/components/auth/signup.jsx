@@ -51,13 +51,25 @@ const Signup = () => {
     // Loading toast
     const loadingToast = toast.loading('Creating your account...');
 
-    // Email validation
-    const emailPattern = /^0801[a-zA-Z0-9._%+-]+@sgsits\.ac\.in$/;
-    if (!emailPattern.test(formData.email)) {
-      toast.error('Please use a valid email starting with 0801 and ending with @sgsits.ac.in', {
-        id: loadingToast,
-      });
-      return;
+    // Email validation for student role
+    if (formData.role === "STUDENT") {
+      const emailPattern = /^0801ei[a-zA-Z0-9._%+-]+@sgsits\.ac\.in$/;
+      if (!emailPattern.test(formData.email)) {
+        toast.error('Please use a valid college issued email associated with EI Dept. only', {
+          id: loadingToast,
+        });
+        return;
+      }
+    }
+
+    if (formData.role === "TEACHER") {
+      const TeacherEmailPattern = /^[a-zA-Z0-9._%+-]+@sgsits\.ac\.in$/;
+      if (!TeacherEmailPattern.test(formData.email)) {
+        toast.error('Please use a valid college issued email only', {
+          id: loadingToast,
+        });
+        return;
+      }
     }
 
     // Verify secret key for teacher and admin roles
