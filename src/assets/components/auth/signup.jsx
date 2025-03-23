@@ -6,6 +6,7 @@ import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import Cookies from 'js-cookie';
+import { Mail, KeyRound } from "lucide-react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,8 @@ const Signup = () => {
     password: "",
     role: "STUDENT",
     enrollmentNumber: "",
+    semester: "",
+    year: "",
     secretKey: ""
   });
   const [loading, setLoading] = useState(true);
@@ -22,8 +25,8 @@ const Signup = () => {
   const navigate = useNavigate();
 
   // Secret keys for teacher and admin
-  const TEACHER_KEY = "teacher123";
-  const ADMIN_KEY = "admin123";
+  const TEACHER_KEY = "teacher_secret2025";
+  const ADMIN_KEY = "admin_secret2025";
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -47,6 +50,15 @@ const Signup = () => {
 
     // Loading toast
     const loadingToast = toast.loading('Creating your account...');
+
+    // Email validation
+    const emailPattern = /^0801[a-zA-Z0-9._%+-]+@sgsits\.ac\.in$/;
+    if (!emailPattern.test(formData.email)) {
+      toast.error('Please use a valid email starting with 0801 and ending with @sgsits.ac.in', {
+        id: loadingToast,
+      });
+      return;
+    }
 
     // Verify secret key for teacher and admin roles
     if (formData.role === "TEACHER" && formData.secretKey !== TEACHER_KEY) {
@@ -74,13 +86,8 @@ const Signup = () => {
       // Send the signup request to the backend
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
       
-      // Store the JWT token and user info in cookies
-      Cookies.set('token', response.data.token, { expires: 1 });
-      Cookies.set('userId', response.data.user.id, { expires: 1 });
-      Cookies.set('userRole', response.data.user.role, { expires: 1 });
-      
       // Success toast
-      toast.success('Account created successfully!', {
+      toast.success('Account created successfully! Please check your email to verify your account.', {
         id: loadingToast,
         duration: 3000,
       });
@@ -103,6 +110,11 @@ const Signup = () => {
               id: loadingToast,
             });
             break;
+          case 429:
+            toast.error("Verification email already sent. Please wait for some time to resend a new email.", {
+              id: loadingToast,
+            });
+            break;
           default:
             toast.error("Something went wrong. Please try again.", {
               id: loadingToast,
@@ -113,6 +125,27 @@ const Signup = () => {
           id: loadingToast,
         });
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const loadingToast = toast.loading('Resending verification email...');
+
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/resend-verification`, { email: formData.email });
+      toast.success('Verification email resent successfully!', {
+        id: loadingToast,
+        duration: 3000,
+      });
+
+      // Short delay before navigation to allow toast to be seen
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
+    } catch (error) {
+      toast.error('Error resending verification email. Please try again.', {
+        id: loadingToast,
+      });
     }
   };
 
@@ -145,17 +178,58 @@ const Signup = () => {
           </LabelInputContainer>
 
           {formData.role === "STUDENT" && (
-            <LabelInputContainer className="mb-4">
-              <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
-              <Input
-                id="enrollmentNumber"
-                placeholder="0801FC69420"
-                type="text"
-                value={formData.enrollmentNumber}
-                onChange={handleInputChange}
-                required
-              />
-            </LabelInputContainer>
+            <>
+              <LabelInputContainer className="mb-4">
+                <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
+                <Input
+                  id="enrollmentNumber"
+                  placeholder="0801FC69420"
+                  type="text"
+                  value={formData.enrollmentNumber}
+                  onChange={handleInputChange}
+                  required
+                />
+              </LabelInputContainer>
+              
+              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
+                <LabelInputContainer>
+                  <Label htmlFor="semester">Semester</Label>
+                  <select
+                    id="semester"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 p-2 text-neutral-900 dark:text-neutral-100 bg-gray-50 dark:bg-black"
+                    value={formData.semester}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
+                </LabelInputContainer>
+                <LabelInputContainer>
+                  <Label htmlFor="year">Year</Label>
+                  <select
+                    id="year"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 p-2 text-neutral-900 dark:text-neutral-100 bg-gray-50 dark:bg-black"
+                    value={formData.year}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select Year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                  </select>
+                </LabelInputContainer>
+              </div>
+            </>
           )}
 
           {(formData.role === "TEACHER" || formData.role === "ADMIN") && (
@@ -227,9 +301,20 @@ const Signup = () => {
           </button>
 
           <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-          <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300 text-center">
-            Already have an account? <a href="/signin" className="text-blue-500 underline">Sign In</a>
-          </p>
+          <div
+            className="mt-4 relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)] cursor-pointer"
+            onClick={handleResendVerification}
+          >
+            <p className="flex gap-4 text-sm"><Mail size={20}/>Resend Verification Email</p>
+            <BottomGradient />
+          </div>
+          <a
+            href="/signin"
+            className="mt-2 relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-neutral-700 dark:text-neutral-300 rounded-md h-9 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            <p className="flex gap-4 text-sm"><KeyRound size={20}/> Already have an account</p>
+            <BottomGradient />
+          </a>
         </form>
       </div>
     </div>
