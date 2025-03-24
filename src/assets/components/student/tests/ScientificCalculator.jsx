@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, History } from 'lucide-react';
+import { X, History, GripHorizontal } from 'lucide-react';
 import * as math from 'mathjs';
 
 const ScientificCalculator = ({ onClose, theme }) => {
@@ -312,6 +312,14 @@ const ScientificCalculator = ({ onClose, theme }) => {
           isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
         } transition-all duration-300`}
       >
+        {/* Drag indicator */}
+        <div className="w-full flex justify-center items-center -mt-2 mb-1 cursor-move">
+          <div className="flex flex-col items-center">
+            <GripHorizontal className={`w-6 h-6 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+            {/* <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Drag to move</span> */}
+          </div>
+        </div>
+        
         {/* Header with title and close button */}
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
