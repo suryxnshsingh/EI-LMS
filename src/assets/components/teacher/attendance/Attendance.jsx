@@ -277,8 +277,8 @@ const Attendance = () => {
                   onClick={() => setShowDownloadDialog(true)}
                   className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700 transition-colors"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Excel
+                  <Download className="h-4 w-4" />
+                  <p className='hidden md:block ml-2'>Download Excel</p>
                 </button>
               </div>
             </div>
