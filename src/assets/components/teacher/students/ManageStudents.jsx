@@ -15,72 +15,77 @@ const ManageStudentsPage = () => {
   const [buttonLoading, setButtonLoading] = useState({ refresh: false, enrollments: {} });
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  // Fetch teacher courses
-  const fetchCourses = async () => {
+  // Fetch teacher courses with enrollments (both pending and accepted)
+  const fetchCoursesWithEnrollments = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/courses/teacher-courses`, {
+      setError({ courses: null, enrollments: null });
+      
+      const courseResponse = await axios.get(`${BASE_URL}/api/courses/teacher-courses`, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`
         }
       });
-      const coursesData = response.data;
       
-      const updatedCourses = await Promise.all(
+      const coursesData = courseResponse.data;
+      
+      // For each course, fetch enrolled students
+      const coursesWithEnrollments = await Promise.all(
         coursesData.map(async (course) => {
-          const enrolledResponse = await axios.get(`${BASE_URL}/api/courses/courses/${course.id}`, {
-            headers: { Authorization: `Bearer ${Cookies.get("token")}` }
-          });
-          return {
-            ...course,
-            enrolledStudents: enrolledResponse.data.enrollments || []
-          };
+          try {
+            const enrolledResponse = await axios.get(`${BASE_URL}/api/courses/courses/${course.id}`, {
+              headers: { Authorization: `Bearer ${Cookies.get("token")}` }
+            });
+            
+            return {
+              ...course,
+              enrolledStudents: enrolledResponse.data.enrollments || [],
+              pendingEnrollments: [] // Initialize with empty array, will be populated later
+            };
+          } catch (err) {
+            console.error(`Failed to fetch enrollments for course ${course.id}:`, err);
+            return {
+              ...course,
+              enrolledStudents: [],
+              pendingEnrollments: []
+            };
+          }
         })
       );
-      setCourses(updatedCourses);
-    } catch (err) {
-      setError((prev) => ({
-        ...prev,
-        courses: err.response?.data?.message || "Failed to fetch courses"
-      }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch pending enrollments
-  const fetchPendingEnrollments = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/enrollment/enrollments/pending`, {
+      
+      // Fetch pending enrollments separately
+      const pendingResponse = await axios.get(`${BASE_URL}/api/enrollment/enrollments/pending`, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`
         }
       });
-      const pendingEnrollments = response.data;
       
-      setCourses((prevCourses) =>
-        prevCourses.map((course) => ({
-          ...course,
-          pendingEnrollments: pendingEnrollments.filter(
-            (enrollment) => enrollment.course.courseCode === course.courseCode
-          )
-        }))
-      );
+      const pendingEnrollments = pendingResponse.data;
+      
+      // Map pending enrollments to their respective courses
+      const updatedCourses = coursesWithEnrollments.map((course) => ({
+        ...course,
+        pendingEnrollments: pendingEnrollments.filter(
+          (enrollment) => enrollment.course.courseCode === course.courseCode
+        )
+      }));
+      
+      setCourses(updatedCourses);
+      return updatedCourses;
     } catch (err) {
       setError((prev) => ({
         ...prev,
-        enrollments: "Failed to fetch pending enrollments"
+        courses: err.response?.data?.message || "Failed to fetch courses and enrollments"
       }));
+      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRefresh = async () => {
     setButtonLoading((prev) => ({ ...prev, refresh: true }));
     setRefreshing(true);
-    setError({ courses: null, enrollments: null });
-    await fetchCourses();
-    if (courses.length > 0) {
-      await fetchPendingEnrollments();
-    }
+    await fetchCoursesWithEnrollments();
     setRefreshing(false);
     setButtonLoading((prev) => ({ ...prev, refresh: false }));
   };
@@ -90,7 +95,18 @@ const ManageStudentsPage = () => {
       ...prev,
       enrollments: { ...prev.enrollments, [enrollmentId]: true }
     }));
+    
     try {
+      // Get the enrollment details before updating to identify which course it belongs to
+      const enrollmentToUpdate = courses.flatMap(course => 
+        course.pendingEnrollments
+      ).find(enrollment => enrollment.id === enrollmentId);
+      
+      if (!enrollmentToUpdate) {
+        throw new Error("Enrollment not found");
+      }
+      
+      // Update the enrollment status
       await axios.put(
         `${BASE_URL}/api/enrollment/enrollments/${enrollmentId}/status`,
         { status },
@@ -100,13 +116,47 @@ const ManageStudentsPage = () => {
           }
         }
       );
-      fetchCourses();
-      fetchPendingEnrollments();
+
+      // Update local state to immediately reflect the change
+      const updatedCourses = courses.map(course => {
+        // If this is the course that contains the enrollment being updated
+        if (course.courseCode === enrollmentToUpdate.course.courseCode) {
+          // Remove from pending
+          const updatedPendingEnrollments = course.pendingEnrollments.filter(
+            enrollment => enrollment.id !== enrollmentId
+          );
+          
+          // If accepted, add to enrolled students
+          let updatedEnrolledStudents = [...course.enrolledStudents];
+          if (status === 'ACCEPTED') {
+            updatedEnrolledStudents.push({
+              ...enrollmentToUpdate,
+              status: 'ACCEPTED'
+            });
+          }
+          
+          return {
+            ...course,
+            pendingEnrollments: updatedPendingEnrollments,
+            enrolledStudents: updatedEnrolledStudents
+          };
+        }
+        return course;
+      });
+      
+      setCourses(updatedCourses);
+      
+      // Still refresh data from server to ensure consistency
+      await fetchCoursesWithEnrollments();
     } catch (err) {
+      console.error("Error updating enrollment status:", err);
       setError((prev) => ({
         ...prev,
-        enrollments: "Failed to update enrollment status"
+        enrollments: err.response?.data?.message || "Failed to update enrollment status"
       }));
+      
+      // Refresh data to ensure UI is in sync with backend
+      await fetchCoursesWithEnrollments();
     } finally {
       setButtonLoading((prev) => ({
         ...prev,
@@ -126,6 +176,24 @@ const ManageStudentsPage = () => {
     }));
     
     try {
+      // First find which course and student this enrollment belongs to
+      let enrollmentToRemove = null;
+      let courseWithEnrollment = null;
+      
+      for (const course of courses) {
+        const enrollment = course.enrolledStudents.find(e => e.id === enrollmentId);
+        if (enrollment) {
+          enrollmentToRemove = enrollment;
+          courseWithEnrollment = course;
+          break;
+        }
+      }
+      
+      if (!enrollmentToRemove || !courseWithEnrollment) {
+        throw new Error("Could not find the enrollment to remove");
+      }
+      
+      // Send the request to reject/remove the student
       await axios.put(
         `${BASE_URL}/api/enrollment/enrollments/${enrollmentId}/status`,
         { status: 'REJECTED' },
@@ -135,13 +203,33 @@ const ManageStudentsPage = () => {
           }
         }
       );
-      fetchCourses();
-      fetchPendingEnrollments();
+      
+      // Update local state immediately to reflect the change
+      const updatedCourses = courses.map(course => {
+        if (course.id === courseWithEnrollment.id) {
+          return {
+            ...course,
+            enrolledStudents: course.enrolledStudents.filter(
+              enrollment => enrollment.id !== enrollmentId
+            )
+          };
+        }
+        return course;
+      });
+      
+      setCourses(updatedCourses);
+      
+      // Refresh data to ensure consistency
+      await fetchCoursesWithEnrollments();
     } catch (err) {
+      console.error("Error removing student:", err);
       setError((prev) => ({
         ...prev,
-        enrollments: "Failed to remove student from course"
+        enrollments: err.response?.data?.message || "Failed to remove student from course"
       }));
+      
+      // Refresh to ensure UI is in sync with backend
+      await fetchCoursesWithEnrollments();
     } finally {
       setButtonLoading((prev) => ({
         ...prev,
@@ -150,15 +238,10 @@ const ManageStudentsPage = () => {
     }
   };
 
+  // Initial data load
   useEffect(() => {
-    fetchCourses();
+    fetchCoursesWithEnrollments();
   }, []);
-
-  useEffect(() => {
-    if (courses.length > 0) {
-      fetchPendingEnrollments();
-    }
-  }, [courses.length]);
 
   if (loading) {
     return (
@@ -205,6 +288,11 @@ const ManageStudentsPage = () => {
               <div className="flex items-center gap-2">
                 <BookUser className="h-4 w-4" />
                 {course.name}
+                {course.pendingEnrollments?.length > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full">
+                    {course.pendingEnrollments.length}
+                  </span>
+                )}
               </div>
             </button>
           ))}
