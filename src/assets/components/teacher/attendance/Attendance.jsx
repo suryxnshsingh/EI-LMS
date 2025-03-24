@@ -29,6 +29,7 @@ const Attendance = () => {
   const [showResponses, setShowResponses] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [sessionsLoading, setSessionsLoading] = useState(false); // New state for sessions loading
 
   const toggleDropdown = (id) => {
     setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -83,6 +84,7 @@ const Attendance = () => {
 
   // Fetch attendance sessions for a course
   const fetchAttendanceSessions = async (courseId) => {
+    setSessionsLoading(true); // Set loading state when fetching sessions
     try {
       const response = await axios.get(`${BASE_URL}/api/attendance/courses/${courseId}/attendance`, {
         headers: {
@@ -93,6 +95,8 @@ const Attendance = () => {
       setAttendanceSessions(sortedSessions);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch attendance sessions");
+    } finally {
+      setSessionsLoading(false); // Clear loading state when done
     }
   };
 
@@ -280,7 +284,11 @@ const Attendance = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              {attendanceSessions.length > 0 ? (
+              {sessionsLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-900 dark:text-white" />
+                </div>
+              ) : attendanceSessions.length > 0 ? (
                 <div className="space-y-2">
                   {attendanceSessions.map((session) => (
                     <div
