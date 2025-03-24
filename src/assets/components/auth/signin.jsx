@@ -61,7 +61,20 @@ const Signin = () => {
         id: loadingToast,
       });
 
-      // Redirect based on role
+      // Check if there's a stored redirect path from a previous unauthorized attempt
+      const redirectPath = sessionStorage.getItem('redirectPath');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectPath');
+        // Only redirect if the user has permission to access that path
+        if ((redirectPath.includes('students') && user.role === 'STUDENT') ||
+            (redirectPath.includes('teachers') && user.role === 'TEACHER') ||
+            (redirectPath.includes('hod') && user.role === 'ADMIN')) {
+          navigate(redirectPath);
+          return;
+        }
+      }
+
+      // Default redirects based on role
       switch(user.role) {
         case 'STUDENT':
           navigate("/students");

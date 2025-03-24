@@ -4,7 +4,7 @@ import Signin from './assets/components/auth/signin';
 import Signup from './assets/components/auth/signup';
 import StudentSidebar from './assets/components/student/StudentSidebar';
 import TeacherSidebar from './assets/components/teacher/TeacherSidebar';
-import HodSidebar from './assets/components/hod/HodSidebar'; // Add import for HOD sidebar
+import HodSidebar from './assets/components/hod/HodSidebar'; 
 import { Toaster } from 'react-hot-toast';
 import ForgotPassword from './assets/components/auth/ForgotPassword';
 import ChangePassword from './assets/components/auth/ChangePassword';
@@ -13,6 +13,7 @@ import { Spice, CircuitSim } from './assets/components/simulators/sims';
 import ThankYou from './assets/components/student/tests/ThankYou';
 import Landnew from './assets/components/landnew/land';
 import VerifyEmail from './assets/components/auth/VerifyEmail';
+import ProtectedRoute from './assets/components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
       />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/land" element={<Landnew />} />
           <Route path="/signin" element={<Signin />} />
@@ -56,13 +58,32 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/students/*" element={<StudentSidebar />} />
-          <Route path="/teachers/*" element={<TeacherSidebar />} />
-          <Route path="/hod/*" element={<HodSidebar />} />
           <Route path="/spice" element={<Spice />} />
           <Route path="/circuit" element={<CircuitSim />} />
-          <Route path="/student/quiz/:quizId" element={<QuizAttempt />} />
-          <Route path="/students/tests/thank-you" element={<ThankYou />} />
+          
+          {/* Protected routes with role-based access */}
+          <Route 
+            path="/students/*" 
+            element={<ProtectedRoute component={StudentSidebar} allowedRoles={['STUDENT']} />} 
+          />
+          <Route 
+            path="/teachers/*" 
+            element={<ProtectedRoute component={TeacherSidebar} allowedRoles={['TEACHER']} />} 
+          />
+          <Route 
+            path="/hod/*" 
+            element={<ProtectedRoute component={HodSidebar} allowedRoles={['ADMIN']} />} 
+          />
+          
+          {/* Student-specific routes */}
+          <Route 
+            path="/student/quiz/:quizId" 
+            element={<ProtectedRoute component={QuizAttempt} allowedRoles={['STUDENT']} />} 
+          />
+          <Route 
+            path="/students/tests/thank-you" 
+            element={<ProtectedRoute component={ThankYou} allowedRoles={['STUDENT']} />} 
+          />
         </Routes>
       </BrowserRouter>
     </div>
