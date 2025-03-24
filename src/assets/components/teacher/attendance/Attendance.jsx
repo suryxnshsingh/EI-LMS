@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Loader2, RotateCw, BookUser, QrCode, MoreVertical, Eye, EyeOff, X, Download } from 'lucide-react';
@@ -30,6 +30,8 @@ const Attendance = () => {
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false); // New state for sessions loading
+  const [dynamicQrToken, setDynamicQrToken] = useState(null); // New state for dynamic QR token
+  const qrRefreshInterval = useRef(null); // Ref to store interval ID
 
   const toggleDropdown = (id) => {
     setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -117,6 +119,13 @@ const Attendance = () => {
     }
     setCreatingSession(true);
     try {
+      console.log('Creating attendance session with:', {
+        courseId,
+        teacherId,
+        date,
+        duration
+      });
+
       const response = await axios.post(`${BASE_URL}/api/attendance/attendance`, {
         courseId,
         teacherId,
@@ -124,14 +133,23 @@ const Attendance = () => {
         duration
       }, {
         headers: {
-          Authorization: `Bearer ${Cookies.get("token")}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Cookies.get("token")}`
         }
       });
+      
+      console.log('Attendance session created:', response.data);
+      
       fetchAttendanceSessions(courseId);
       setSelectedCourse(courses.find(course => course.id === courseId)); // Trigger the tab of the specific course
-      setQrCodeSession(encrypt(response.data.id.toString())); // Encrypt the QR code session ID
+      
+      // Set the session ID as a string (not encrypted) and fetch dynamic token
+      setQrCodeSession(response.data.id.toString());
+      fetchDynamicQrToken(response.data.id);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create attendance session");
+      console.error('Failed to create attendance session:', err);
+      console.error('Error details:', err.response?.data);
+      setError(err.response?.data?.error || "Failed to create attendance session");
     } finally {
       setCreatingSession(false);
     }
@@ -184,6 +202,54 @@ const Attendance = () => {
     deleteSession(sessionId, teacherId);
   };
 
+  // Function to fetch dynamic QR token
+  const fetchDynamicQrToken = async (sessionId) => {
+    try {
+      console.log('Fetching dynamic QR token for session:', sessionId);
+      
+      const response = await axios.get(`${BASE_URL}/api/attendance/attendance/${sessionId}/dynamic-token`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        }
+      });
+      
+      console.log('Dynamic QR token received:', response.data);
+      setDynamicQrToken(response.data.token);
+    } catch (err) {
+      console.error('Failed to fetch dynamic QR token:', err);
+      console.error('Error details:', err.response?.data || err.message);
+      setError('Failed to generate QR code. Please try again.');
+    }
+  };
+
+  // Setup QR code refresh interval when qrCodeSession changes
+  useEffect(() => {
+    // Clear previous interval if exists
+    if (qrRefreshInterval.current) {
+      clearInterval(qrRefreshInterval.current);
+      qrRefreshInterval.current = null;
+    }
+    
+    // If there's an active QR code session, fetch initial token and set interval
+    if (qrCodeSession) {
+      // Fetch initial token
+      fetchDynamicQrToken(qrCodeSession);
+      
+      // Set interval to refresh token every 10 seconds instead of 15
+      qrRefreshInterval.current = setInterval(() => {
+        fetchDynamicQrToken(qrCodeSession);
+      }, 10000);
+    }
+    
+    // Cleanup function to clear interval when component unmounts or qrCodeSession changes
+    return () => {
+      if (qrRefreshInterval.current) {
+        clearInterval(qrRefreshInterval.current);
+        qrRefreshInterval.current = null;
+      }
+    };
+  }, [qrCodeSession]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -235,7 +301,18 @@ const Attendance = () => {
                 </select>
               </div>
               <button
-                onClick={() => createAttendanceSession(selectedCourseForSession.id, selectedCourseForSession.teacherId, new Date().toISOString(), 60)}
+                onClick={() => {
+                  if (selectedCourseForSession) {
+                    createAttendanceSession(
+                      selectedCourseForSession.id, 
+                      selectedCourseForSession.teacherId, 
+                      new Date().toISOString().split('T')[0], // Send date in YYYY-MM-DD format
+                      60
+                    );
+                  } else {
+                    setError("Please select a course first");
+                  }
+                }}
                 disabled={creatingSession || !selectedCourseForSession}
                 className="flex justify-center text-nowrap text-center items-center px-3 py-2 text-sm font-medium rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-300 dark:hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
@@ -325,7 +402,7 @@ const Attendance = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
-                              setQrCodeSession(encrypt(session.id.toString()));
+                              setQrCodeSession(session.id.toString()); // Use raw ID instead of encryption
                               setShowAttendanceId(false);
                             }}
                             disabled={!session.isActive} // Disable if session is not active
@@ -377,7 +454,7 @@ const Attendance = () => {
         )}
       </div>
 
-      {qrCodeSession && (
+      {dynamicQrToken && qrCodeSession && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
           <div className="bg-white rounded-lg shadow-lg px-6 pb-6 pt-2">
             <div className="flex justify-between items-center mb-3 pb-1 border-b-2 border-gray-200">
@@ -387,7 +464,7 @@ const Attendance = () => {
                     Attendance ID :
                 </h2>
                 <h2 className={`text-2xl text-nowrap font-semibold text-gray-900 text-center ${!showAttendanceId && 'blur-[5px]'}`}>
-                   {decrypt(qrCodeSession)}
+                   {qrCodeSession}
                 </h2>
                 <button
                   onClick={() => setShowAttendanceId(!showAttendanceId)}
@@ -397,13 +474,30 @@ const Attendance = () => {
                 </button>
               </div>
               <button
-              onClick={() => setQrCodeSession(null)}
-              className="text-gray-600 hover:text-gray-900 flex w-full justify-end"
-            >
-              ❌
-            </button>
+                onClick={() => {
+                  setQrCodeSession(null);
+                  setDynamicQrToken(null);
+                }}
+                className="text-gray-600 hover:text-gray-900 flex w-full justify-end"
+              >
+                ❌
+              </button>
             </div>
-            <QRCodeSVG value={qrCodeSession} size={isSmallDevice ? 300 : 550} /> {/* Adjust size based on device */}
+            <div className="flex flex-col items-center">
+              <QRCodeSVG value={dynamicQrToken} size={isSmallDevice ? 300 : 550} />
+              <p className="text-sm text-gray-500 mt-3 animate-pulse">
+                QR code refreshes every 10 seconds
+              </p>
+              {process.env.NODE_ENV === 'development' && (
+                <details className="mt-2 text-xs text-gray-500 border-t pt-2 w-full">
+                  <summary>Debug Info</summary>
+                  <pre className="overflow-auto max-h-32 p-2 bg-gray-100 rounded text-black">
+                    Session ID: {qrCodeSession}
+                    Token: {dynamicQrToken?.substring(0, 20)}...
+                  </pre>
+                </details>
+              )}
+            </div>
           </div>
         </div>
       )}

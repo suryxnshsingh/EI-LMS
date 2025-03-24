@@ -123,33 +123,81 @@ const Attendance = () => {
     try {
       const userId = Cookies.get('userId');
       const token = Cookies.get('token');
-      const idToUse = attendanceId || decrypt(qrId);
       
-      const response = await axios.post(`${BASE_URL}/api/attendance/attendance/${idToUse}/mark`, {
-        userId: parseInt(userId)
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+      console.log('Marking attendance with:', {
+        userId,
+        qrId: qrId ? 'present' : 'not present',
+        attendanceId: attendanceId || 'not present'
       });
+      
+      // Check if we're using QR code or manual entry
+      if (qrId) {
+        // Handle dynamic QR token
+        console.log('Using dynamic QR token');
+        
+        // Use the correct endpoint path to match the backend route
+        const response = await axios.post(`${BASE_URL}/api/attendance/validate-token`, {
+          token: qrId,
+          userId: parseInt(userId)
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('QR token validation response:', response.data);
+        
+        toast.success('Attendance marked successfully', {
+          id: loadingToast,
+        });
+        
+        // Set success message with course details if available
+        setSuccessMessage({
+          message: 'Attendance marked successfully',
+          timestamp: new Date(),
+          course: response.data?.courseName || 'Course'
+        });
+      } else if (attendanceId) {
+        // Handle manual attendance ID entry
+        console.log('Using manual attendance ID:', attendanceId);
+        
+        const response = await axios.post(`${BASE_URL}/api/attendance/attendance/${attendanceId}/mark`, {
+          userId: parseInt(userId)
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
-      toast.success('Attendance marked successfully', {
-        id: loadingToast,
-      });
-      
-      // Set success message with course details if available
-      setSuccessMessage({
-        message: 'Attendance marked successfully',
-        timestamp: new Date(),
-        course: response.data?.courseName || 'Course'
-      });
+        console.log('Manual attendance response:', response.data);
+
+        toast.success('Attendance marked successfully', {
+          id: loadingToast,
+        });
+        
+        // Set success message with course details if available
+        setSuccessMessage({
+          message: 'Attendance marked successfully',
+          timestamp: new Date(),
+          course: response.data?.courseName || 'Course'
+        });
+      } else {
+        toast.error('No attendance ID provided', {
+          id: loadingToast,
+        });
+        return;
+      }
 
       // Refresh history if it's being shown
       if (showHistory) {
         fetchAttendanceHistory();
       }
     } catch (err) {
+      console.error('Attendance marking failed:', err);
+      console.error('Error details:', err.response?.data || err.message);
+      
       toast.error(err.response?.data?.error || 'Failed to mark attendance', {
         id: loadingToast,
       });
