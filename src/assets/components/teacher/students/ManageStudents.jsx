@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Check, X, Users, BookUser, RotateCw } from 'lucide-react';
+import { Loader2, Check, X, Users, BookUser, RotateCw, Trash2 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import StudentAttendanceDialog from './StudentAttendanceDialog';
 
@@ -106,6 +106,41 @@ const ManageStudentsPage = () => {
       setError((prev) => ({
         ...prev,
         enrollments: "Failed to update enrollment status"
+      }));
+    } finally {
+      setButtonLoading((prev) => ({
+        ...prev,
+        enrollments: { ...prev.enrollments, [enrollmentId]: false }
+      }));
+    }
+  };
+
+  const handleRemoveStudent = async (enrollmentId) => {
+    if (!confirm('Are you sure you want to remove this student from the course?')) {
+      return;
+    }
+    
+    setButtonLoading((prev) => ({
+      ...prev,
+      enrollments: { ...prev.enrollments, [enrollmentId]: true }
+    }));
+    
+    try {
+      await axios.put(
+        `${BASE_URL}/api/enrollment/enrollments/${enrollmentId}/status`,
+        { status: 'REJECTED' },
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`
+          }
+        }
+      );
+      fetchCourses();
+      fetchPendingEnrollments();
+    } catch (err) {
+      setError((prev) => ({
+        ...prev,
+        enrollments: "Failed to remove student from course"
       }));
     } finally {
       setButtonLoading((prev) => ({
@@ -254,17 +289,30 @@ const ManageStudentsPage = () => {
                               ({enrollment.student.enrollmentNumber})
                             </span>
                           </div>
-                          <button
-                            onClick={() => setSelectedStudent({
-                              id: enrollment.studentId,
-                              firstName: enrollment.student.firstName,
-                              lastName: enrollment.student.lastName,
-                              enrollmentNumber: enrollment.student.enrollmentNumber
-                            })}
-                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-gray-300 hover:dark:bg-neutral-800 rounded"
-                          >
-                            Check Details
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setSelectedStudent({
+                                id: enrollment.studentId,
+                                firstName: enrollment.student.firstName,
+                                lastName: enrollment.student.lastName,
+                                enrollmentNumber: enrollment.student.enrollmentNumber
+                              })}
+                              className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-gray-300 hover:dark:bg-neutral-800 rounded"
+                            >
+                              Check Details
+                            </button>
+                            <button
+                              onClick={() => handleRemoveStudent(enrollment.id)}
+                              disabled={buttonLoading.enrollments[enrollment.id]}
+                              className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-gray-300 hover:dark:bg-neutral-800 rounded inline-flex items-center"
+                            >
+                              {buttonLoading.enrollments[enrollment.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
                         </div>
                       ))}
                   </div>
