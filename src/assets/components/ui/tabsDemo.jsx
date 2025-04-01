@@ -48,7 +48,7 @@ export function TabsDemo() {
   ];
 
   return (
-    <div className="h-[20rem] md:h-[40rem] [perspective:1000px] relative b flex flex-col max-w-5xl mx-auto w-full  items-start justify-start my-40">
+    <div className="h-[20rem] md:h-[40rem] pt-10 [perspective:1000px] relative b flex flex-col max-w-5xl mx-auto w-full  items-start justify-start my-40">
       <Tabs tabs={tabs} />
     </div>
   );
@@ -57,7 +57,7 @@ export function TabsDemo() {
 const DummyContent = () => {
   return (
     <img
-      src="/linear.webp"
+      src="/GS LOGO.png"
       alt="dummy image"
       className="object-cover object-left-top h-[60%] md:h-[90%] absolute -bottom-10 inset-x-0 w-[90%] rounded-xl mx-auto"
     />
