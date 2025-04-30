@@ -224,7 +224,7 @@ const AIChatbot = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
         <div className="flex items-center">
           <BookOpen className="h-5 w-5 text-purple-500 mr-2" />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Academic AI Assistant</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">AI Chatbot</h1>
         </div>
         <div className="flex items-center space-x-2">
           <button
