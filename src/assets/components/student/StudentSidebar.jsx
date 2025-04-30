@@ -10,7 +10,8 @@ import {
   Sun,
   Moon,
   Settings, 
-  LogOut 
+  LogOut,
+  Bot
 } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar';
 import {  Routes, Route, Link } from 'react-router-dom';
@@ -24,6 +25,7 @@ import ManageCourses from './courses/ManageCourses';
 import Cookies from 'js-cookie';
 import Attendance from './attendance/Attendance';
 import { Simulator } from '../simulators/Simulator';
+import AIChatbot from './ai/AIChatbot';
 
 const StudentSidebar = () => {
 
@@ -75,6 +77,11 @@ const StudentSidebar = () => {
       label: "Simulators",
       href: "/students/simulators",
       icon: <Cpu className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    },
+    {
+      label: "AI Chatbot",
+      href: "/students/ai-chatbot",
+      icon: <Bot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Change Theme",
@@ -171,22 +178,23 @@ const LogoIcon = () => {
 const Dashboard = () => {
   return (
     <div className="flex flex-1 bg-neutral-100 dark:bg-neutral-950">
-      <div className=" rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black dark:bg-dot-white/[0.2] bg-dot-black/[0.2] overflow-scroll ">
-        <div className='p-2 rounded-tl-2xl  w-screen h-screen '>
-        <div className=' flex items-center justify-center text-black  dark:text-white'>
-          <Routes>
-            <Route path="/" element={<Dash />} />
-            <Route path="/:courseId" element={<SubjectDashboard />} />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/tests" element={<Tests />} />
-            <Route path="/managecourses" element={<ManageCourses />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/simulators" element={<Simulator/>} />
-            <Route path="/tests/history" element={<QuizHistory />} />
-            <Route path="/tests/available" element={<QuizList />} />
-          </Routes>
+      <div className="rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black dark:bg-dot-white/[0.2] bg-dot-black/[0.2] overflow-auto w-full">
+        <div className='p-2 rounded-tl-2xl h-screen overflow-auto'>
+          <div className='flex items-center justify-center text-black dark:text-white'>
+            <Routes>
+              <Route path="/" element={<Dash />} />
+              <Route path="/:courseId" element={<SubjectDashboard />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/tests" element={<Tests />} />
+              <Route path="/managecourses" element={<ManageCourses />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/simulators" element={<Simulator/>} />
+              <Route path="/tests/history" element={<QuizHistory />} />
+              <Route path="/tests/available" element={<QuizList />} />
+              <Route path="/ai-chatbot" element={<AIChatbot />} />
+            </Routes>
           </div>
-          </div>
+        </div>
       </div>
     </div>
   );
