@@ -26,6 +26,7 @@ import Cookies from 'js-cookie';
 import Attendance from './attendance/Attendance';
 import { Simulator } from '../simulators/Simulator';
 import AIChatbot from './ai/AIChatbot';
+import AccessCourses from './AccessCourses';
 
 const StudentSidebar = () => {
 
@@ -57,6 +58,11 @@ const StudentSidebar = () => {
       label: "Dashboard",
       href: "/students/",
       icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    },
+    {
+      label: "Access Courses",
+      href: "/students/courses",
+      icon: <LibraryBig className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Attendance",
@@ -183,7 +189,7 @@ const Dashboard = () => {
           <div className='flex items-center justify-center text-black dark:text-white'>
             <Routes>
               <Route path="/" element={<Dash />} />
-              <Route path="/:courseId" element={<SubjectDashboard />} />
+              <Route path="/courses/:courseId" element={<SubjectDashboard />} />
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/tests" element={<Tests />} />
               <Route path="/managecourses" element={<ManageCourses />} />
@@ -192,6 +198,7 @@ const Dashboard = () => {
               <Route path="/tests/history" element={<QuizHistory />} />
               <Route path="/tests/available" element={<QuizList />} />
               <Route path="/ai-chatbot" element={<AIChatbot />} />
+              <Route path="/courses" element={<AccessCourses />} />
             </Routes>
           </div>
         </div>

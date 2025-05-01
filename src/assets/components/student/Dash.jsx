@@ -43,7 +43,6 @@ const Dash = () => {
   const [error, setError] = useState(null);
   const [showChatButton, setShowChatButton] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
-  const [showAllCourses, setShowAllCourses] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState([
     {
@@ -215,10 +214,6 @@ const Dash = () => {
   const toggleChat = () => {
     setChatOpen(!chatOpen);
   };
-  
-  const toggleShowAllCourses = () => {
-    setShowAllCourses(!showAllCourses);
-  };
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
@@ -237,12 +232,17 @@ const Dash = () => {
     
     try {
       const baseURL = import.meta.env.VITE_API_URL;
-      
-      // Send the message to the AI endpoint
-      const response = await axios.post(`${baseURL}/api/supra/ask`, {
-        question: userMessage
-      });
-      
+      // Send the message to the AI endpoint with Authorization header
+      const response = await axios.post(
+        `${baseURL}/api/supra/ask`,
+        { question: userMessage },
+        {
+          headers: {
+            'Authorization': `Bearer ${Cookies.get('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       // Add AI response to chat
       setChatMessages(prev => [...prev, {
         sender: 'bot',
@@ -362,9 +362,6 @@ const Dash = () => {
 
   if (loading) return <Loading />;
   if (error) return <Error error={error} />;
-
-  // Determine courses to display based on toggle state
-  const coursesToDisplay = showAllCourses ? enrolledCourses : enrolledCourses.slice(0, 6);
 
   return (
     <div className="w-full md:mr-16 pb-16">
@@ -517,63 +514,28 @@ const Dash = () => {
                 <span className="text-sm font-medium">AI Assistant</span>
               </motion.div>
             </Link>
+            {/* New Access Courses button */}
+            <Link to="/students/courses">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-br from-pink-500 to-pink-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+              >
+                <Book className="h-6 w-6 mb-2" />
+                <span className="text-sm font-medium">Access Courses</span>
+              </motion.div>
+            </Link>
           </div>
         </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <div className='flex justify-between mb-4 items-center'>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">My Courses</h2>
-            {enrolledCourses.length > 6 && (
-              <button 
-                onClick={toggleShowAllCourses}
-                className="text-purple-600 dark:text-purple-400 text-sm font-medium hover:underline flex items-center"
-              >
-                {showAllCourses ? (
-                  <>Show less <ChevronUp className="h-4 w-4 ml-1" /></>
-                ) : (
-                  <>Show all ({enrolledCourses.length}) <ChevronDown className="h-4 w-4 ml-1" /></>
-                )}
-              </button>
-            )}
+        {/* Notices Section */}
+        <motion.div 
+          variants={itemVariants}
+          className="mb-10"
+        >
+          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Notices</h2>
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700 flex items-center justify-center min-h-[80px]">
+            <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">Coming soon</span>
           </div>
-          
-          {enrolledCourses.length === 0 ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-8 text-center border border-gray-100 dark:border-neutral-700">
-              <p className="text-xl pb-6 text-gray-600 dark:text-gray-400">No enrolled courses yet.</p>
-              <Link 
-                to='/students/managecourses' 
-                className='bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors'
-              >
-                Manage Courses
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {coursesToDisplay.map((course) => (
-                  <motion.div key={course.id} whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
-                    <SubCard 
-                      id={course.id}
-                      code={course.code} 
-                      name={course.name} 
-                    />
-                  </motion.div>
-                ))}
-              </div>
-              
-              {!showAllCourses && enrolledCourses.length > 6 && (
-                <motion.button
-                  onClick={toggleShowAllCourses}
-                  className="mt-6 mx-auto bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 text-purple-600 dark:text-purple-400 font-medium py-3 px-6 rounded-xl border border-gray-200 dark:border-neutral-700 shadow-sm transition-colors flex items-center"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span>Show all {enrolledCourses.length} courses</span>
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </motion.button>
-              )}
-            </>
-          )}
         </motion.div>
       </motion.div>
       
