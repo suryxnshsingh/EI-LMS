@@ -388,81 +388,124 @@ const Dash = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
           <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700"
+            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)" }}
+            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
           >
-            <div className="flex justify-between items-start">
+            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-blue-100/50 dark:bg-blue-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-blue-100/30 dark:bg-blue-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+            <div className="relative flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Courses</p>
-                <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{stats.totalCourses}</h3>
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Total Courses</p>
+                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.totalCourses}</h3>
               </div>
-              <span className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
                 <Book className="h-5 w-5 text-blue-500" />
-              </span>
+              </div>
             </div>
-            <div className="mt-4 text-xs font-medium text-gray-500 dark:text-gray-400">
-              {stats.totalCourses > 0 ? "View all courses" : "Enroll in courses"}
+            <div className="mt-4 flex items-center text-xs font-medium text-blue-500 dark:text-blue-400 relative">
+              {stats.totalCourses > 0 ? (
+                <Link to="/students/courses" className="flex items-center hover:underline">
+                  <span>View all courses</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <Link to="/students/managecourses" className="flex items-center hover:underline">
+                  <span>Enroll in courses</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
             </div>
           </motion.div>
 
           <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700"
+            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(168, 85, 247, 0.1)" }}
+            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
           >
-            <div className="flex justify-between items-start">
+            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-purple-100/50 dark:bg-purple-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-purple-100/30 dark:bg-purple-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+            <div className="relative flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Assignments</p>
-                <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{stats.assignments}</h3>
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Pending Assignments</p>
+                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.assignments}</h3>
               </div>
-              <span className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+              <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
                 <Clock className="h-5 w-5 text-purple-500" />
-              </span>
-            </div>
-            <div className="mt-4 text-xs font-medium text-purple-500 dark:text-purple-400">
-              {stats.assignments > 0 ? `${stats.assignments} assignments due soon` : "No pending assignments"}
-            </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Upcoming Tests</p>
-                <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{stats.upcomingTests}</h3>
               </div>
-              <span className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
-                <BarChart3 className="h-5 w-5 text-amber-500" />
-              </span>
-            </div>
-            <div className="mt-4 text-xs font-medium text-amber-500 dark:text-amber-400">
-              {stats.upcomingTests > 0 ? `${stats.upcomingTests} tests this week` : "No upcoming tests"}
-            </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Attendance</p>
-                <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{stats.attendancePercentage}%</h3>
-              </div>
-              <span className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                <Award className="h-5 w-5 text-green-500" />
-              </span>
             </div>
             <div className="mt-4 flex items-center">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="text-xs font-medium text-purple-500 dark:text-purple-400 flex items-center">
+                {stats.assignments > 0 ? (
+                  <Link to="/students/managecourses" className="flex items-center hover:underline">
+                    <span>{stats.assignments} assignments due soon</span>
+                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <span>No pending assignments</span>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.1)" }}
+            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+          >
+            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-amber-100/50 dark:bg-amber-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-amber-100/30 dark:bg-amber-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+            <div className="relative flex justify-between items-start">
+              <div>
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Upcoming Tests</p>
+                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.upcomingTests}</h3>
+              </div>
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                <BarChart3 className="h-5 w-5 text-amber-500" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center">
+              <div className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center">
+                {stats.upcomingTests > 0 ? (
+                  <Link to="/students/tests" className="flex items-center hover:underline">
+                    <span>{stats.upcomingTests} tests this week</span>
+                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <span>No upcoming tests</span>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(16, 185, 129, 0.1)" }}
+            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+          >
+            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-green-100/50 dark:bg-green-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-green-100/30 dark:bg-green-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+            <div className="relative flex justify-between items-start">
+              <div>
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Attendance</p>
+                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.attendancePercentage}%</h3>
+              </div>
+              <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                <Award className="h-5 w-5 text-green-500" />
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col space-y-2">
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                 <div 
-                  className={`h-2 rounded-full ${
-                    stats.attendancePercentage >= 85 ? 'bg-green-500' : 
-                    stats.attendancePercentage >= 75 ? 'bg-amber-500' : 'bg-red-500'
+                  className={`h-2.5 rounded-full relative ${
+                    stats.attendancePercentage >= 85 ? 'bg-gradient-to-r from-green-400 to-green-500' : 
+                    stats.attendancePercentage >= 75 ? 'bg-gradient-to-r from-amber-300 to-amber-500' : 'bg-gradient-to-r from-red-400 to-red-500'
                   }`}
                   style={{width: `${stats.attendancePercentage}%`}}
-                />
+                >
+                  <div className="absolute -inset-y-full right-0 w-2 bg-white/20 skew-x-12 animate-shimmer"></div>
+                </div>
+              </div>
+              <div className="w-full flex justify-between text-xs">
+                <span className="text-red-500">0%</span>
+                <span className="text-amber-500">50%</span>
+                <span className="text-green-500">100%</span>
               </div>
             </div>
           </motion.div>
@@ -472,69 +515,148 @@ const Dash = () => {
           variants={itemVariants}
           className="mb-10"
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Quick Access</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Quick Access</h2>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-neutral-700 px-2 py-1 rounded-full">
+              Frequently Used
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
             <Link to="/students/attendance">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+                className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 text-white p-5 rounded-xl flex flex-col items-center text-center shadow-md shadow-purple-500/10 group"
               >
-                <Award className="h-6 w-6 mb-2" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <Award className="h-7 w-7 mb-3 z-10" />
                 <span className="text-sm font-medium">Attendance</span>
               </motion.div>
             </Link>
+            
             <Link to="/students/tests">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-amber-500 to-amber-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+                className="relative overflow-hidden bg-gradient-to-br from-amber-500 to-amber-700 text-white p-5 rounded-xl flex flex-col items-center text-center shadow-md shadow-amber-500/10 group"
               >
-                <BarChart3 className="h-6 w-6 mb-2" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <BarChart3 className="h-7 w-7 mb-3 z-10" />
                 <span className="text-sm font-medium">Tests & Quizzes</span>
               </motion.div>
             </Link>
+            
             <Link to="/students/managecourses">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+                className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 rounded-xl flex flex-col items-center text-center shadow-md shadow-blue-500/10 group"
               >
-                <Book className="h-6 w-6 mb-2" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <Book className="h-7 w-7 mb-3 z-10" />
                 <span className="text-sm font-medium">Course Management</span>
               </motion.div>
             </Link>
+            
             <Link to="/students/ai-chatbot">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-green-500 to-green-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+                className="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-700 text-white p-5 rounded-xl flex flex-col items-center text-center shadow-md shadow-green-500/10 group"
               >
-                <Bot className="h-6 w-6 mb-2" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <Bot className="h-7 w-7 mb-3 z-10" />
                 <span className="text-sm font-medium">AI Assistant</span>
               </motion.div>
             </Link>
-            {/* New Access Courses button */}
+            
             <Link to="/students/courses">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-pink-500 to-pink-700 text-white p-4 rounded-xl flex flex-col items-center text-center shadow-md"
+                className="relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-700 text-white p-5 rounded-xl flex flex-col items-center text-center shadow-md shadow-pink-500/10 group"
               >
-                <Book className="h-6 w-6 mb-2" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <Book className="h-7 w-7 mb-3 z-10" />
                 <span className="text-sm font-medium">Access Courses</span>
               </motion.div>
             </Link>
           </div>
         </motion.div>
+
         {/* Notices Section */}
         <motion.div 
           variants={itemVariants}
           className="mb-10"
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Notices</h2>
-          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-neutral-700 flex items-center justify-center min-h-[80px]">
-            <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">Coming soon</span>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Announcements & Notices</h2>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-xs flex items-center font-medium text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+            >
+              <span>View All</span>
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </motion.button>
+          </div>
+          
+          {/* Notifications card with layered design */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-neutral-800 dark:to-neutral-900 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-100/20 dark:bg-purple-900/10 rounded-full blur-xl transform translate-x-16 -translate-y-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-100/20 dark:bg-blue-900/10 rounded-full blur-xl transform -translate-x-12 translate-y-12"></div>
+            
+            {/* Coming soon message with improved design */}
+            <div className="relative flex flex-col items-center justify-center min-h-[160px] text-center max-w-md mx-auto">
+              <div className="bg-white dark:bg-neutral-800 rounded-full p-4 shadow-md mb-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="text-purple-500 dark:text-purple-400"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                </motion.div>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                Notifications Coming Soon
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Important department announcements and updates will appear here. Check back soon!
+              </p>
+              
+              {/* Example notice items (visually hidden with opacity-0, but showing structure) */}
+              <div className="absolute opacity-0 pointer-events-none w-full max-w-md">
+                <div className="flex items-start p-4 mb-3 bg-white dark:bg-neutral-800 rounded-lg border-l-4 border-blue-500 shadow-sm">
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h4 className="font-medium text-gray-900 dark:text-white">Class Rescheduled</h4>
+                      <span className="text-xs text-gray-500">2h ago</span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Digital Signal Processing class moved to Room EI-305</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start p-4 mb-3 bg-white dark:bg-neutral-800 rounded-lg border-l-4 border-purple-500 shadow-sm">
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h4 className="font-medium text-gray-900 dark:text-white">Assignment Deadline</h4>
+                      <span className="text-xs text-gray-500">1d ago</span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Embedded Systems final project due date extended</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </motion.div>
