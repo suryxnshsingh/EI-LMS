@@ -4,43 +4,163 @@ import SubCard from '../ui/subcard';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
-import { Bot, ArrowRight, BarChart3, Book, Clock, Award, X, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
+import { 
+  Bot, ArrowRight, BarChart3, Book, Clock, Award, X, ChevronUp, 
+  ChevronDown, Loader2, RefreshCw, Bell, AlertTriangle 
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import 'katex/dist/katex.min.css'; // Import KaTeX CSS
 import { InlineMath, BlockMath } from 'react-katex'; // Import KaTeX React components
 
-const Loading = () => {
+// Reusable loading skeletons for each card type
+const StatCardSkeleton = ({ color }) => {
+  const colorClasses = {
+    blue: "bg-blue-100/40 dark:bg-blue-900/20",
+    purple: "bg-purple-100/40 dark:bg-purple-900/20",
+    amber: "bg-amber-100/40 dark:bg-amber-900/20",
+    green: "bg-green-100/40 dark:bg-green-900/20"
+  };
+  
   return (
-    <div className="flex justify-center items-center h-screen text-black dark:text-white">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black dark:border-white"></div>
-    </div>
+    <motion.div 
+      className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700"
+      initial={{ opacity: 0.6 }}
+      animate={{ opacity: [0.6, 0.8, 0.6] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-gray-100/50 dark:bg-gray-700/20"></div>
+      <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-gray-100/30 dark:bg-gray-700/10"></div>
+      <div className="relative flex justify-between items-start">
+        <div className="w-full">
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+          <div className="h-8 w-16 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+        </div>
+        <div className={`rounded-lg w-10 h-10 ${colorClasses[color] || "bg-gray-200 dark:bg-gray-700"}`}></div>
+      </div>
+      <div className="mt-4 flex items-center">
+        <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </motion.div>
   );
 };
 
-const Error = ({ error }) => {
-  const navigate = useNavigate();
+// Specialized attendance card skeleton
+const AttendanceCardSkeleton = () => {
   return (
-    <div className="flex justify-center flex-col items-center h-screen text-black dark:text-white text-2xl">
-      <div>{error}</div>
-      <div>
-        <button
-          onClick={() => {
-            localStorage.clear();
-            navigate("/signin");
-          }}
-          className="bg-purple-500 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-xl my-5"
-        >
-          Re-Login
-        </button>
+    <motion.div 
+      className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700"
+      initial={{ opacity: 0.6 }}
+      animate={{ opacity: [0.6, 0.8, 0.6] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-gray-100/50 dark:bg-gray-700/20"></div>
+      <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-gray-100/30 dark:bg-gray-700/10"></div>
+      <div className="relative flex justify-between items-start">
+        <div>
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+          <div className="h-8 w-16 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+        </div>
+        <div className="rounded-lg w-10 h-10 bg-gray-200 dark:bg-gray-700"></div>
       </div>
+      <div className="mt-6 flex flex-col space-y-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"></div>
+        <div className="w-full flex justify-between">
+          <div className="h-3 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-3 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-3 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Quick access button skeleton
+const QuickAccessSkeleton = () => {
+  return (
+    <motion.div 
+      className="relative overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 p-5 rounded-xl flex flex-col items-center text-center shadow-md"
+      initial={{ opacity: 0.6 }}
+      animate={{ opacity: [0.6, 0.8, 0.6] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="rounded-full bg-gray-300 dark:bg-gray-600 h-7 w-7 mb-3"></div>
+      <div className="w-16 h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+    </motion.div>
+  );
+};
+
+// Notices section skeleton
+const NoticesSkeleton = () => {
+  return (
+    <motion.div 
+      className="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700"
+      initial={{ opacity: 0.6 }}
+      animate={{ opacity: [0.6, 0.8, 0.6] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="relative flex flex-col items-center justify-center min-h-[160px] text-center max-w-md mx-auto">
+        <div className="bg-gray-200 dark:bg-gray-700 rounded-full p-4 w-16 h-16 mb-4"></div>
+        <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-48 mb-3"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-72 mb-2"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Error component for individual card errors
+const CardError = ({ message, onRetry }) => {
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-red-200 dark:border-red-900 flex flex-col items-center justify-center text-center">
+      <AlertTriangle className="h-8 w-8 text-red-500 mb-2" />
+      <p className="text-gray-800 dark:text-gray-200 text-sm mb-3">{message || "Failed to load data"}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+        >
+          <RefreshCw className="h-3 w-3 mr-1.5" />
+          Retry
+        </button>
+      )}
     </div>
   );
 };
 
 const Dash = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const baseURL = import.meta.env.VITE_API_URL;
+  const userId = Cookies.get('userId');
+  const authHeaders = {
+    Authorization: `Bearer ${Cookies.get('token')}`
+  };
+  
+  // State variables for each section
+  const [coursesData, setCoursesData] = useState({
+    isLoading: true,
+    error: null,
+    data: { count: 0 }
+  });
+  
+  const [assignmentsData, setAssignmentsData] = useState({
+    isLoading: true,
+    error: null,
+    data: { count: 0 }
+  });
+  
+  const [testsData, setTestsData] = useState({
+    isLoading: true,
+    error: null,
+    data: { count: 0 }
+  });
+  
+  const [attendanceData, setAttendanceData] = useState({
+    isLoading: true,
+    error: null,
+    data: { percentage: 0 }
+  });
+  
+  // Chat state variables
   const [showChatButton, setShowChatButton] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
@@ -51,14 +171,8 @@ const Dash = () => {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  const [stats, setStats] = useState({
-    totalCourses: 0,
-    assignments: 0,
-    upcomingTests: 0,
-    attendancePercentage: 0
-  });
-  const navigate = useNavigate();
   
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,133 +196,191 @@ const Dash = () => {
     }
   };
 
+  // Fetch courses data
+  const fetchCoursesData = async () => {
+    setCoursesData({ ...coursesData, isLoading: true, error: null });
+    try {
+      const response = await axios.get(
+        `${baseURL}/api/enrollment/enrollments/my-courses`, 
+        { headers: authHeaders }
+      );
+      
+      const courses = response.data
+        .filter(enrollment => enrollment.status === 'ACCEPTED')
+        .map(enrollment => {
+          const course = enrollment.course || {};
+          return {
+            id: enrollment.courseId,
+            name: course.name,
+            code: course.courseCode,
+            teacher: `${course.teacher?.firstName} ${course.teacher?.lastName}`,
+            session: course.session,
+            semester: course.semester
+          };
+        });
+        
+      setCoursesData({
+        isLoading: false,
+        error: null,
+        data: { 
+          courses,
+          count: courses.length,
+          courseIds: courses.map(course => course.id)
+        }
+      });
+      
+      // After courses are loaded, fetch assignments since they depend on course IDs
+      fetchAssignmentsData(courses.map(course => course.id));
+      
+    } catch (err) {
+      console.error('Error fetching courses:', err);
+      setCoursesData({
+        isLoading: false,
+        error: err.response?.data?.message || 'Failed to load courses',
+        data: { count: 0 }
+      });
+    }
+  };
+  
+  // Fetch assignments data
+  const fetchAssignmentsData = async (courseIds = []) => {
+    if (!courseIds.length && coursesData.data?.courseIds) {
+      courseIds = coursesData.data.courseIds;
+    }
+    
+    if (!courseIds.length) {
+      setAssignmentsData({
+        isLoading: false,
+        error: null,
+        data: { count: 0 }
+      });
+      return;
+    }
+    
+    setAssignmentsData({ ...assignmentsData, isLoading: true, error: null });
+    
+    try {
+      const assignmentsPromises = courseIds.map(courseId => 
+        axios.get(`${baseURL}/api/assignment/by-course/${courseId}`, { headers: authHeaders })
+          .catch(err => {
+            console.error(`Error fetching assignments for course ${courseId}:`, err);
+            return { data: [] };
+          })
+      );
+      
+      const assignmentsResponses = await Promise.all(assignmentsPromises);
+      
+      // Count assignments that haven't been submitted yet
+      const assignments = assignmentsResponses
+        .flatMap(response => response.data)
+        .filter(assignment => {
+          const deadline = new Date(assignment.deadline);
+          const now = new Date();
+          return deadline > now && !assignment.submitted;
+        });
+      
+      setAssignmentsData({
+        isLoading: false,
+        error: null,
+        data: { 
+          assignments,
+          count: assignments.length 
+        }
+      });
+    } catch (err) {
+      console.error('Error fetching assignments:', err);
+      setAssignmentsData({
+        isLoading: false,
+        error: err.response?.data?.message || 'Failed to load assignments',
+        data: { count: 0 }
+      });
+    }
+  };
+  
+  // Fetch tests data
+  const fetchTestsData = async () => {
+    setTestsData({ ...testsData, isLoading: true, error: null });
+    
+    try {
+      const response = await axios.get(
+        `${baseURL}/api/quiz/student/available`, 
+        { headers: authHeaders }
+      );
+      
+      // Filter quizzes that are upcoming (start date is in the future)
+      const upcomingTests = response.data
+        .filter(quiz => {
+          const quizDate = new Date(quiz.scheduledFor);
+          const now = new Date();
+          return quizDate > now;
+        });
+      
+      setTestsData({
+        isLoading: false,
+        error: null,
+        data: { 
+          tests: upcomingTests,
+          count: upcomingTests.length 
+        }
+      });
+    } catch (err) {
+      console.error('Error fetching tests:', err);
+      setTestsData({
+        isLoading: false,
+        error: err.response?.data?.message || 'Failed to load tests',
+        data: { count: 0 }
+      });
+    }
+  };
+  
+  // Fetch attendance data
+  const fetchAttendanceData = async () => {
+    if (!userId) {
+      setAttendanceData({
+        isLoading: false,
+        error: 'User ID not found',
+        data: { percentage: 0 }
+      });
+      return;
+    }
+    
+    setAttendanceData({ ...attendanceData, isLoading: true, error: null });
+    
+    try {
+      const response = await axios.get(
+        `${baseURL}/api/attendance/students/${userId}/attendance-history`, 
+        { headers: authHeaders }
+      );
+      
+      // Extract the percentage from the stats
+      const percentage = response.data?.stats?.percentage 
+        ? parseFloat(response.data.stats.percentage)
+        : 0;
+        
+      setAttendanceData({
+        isLoading: false,
+        error: null,
+        data: { 
+          stats: response.data?.stats,
+          percentage
+        }
+      });
+    } catch (err) {
+      console.error('Error fetching attendance:', err);
+      setAttendanceData({
+        isLoading: false,
+        error: err.response?.data?.message || 'Failed to load attendance data',
+        data: { percentage: 0 }
+      });
+    }
+  };
+  
+  // Initialize data loading when component mounts
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const baseURL = import.meta.env.VITE_API_URL;
-        const headers = {
-          Authorization: `Bearer ${Cookies.get('token')}`
-        };
-
-        // Fetch enrolled courses
-        const coursesResponse = await axios.get(`${baseURL}/api/enrollment/enrollments/my-courses`, {
-          headers
-        });
-
-        // Transform course data
-        const courses = coursesResponse.data
-          .filter(enrollment => enrollment.status === 'ACCEPTED')
-          .map(enrollment => {
-            const course = enrollment.course || {};
-            return {
-              id: enrollment.courseId,
-              name: course.name,
-              code: course.courseCode,
-              teacher: `${course.teacher?.firstName} ${course.teacher?.lastName}`,
-              session: course.session,
-              semester: course.semester
-            };
-          });
-        
-        setEnrolledCourses(courses);
-        
-        // Get all courseIds for fetching related data
-        const courseIds = courses.map(course => course.id);
-        
-        // Fetch pending assignments data
-        let assignmentsCount = 0;
-        if (courseIds.length > 0) {
-          const assignmentsPromises = courseIds.map(courseId => 
-            axios.get(`${baseURL}/api/assignment/by-course/${courseId}`, { headers })
-              .catch(err => {
-                console.error(`Error fetching assignments for course ${courseId}:`, err);
-                return { data: [] };
-              })
-          );
-          
-          const assignmentsResponses = await Promise.all(assignmentsPromises);
-          
-          // Count assignments that haven't been submitted yet
-          assignmentsCount = assignmentsResponses
-            .flatMap(response => response.data)
-            .filter(assignment => {
-              const deadline = new Date(assignment.deadline);
-              const now = new Date();
-              return deadline > now && !assignment.submitted;
-            }).length;
-        }
-        
-        // Fetch upcoming tests data
-        let upcomingTestsCount = 0;
-        try {
-          const quizResponse = await axios.get(`${baseURL}/api/quiz/student/available`, { headers });
-          // Filter quizzes that are upcoming (start date is in the future)
-          upcomingTestsCount = quizResponse.data
-            .filter(quiz => {
-              const quizDate = new Date(quiz.scheduledFor);
-              const now = new Date();
-              return quizDate > now;
-            }).length;
-        } catch (err) {
-          console.error('Error fetching tests:', err);
-          // Continue execution even if tests can't be fetched
-        }
-        
-        // Fetch attendance data using the correct endpoint
-        let attendancePercentage = 0;
-        try {
-          // Get the user ID from Cookies
-          const userId = Cookies.get('userId');
-          
-          if (userId) {
-            // Call the student attendance history endpoint
-            const attendanceResponse = await axios.get(
-              `${baseURL}/api/attendance/students/${userId}/attendance-history`, 
-              { headers }
-            );
-            
-            // Extract the percentage from the stats
-            attendancePercentage = attendanceResponse.data?.stats?.percentage 
-              ? parseFloat(attendanceResponse.data.stats.percentage)
-              : 0;
-              
-            console.log('Attendance data:', {
-              totalClasses: attendanceResponse.data?.stats?.totalClasses,
-              totalPresent: attendanceResponse.data?.stats?.totalPresent,
-              percentage: attendancePercentage
-            });
-          }
-        } catch (err) {
-          console.error('Error fetching attendance history:', err);
-          // Continue execution even if attendance data can't be fetched
-        }
-        
-        console.log('Dashboard Data:', {
-          courses: courses.length,
-          assignments: assignmentsCount,
-          tests: upcomingTestsCount,
-          attendance: {
-            percentage: attendancePercentage
-          }
-        });
-        
-        // Update stats with real data
-        setStats({
-          totalCourses: courses.length,
-          assignments: assignmentsCount,
-          upcomingTests: upcomingTestsCount,
-          attendancePercentage: attendancePercentage
-        });
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError(err.response?.data?.message || 'Failed to fetch dashboard data');
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
+    fetchCoursesData();
+    fetchTestsData();
+    fetchAttendanceData();
+    // Note: fetchAssignmentsData is called after courses are loaded
   }, []);
 
   const toggleChat = () => {
@@ -231,7 +403,6 @@ const Dash = () => {
     setIsTyping(true);
     
     try {
-      const baseURL = import.meta.env.VITE_API_URL;
       // Send the message to the AI endpoint with Authorization header
       const response = await axios.post(
         `${baseURL}/api/supra/ask`,
@@ -360,9 +531,6 @@ const Dash = () => {
     });
   };
 
-  if (loading) return <Loading />;
-  if (error) return <Error error={error} />;
-
   return (
     <div className="w-full md:mr-16 pb-16">
       <motion.div
@@ -383,134 +551,176 @@ const Dash = () => {
           </p>
         </motion.div>
 
+        {/* Stats cards grid */}
         <motion.div 
           variants={itemVariants}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
-          <motion.div 
-            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)" }}
-            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
-          >
-            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-blue-100/50 dark:bg-blue-900/20 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-blue-100/30 dark:bg-blue-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
-            <div className="relative flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Total Courses</p>
-                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.totalCourses}</h3>
-              </div>
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
-                <Book className="h-5 w-5 text-blue-500" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs font-medium text-blue-500 dark:text-blue-400 relative">
-              {stats.totalCourses > 0 ? (
-                <Link to="/students/courses" className="flex items-center hover:underline">
-                  <span>View all courses</span>
-                  <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <Link to="/students/managecourses" className="flex items-center hover:underline">
-                  <span>Enroll in courses</span>
-                  <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                </Link>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(168, 85, 247, 0.1)" }}
-            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
-          >
-            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-purple-100/50 dark:bg-purple-900/20 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-purple-100/30 dark:bg-purple-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
-            <div className="relative flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Pending Assignments</p>
-                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.assignments}</h3>
-              </div>
-              <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
-                <Clock className="h-5 w-5 text-purple-500" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <div className="text-xs font-medium text-purple-500 dark:text-purple-400 flex items-center">
-                {stats.assignments > 0 ? (
-                  <Link to="/students/managecourses" className="flex items-center hover:underline">
-                    <span>{stats.assignments} assignments due soon</span>
-                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                ) : (
-                  <span>No pending assignments</span>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.1)" }}
-            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
-          >
-            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-amber-100/50 dark:bg-amber-900/20 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-amber-100/30 dark:bg-amber-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
-            <div className="relative flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Upcoming Tests</p>
-                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.upcomingTests}</h3>
-              </div>
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
-                <BarChart3 className="h-5 w-5 text-amber-500" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <div className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center">
-                {stats.upcomingTests > 0 ? (
-                  <Link to="/students/tests" className="flex items-center hover:underline">
-                    <span>{stats.upcomingTests} tests this week</span>
-                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                ) : (
-                  <span>No upcoming tests</span>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(16, 185, 129, 0.1)" }}
-            className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
-          >
-            <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-green-100/50 dark:bg-green-900/20 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-green-100/30 dark:bg-green-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
-            <div className="relative flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Attendance</p>
-                <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.attendancePercentage}%</h3>
-              </div>
-              <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
-                <Award className="h-5 w-5 text-green-500" />
-              </div>
-            </div>
-            <div className="mt-6 flex flex-col space-y-2">
-              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                <div 
-                  className={`h-2.5 rounded-full relative ${
-                    stats.attendancePercentage >= 85 ? 'bg-gradient-to-r from-green-400 to-green-500' : 
-                    stats.attendancePercentage >= 75 ? 'bg-gradient-to-r from-amber-300 to-amber-500' : 'bg-gradient-to-r from-red-400 to-red-500'
-                  }`}
-                  style={{width: `${stats.attendancePercentage}%`}}
-                >
-                  <div className="absolute -inset-y-full right-0 w-2 bg-white/20 skew-x-12 animate-shimmer"></div>
+          {/* Courses Card */}
+          {coursesData.isLoading ? (
+            <StatCardSkeleton color="blue" />
+          ) : coursesData.error ? (
+            <CardError 
+              message={coursesData.error} 
+              onRetry={fetchCoursesData} 
+            />
+          ) : (
+            <motion.div 
+              whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)" }}
+              className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+            >
+              <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-blue-100/50 dark:bg-blue-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-blue-100/30 dark:bg-blue-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+              <div className="relative flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Total Courses</p>
+                  <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{coursesData.data.count}</h3>
+                </div>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                  <Book className="h-5 w-5 text-blue-500" />
                 </div>
               </div>
-              <div className="w-full flex justify-between text-xs">
-                <span className="text-red-500">0%</span>
-                <span className="text-amber-500">50%</span>
-                <span className="text-green-500">100%</span>
+              <div className="mt-4 flex items-center text-xs font-medium text-blue-500 dark:text-blue-400 relative">
+                {coursesData.data.count > 0 ? (
+                  <Link to="/students/courses" className="flex items-center hover:underline">
+                    <span>View all courses</span>
+                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <Link to="/students/managecourses" className="flex items-center hover:underline">
+                    <span>Enroll in courses</span>
+                    <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                )}
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
+
+          {/* Assignments Card */}
+          {assignmentsData.isLoading ? (
+            <StatCardSkeleton color="purple" />
+          ) : assignmentsData.error ? (
+            <CardError 
+              message={assignmentsData.error} 
+              onRetry={() => fetchAssignmentsData(coursesData.data.courseIds)} 
+            />
+          ) : (
+            <motion.div 
+              whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(168, 85, 247, 0.1)" }}
+              className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+            >
+              <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-purple-100/50 dark:bg-purple-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-purple-100/30 dark:bg-purple-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+              <div className="relative flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Pending Assignments</p>
+                  <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{assignmentsData.data.count}</h3>
+                </div>
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                  <Clock className="h-5 w-5 text-purple-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center">
+                <div className="text-xs font-medium text-purple-500 dark:text-purple-400 flex items-center">
+                  {assignmentsData.data.count > 0 ? (
+                    <Link to="/students/managecourses" className="flex items-center hover:underline">
+                      <span>{assignmentsData.data.count} assignments due soon</span>
+                      <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  ) : (
+                    <span>No pending assignments</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tests Card */}
+          {testsData.isLoading ? (
+            <StatCardSkeleton color="amber" />
+          ) : testsData.error ? (
+            <CardError 
+              message={testsData.error} 
+              onRetry={fetchTestsData} 
+            />
+          ) : (
+            <motion.div 
+              whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.1)" }}
+              className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+            >
+              <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-amber-100/50 dark:bg-amber-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-amber-100/30 dark:bg-amber-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+              <div className="relative flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Upcoming Tests</p>
+                  <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{testsData.data.count}</h3>
+                </div>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                  <BarChart3 className="h-5 w-5 text-amber-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center">
+                <div className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center">
+                  {testsData.data.count > 0 ? (
+                    <Link to="/students/tests" className="flex items-center hover:underline">
+                      <span>{testsData.data.count} tests this week</span>
+                      <ArrowRight className="h-3.5 w-3.5 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  ) : (
+                    <span>No upcoming tests</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Attendance Card */}
+          {attendanceData.isLoading ? (
+            <AttendanceCardSkeleton />
+          ) : attendanceData.error ? (
+            <CardError 
+              message={attendanceData.error} 
+              onRetry={fetchAttendanceData} 
+            />
+          ) : (
+            <motion.div 
+              whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(16, 185, 129, 0.1)" }}
+              className="relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow p-6 border border-gray-100 dark:border-neutral-700 group"
+            >
+              <div className="absolute -right-12 -top-12 w-24 h-24 rounded-full bg-green-100/50 dark:bg-green-900/20 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="absolute right-0 bottom-0 w-16 h-16 rounded-full bg-green-100/30 dark:bg-green-900/10 group-hover:scale-150 transition-transform duration-700 delay-100"></div>
+              <div className="relative flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Attendance</p>
+                  <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{attendanceData.data.percentage}%</h3>
+                </div>
+                <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg shadow-inner flex items-center justify-center transform transition-transform group-hover:rotate-12">
+                  <Award className="h-5 w-5 text-green-500" />
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col space-y-2">
+                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                  <div 
+                    className={`h-2.5 rounded-full relative ${
+                      attendanceData.data.percentage >= 85 ? 'bg-gradient-to-r from-green-400 to-green-500' : 
+                      attendanceData.data.percentage >= 75 ? 'bg-gradient-to-r from-amber-300 to-amber-500' : 'bg-gradient-to-r from-red-400 to-red-500'
+                    }`}
+                    style={{width: `${attendanceData.data.percentage}%`}}
+                  >
+                    <div className="absolute -inset-y-full right-0 w-2 bg-white/20 skew-x-12 animate-shimmer"></div>
+                  </div>
+                </div>
+                <div className="w-full flex justify-between text-xs">
+                  <span className="text-red-500">0%</span>
+                  <span className="text-amber-500">50%</span>
+                  <span className="text-green-500">100%</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
+        {/* Quick Access Section */}
         <motion.div 
           variants={itemVariants}
           className="mb-10"
@@ -661,6 +871,7 @@ const Dash = () => {
         </motion.div>
       </motion.div>
       
+      {/* Chat button */}
       {showChatButton && (
         <motion.div 
           className="fixed bottom-6 right-6 z-50"
@@ -696,6 +907,7 @@ const Dash = () => {
         </motion.div>
       )}
       
+      {/* Chat panel */}
       <motion.div
         className={`fixed bottom-24 right-6 w-80 sm:w-96 bg-white dark:bg-neutral-800 rounded-xl shadow-xl z-40 overflow-hidden border border-gray-200 dark:border-neutral-700`}
         initial={{ opacity: 0, y: 50, scale: 0.8 }}
