@@ -12,7 +12,6 @@ const CoursesPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [mockMode, setMockMode] = useState(false); // Use mock data if API isn't ready yet
   const [stats, setStats] = useState({
     totalCourses: 0,
     totalTeachers: 0,
@@ -25,177 +24,48 @@ const CoursesPage = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      
-      // Try to fetch from the real API endpoint
-      try {
-        const response = await axios.get(`${BASE_URL}/api/courses/all-courses`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`
-          }
-        });
-        
-        // Process the response to count only ACCEPTED enrollments
-        const processedCourses = response.data.map(course => {
-          // If the API includes acceptance status, filter by it
-          if (course.enrollments) {
-            const acceptedCount = course.enrollments.filter(e => e.status === 'ACCEPTED').length;
-            return {
-              ...course,
-              _count: {
-                ...course._count,
-                acceptedEnrollments: acceptedCount
-              }
-            };
-          }
-          // If API doesn't have detailed enrollment info, use the total count (will be fixed in backend)
-          return course;
-        });
-        
-        setCourses(processedCourses);
-        setFilteredCourses(processedCourses);
-        
-        // Get stats with correct student counts
-        const uniqueTeachers = new Set(processedCourses.map(course => course.teacherId));
-        const totalStudents = processedCourses.reduce((sum, course) => 
-          sum + (course._count?.acceptedEnrollments || course._count?.enrollments || 0), 0);
-        
-        setStats({
-          totalCourses: processedCourses.length,
-          totalTeachers: uniqueTeachers.size,
-          totalStudents
-        });
-        
-        setMockMode(false);
-      } catch (apiError) {
-        console.warn('API not available, using mock data:', apiError);
-        setMockMode(true);
-        
-        // If the API call failed, use mock data
-        const mockCourses = [
-          { 
-            id: 1, 
-            name: 'Digital Signal Processing', 
-            courseCode: 'EI401', 
-            semester: '7',
-            session: '2023-24',
-            teacher: { firstName: 'Robert', lastName: 'Brown' },
-            _count: { 
-              enrollments: 45,
-              // For mock data, we'll assume 85% of enrollments are accepted
-              acceptedEnrollments: 38
-            }
-          },
-          { 
-            id: 2, 
-            name: 'Control Systems', 
-            courseCode: 'EI303', 
-            semester: '5',
-            session: '2023-24',
-            teacher: { firstName: 'Sarah', lastName: 'Johnson' },
-            _count: { 
-              enrollments: 52,
-              acceptedEnrollments: 44
-            }
-          },
-          { 
-            id: 3, 
-            name: 'Digital Electronics', 
-            courseCode: 'EI301', 
-            semester: '5',
-            session: '2023-24',
-            teacher: { firstName: 'John', lastName: 'Smith' },
-            _count: { 
-              enrollments: 48,
-              acceptedEnrollments: 41
-            }
-          },
-          { 
-            id: 4, 
-            name: 'Microprocessors', 
-            courseCode: 'EI302', 
-            semester: '5',
-            session: '2023-24',
-            teacher: { firstName: 'Emily', lastName: 'Davis' },
-            _count: { 
-              enrollments: 47,
-              acceptedEnrollments: 40
-            }
-          },
-          { 
-            id: 5, 
-            name: 'Signals and Systems', 
-            courseCode: 'EI203', 
-            semester: '3',
-            session: '2023-24',
-            teacher: { firstName: 'Michael', lastName: 'Wilson' },
-            _count: { 
-              enrollments: 55,
-              acceptedEnrollments: 47
-            }
-          },
-          { 
-            id: 6, 
-            name: 'Circuit Theory', 
-            courseCode: 'EI201', 
-            semester: '3',
-            session: '2023-24',
-            teacher: { firstName: 'Jessica', lastName: 'Martinez' },
-            _count: { 
-              enrollments: 51,
-              acceptedEnrollments: 43
-            }
-          },
-          { 
-            id: 7, 
-            name: 'Advanced Signal Processing', 
-            courseCode: 'EI501', 
-            semester: '1',
-            session: '2023-24',
-            teacher: { firstName: 'David', lastName: 'Anderson' },
-            _count: { 
-              enrollments: 22,
-              acceptedEnrollments: 19
-            }
-          },
-          { 
-            id: 8, 
-            name: 'Industrial Automation', 
-            courseCode: 'EI502', 
-            semester: '1',
-            session: '2023-24',
-            teacher: { firstName: 'Lisa', lastName: 'Thompson' },
-            _count: { 
-              enrollments: 24,
-              acceptedEnrollments: 20
-            }
-          }
-        ];
+      setError(null);
 
-        // Make sure all mock courses have acceptedEnrollments
-        const processedMockCourses = mockCourses.map(course => ({
-          ...course,
-          _count: {
-            ...course._count,
-            // If not explicitly set above, assume 85% of enrollments are accepted
-            acceptedEnrollments: course._count.acceptedEnrollments || Math.floor(course._count.enrollments * 0.85)
-          }
-        }));
+      const response = await axios.get(`${BASE_URL}/api/courses/all-courses`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        }
+      });
 
-        setCourses(processedMockCourses);
-        setFilteredCourses(processedMockCourses);
-        
-        // Set mock stats with accepted enrollments
-        setStats({
-          totalCourses: processedMockCourses.length,
-          totalTeachers: new Set(processedMockCourses.map(course => course.teacher.firstName + course.teacher.lastName)).size,
-          totalStudents: processedMockCourses.reduce((sum, course) => sum + course._count.acceptedEnrollments, 0)
-        });
-      }
-      
-      setLoading(false);
+      const processedCourses = response.data.map(course => {
+        if (course.enrollments) {
+          const acceptedCount = course.enrollments.filter(e => e.status === 'ACCEPTED').length;
+          return {
+            ...course,
+            _count: {
+              ...course._count,
+              acceptedEnrollments: acceptedCount
+            }
+          };
+        }
+        return course;
+      });
+
+      setCourses(processedCourses);
+      setFilteredCourses(processedCourses);
+
+      const uniqueTeachers = new Set(processedCourses.map(course => course.teacherId));
+      const totalStudents = processedCourses.reduce((sum, course) => 
+        sum + (course._count?.acceptedEnrollments || course._count?.enrollments || 0), 0);
+
+      setStats({
+        totalCourses: processedCourses.length,
+        totalTeachers: uniqueTeachers.size,
+        totalStudents
+      });
+
     } catch (err) {
       console.error('Error fetching courses:', err);
       setError(err.message || 'Failed to fetch courses');
+      setCourses([]);
+      setFilteredCourses([]);
+      setStats({ totalCourses: 0, totalTeachers: 0, totalStudents: 0 });
+    } finally {
       setLoading(false);
     }
   };
@@ -205,7 +75,6 @@ const CoursesPage = () => {
   }, []);
 
   useEffect(() => {
-    // Filter courses based on search term
     if (searchTerm) {
       const filtered = courses.filter(course => 
         course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -265,13 +134,6 @@ const CoursesPage = () => {
           </div>
         )}
 
-        {mockMode && (
-          <div className="border px-4 py-3 rounded mb-4 bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900 dark:border-yellow-800 dark:text-yellow-200">
-            Using mock data. The actual HOD API endpoint may not be available yet.
-          </div>
-        )}
-
-        {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <StatCard 
             title="Total Courses" 
@@ -293,7 +155,6 @@ const CoursesPage = () => {
           />
         </div>
 
-        {/* Search bar */}
         <div className="relative flex-grow mb-6">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-gray-400" />
@@ -307,7 +168,6 @@ const CoursesPage = () => {
           />
         </div>
 
-        {/* Course cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.length > 0 ? (
             filteredCourses.map(course => (
@@ -325,32 +185,26 @@ const CoursesPage = () => {
         </div>
       </div>
 
-      {/* Course Detail Modal */}
       {selectedCourse && (
         <CourseDetailModal 
           course={selectedCourse} 
           onClose={handleCloseModal} 
-          mockMode={mockMode}
           onViewAttendance={() => setViewingAttendance(true)}
           onViewStudents={() => setViewingStudents(true)}
         />
       )}
 
-      {/* Attendance Dialog */}
       {viewingAttendance && selectedCourse && (
         <CourseAttendanceDialog
           course={selectedCourse}
           onClose={() => setViewingAttendance(false)}
-          mockMode={mockMode}
         />
       )}
 
-      {/* Students List Dialog */}
       {viewingStudents && selectedCourse && (
         <CourseStudentsDialog
           course={selectedCourse}
           onClose={() => setViewingStudents(false)}
-          mockMode={mockMode}
         />
       )}
     </div>
@@ -381,7 +235,6 @@ const StatCard = ({ title, value, icon, color }) => {
 };
 
 const CourseCard = ({ course, onClick }) => {
-  // Determine semester background color
   const getSemesterColor = (semester) => {
     const semesterNum = parseInt(semester);
     if (semesterNum <= 2) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
@@ -429,7 +282,7 @@ const CourseCard = ({ course, onClick }) => {
   );
 };
 
-const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance, onViewStudents }) => {
+const CourseDetailModal = ({ course, onClose, onViewAttendance, onViewStudents }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-[90vw] md:w-[600px] max-h-[80vh] overflow-y-auto">
@@ -446,14 +299,6 @@ const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance, onView
             </svg>
           </button>
         </div>
-
-        {mockMode && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded p-4 mb-4 text-yellow-800 dark:text-yellow-200">
-            <p className="text-sm">
-              Showing mock data. The actual course details API may not be available yet.
-            </p>
-          </div>
-        )}
 
         <div className="space-y-4">
           <div className="bg-gray-50 dark:bg-neutral-900 p-4 rounded-lg">
@@ -514,57 +359,38 @@ const CourseDetailModal = ({ course, onClose, mockMode, onViewAttendance, onView
   );
 };
 
-// New component for course attendance dialog
-const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
+const CourseAttendanceDialog = ({ course, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [attendanceData, setAttendanceData] = useState([]);
   const [exporting, setExporting] = useState(false);
   const [exportType, setExportType] = useState('monthly');
-  const [month, setMonth] = useState(new Date().getMonth() + 1); // Current month
-  const [year, setYear] = useState(new Date().getFullYear()); // Current year
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [year, setYear] = useState(new Date().getFullYear());
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [error, setError] = useState(null);
   
   useEffect(() => {
-    if (mockMode) {
-      // Simulate API delay
-      setTimeout(() => {
-        const mockAttendance = Array.from({ length: 20 }, (_, i) => ({
-          id: i + 1,
-          date: new Date(2023, 6 + Math.floor(i/5), 1 + (i % 30)).toISOString().split('T')[0],
-          attendees: 15 + Math.floor(Math.random() * 10),
-          totalStudents: 30,
-          percentage: Math.round((15 + Math.floor(Math.random() * 10)) / 30 * 100)
-        }));
-        setAttendanceData(mockAttendance);
-        setLoading(false);
-      }, 1000);
-    } else {
-      // Fetch real attendance data from API
-      fetchAttendanceData();
-    }
-  }, [course.id, mockMode]);
+    fetchAttendanceData();
+  }, [course.id]);
   
   const fetchAttendanceData = async () => {
     try {
       setLoading(true);
-      // Using the correct endpoint from attendance.js routes
+      setError(null);
+
       const response = await axios.get(`${BASE_URL}/api/attendance/courses/${course.id}/attendance`, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`
         }
       });
-      
-      // Format the attendance data from the API response
+
       const formattedData = response.data.map(session => {
-        // Count responses as attendees
         const attendees = session._count?.responses || 0;
-        // Calculate percentage
         const percentage = session.totalStudents > 0 
           ? Math.round((attendees / session.totalStudents) * 100) 
           : 0;
-          
+
         return {
           id: session.id,
           date: session.date,
@@ -573,35 +399,25 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
           percentage: percentage
         };
       });
-      
+
       setAttendanceData(formattedData);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching attendance data:', err);
-      setError('Failed to load attendance data. Using mock data instead.');
-      
-      // Fall back to mock data if API fails
-      setTimeout(() => {
-        const mockAttendance = Array.from({ length: 20 }, (_, i) => ({
-          id: i + 1,
-          date: new Date(2023, 6 + Math.floor(i/5), 1 + (i % 30)).toISOString().split('T')[0],
-          attendees: 15 + Math.floor(Math.random() * 10),
-          totalStudents: 30,
-          percentage: Math.round((15 + Math.floor(Math.random() * 10)) / 30 * 100)
-        }));
-        setAttendanceData(mockAttendance);
-        setLoading(false);
-      }, 500);
+      setError(err.message || 'Failed to load attendance data.');
+      setAttendanceData([]);
+      setLoading(false);
     }
   };
   
   const handleExportAttendance = async () => {
     try {
       setExporting(true);
-      
+      setError(null);
+
       let endpoint;
       let params = { session: course.session, semester: course.semester };
-      
+
       if (exportType === 'monthly') {
         endpoint = `${BASE_URL}/api/attendance/attendance/monthly-report/${course.id}`;
         params = { ...params, month, year };
@@ -609,42 +425,33 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
         endpoint = `${BASE_URL}/api/attendance/attendance/range-report/${course.id}`;
         params = { ...params, startDate, endDate };
       }
-      
-      if (mockMode) {
-        // Simulate export in mock mode
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        alert('Export simulated in mock mode');
-      } else {
-        // Real export
-        const response = await axios.get(endpoint, {
-          params,
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`
-          },
-          responseType: 'blob'
-        });
-        
-        // Create download link
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        const filename = exportType === 'monthly' 
-          ? `attendance_${course.courseCode}_${month}_${year}.xlsx` 
-          : `attendance_${course.courseCode}_${startDate}_to_${endDate}.xlsx`;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
+
+      const response = await axios.get(endpoint, {
+        params,
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = exportType === 'monthly' 
+        ? `attendance_${course.courseCode}_${month}_${year}.xlsx` 
+        : `attendance_${course.courseCode}_${startDate}_to_${endDate}.xlsx`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (err) {
       console.error('Error exporting attendance:', err);
-      setError('Failed to export attendance report');
+      setError(err.message || 'Failed to export attendance report');
     } finally {
       setExporting(false);
     }
   };
   
-  // Generate month options
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -667,21 +474,12 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
           </button>
         </div>
         
-        {mockMode && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded p-4 mb-4 text-yellow-800 dark:text-yellow-200">
-            <p className="text-sm">
-              Showing mock attendance data. The actual API may not be available yet.
-            </p>
-          </div>
-        )}
-        
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 rounded p-4 mb-4 text-red-800 dark:text-red-200">
             <p className="text-sm font-medium">{error}</p>
           </div>
         )}
         
-        {/* Export controls */}
         <div className="mb-6 bg-gray-50 dark:bg-neutral-900 rounded-lg p-4">
           <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Export Attendance Report</h3>
           
@@ -786,7 +584,6 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
           </div>
         </div>
         
-        {/* Attendance data table */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
@@ -846,8 +643,7 @@ const CourseAttendanceDialog = ({ course, onClose, mockMode }) => {
   );
 };
 
-// New component for course students dialog
-const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
+const CourseStudentsDialog = ({ course, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -856,54 +652,27 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   
   useEffect(() => {
-    if (mockMode) {
-      // Simulate API delay with mock data
-      setTimeout(() => {
-        const mockStudents = Array.from({ length: 30 }, (_, i) => ({
-          id: i + 1,
-          firstName: ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Mark', 'Lisa'][i % 8],
-          lastName: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson'][i % 8],
-          enrollmentNumber: `0901EI${22 - (i % 5)}${String(i+1).padStart(3, '0')}`,
-          email: `student${i+1}@example.com`,
-          attendance: `${75 + Math.floor(Math.random() * 25)}%`
-        }));
-        setStudents(mockStudents);
-        setLoading(false);
-      }, 1000);
-    } else {
-      // Fetch real student data from API
-      fetchStudents();
-    }
-  }, [course.id, mockMode]);
+    fetchStudents();
+  }, [course.id]);
   
   const fetchStudents = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const response = await axios.get(`${BASE_URL}/api/hod/courses/${course.id}`, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`
         }
       });
-      
+
       setStudents(response.data.students || []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching students:', err);
-      setError('Failed to load students. Using mock data instead.');
-      
-      // Fall back to mock data if API fails
-      setTimeout(() => {
-        const mockStudents = Array.from({ length: 30 }, (_, i) => ({
-          id: i + 1,
-          firstName: ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Mark', 'Lisa'][i % 8],
-          lastName: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson'][i % 8],
-          enrollmentNumber: `0901EI${22 - (i % 5)}${String(i+1).padStart(3, '0')}`,
-          email: `student${i+1}@example.com`,
-          attendance: `${75 + Math.floor(Math.random() * 25)}%`
-        }));
-        setStudents(mockStudents);
-        setLoading(false);
-      }, 500);
+      setError(err.message || 'Failed to load students.');
+      setStudents([]);
+      setLoading(false);
     }
   };
   
@@ -916,39 +685,31 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
   const handleExportStudentList = async () => {
     try {
       setExportingList(true);
-      
-      if (mockMode) {
-        // Simulate export in mock mode
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        alert('Student list export simulated in mock mode');
-      } else {
-        // Create a simple CSV string - removed email from header and data
-        const csvContent = [
-          ['Enrollment Number', 'First Name', 'Last Name'].join(','),
-          ...filteredStudents.map(student => 
-            [
-              student.enrollmentNumber || 'N/A', 
-              student.firstName, 
-              student.lastName
-            ].join(',')
-          )
-        ].join('\n');
-        
-        // Create a Blob from the CSV string
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        // Create a link and click it to trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${course.courseCode}_student_list.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      setError(null);
+
+      const csvContent = [
+        ['Enrollment Number', 'First Name', 'Last Name'].join(','),
+        ...filteredStudents.map(student => 
+          [
+            student.enrollmentNumber || 'N/A', 
+            student.firstName, 
+            student.lastName
+          ].join(',')
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${course.courseCode}_student_list.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error('Error exporting student list:', err);
-      setError('Failed to export student list');
+      setError(err.message || 'Failed to export student list');
     } finally {
       setExportingList(false);
     }
@@ -975,14 +736,6 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
           </button>
         </div>
         
-        {mockMode && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded p-4 mb-4 text-yellow-800 dark:text-yellow-200">
-            <p className="text-sm">
-              Showing mock student data. The actual API may not be available yet.
-            </p>
-          </div>
-        )}
-        
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 rounded p-4 mb-4 text-red-800 dark:text-red-200">
             <p className="text-sm font-medium">{error}</p>
@@ -990,7 +743,6 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
         )}
         
         <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
-          {/* Search bar */}
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
@@ -1004,7 +756,6 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
             />
           </div>
           
-          {/* Export button */}
           <button
             onClick={handleExportStudentList}
             disabled={exportingList || filteredStudents.length === 0}
@@ -1024,7 +775,6 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
           </button>
         </div>
         
-        {/* Students data table - removed email column */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
@@ -1074,13 +824,11 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
           </div>
         </div>
 
-        {/* Student Details Dialog */}
         {selectedStudent && (
           <StudentDetailsModal 
             student={selectedStudent} 
             course={course}
             onClose={() => setSelectedStudent(null)}
-            mockMode={mockMode}
           />
         )}
       </div>
@@ -1088,8 +836,7 @@ const CourseStudentsDialog = ({ course, onClose, mockMode }) => {
   );
 };
 
-// New component for student details modal
-const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
+const StudentDetailsModal = ({ student, course, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [attendanceData, setAttendanceData] = useState({
     present: 0,
@@ -1103,119 +850,58 @@ const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
   useEffect(() => {
     const fetchStudentDetails = async () => {
       setLoading(true);
+      setError(null);
 
-      if (mockMode) {
-        // Simulate API delay with mock data
-        setTimeout(() => {
-          const presentCount = Math.floor(Math.random() * 12) + 8; // 8-20 present days
-          const totalCount = 20;
-          const percentage = Math.round((presentCount / totalCount) * 100);
+      try {
+        const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/attendance-summary`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`
+          }
+        });
 
-          // Generate mock attendance sessions - include both present and absent sessions
-          const mockSessions = Array.from({ length: totalCount }, (_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            // First 'presentCount' sessions are present, rest are absent
-            return {
-              id: i + 1,
-              date: date.toISOString().split('T')[0],
-              status: i < presentCount ? 'Present' : 'Absent'
-            };
-          });
-
-          setAttendanceData({
-            present: presentCount,
-            total: totalCount,
-            percentage: `${percentage}%`,
-            sessions: mockSessions
-          });
-          setLoading(false);
-        }, 800);
-      } else {
-        try {
-          // Fetch real attendance data from API
-          const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/attendance-summary`, {
-            headers: {
-              Authorization: `Bearer ${Cookies.get("token")}`
-            }
-          });
-
-          // The API response should include all sessions (present and absent)
-          setAttendanceData({
-            present: response.data.summary.presentSessions,
-            total: response.data.summary.totalSessions,
-            percentage: `${response.data.summary.percentage}%`,
-            sessions: response.data.attendance || []
-          });
-          setLoading(false);
-        } catch (err) {
-          console.error('Error fetching student details:', err);
-          setError('Failed to load student details. Using mock data instead.');
-          
-          // Fall back to mock data
-          setTimeout(() => {
-            const presentCount = Math.floor(Math.random() * 12) + 8;
-            const totalCount = 20;
-            const percentage = Math.round((presentCount / totalCount) * 100);
-            
-            // Include both present and absent sessions in mock data
-            const mockSessions = Array.from({ length: totalCount }, (_, i) => {
-              const date = new Date();
-              date.setDate(date.getDate() - i);
-              return {
-                id: i + 1,
-                date: date.toISOString().split('T')[0],
-                status: i < presentCount ? 'Present' : 'Absent'
-              };
-            });
-            
-            setAttendanceData({
-              present: presentCount,
-              total: totalCount,
-              percentage: `${percentage}%`,
-              sessions: mockSessions
-            });
-            setLoading(false);
-          }, 500);
-        }
+        setAttendanceData({
+          present: response.data.summary.presentSessions,
+          total: response.data.summary.totalSessions,
+          percentage: `${response.data.summary.percentage}%`,
+          sessions: response.data.attendance || []
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching student details:', err);
+        setError(err.message || 'Failed to load student details.');
+        setAttendanceData({ present: 0, total: 0, percentage: '0%', sessions: [] });
+        setLoading(false);
       }
     };
 
     fetchStudentDetails();
-  }, [student.id, course.id, mockMode]);
+  }, [student.id, course.id]);
 
   const handleExportReport = async () => {
     try {
       setExportingReport(true);
-      
-      if (mockMode) {
-        // Simulate export in mock mode
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        alert('Report export simulated in mock mode');
-      } else {
-        // Real export - fetch report from API
-        const response = await axios.get(
-          `${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/report`,
-          {
-            headers: {
-              Authorization: `Bearer ${Cookies.get("token")}`
-            },
-            responseType: 'blob'
-          }
-        );
-        
-        // Create download link and trigger download
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${student.firstName}_${student.lastName}_${course.courseCode}_report.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
+      setError(null);
+
+      const response = await axios.get(
+        `${BASE_URL}/api/hod/students/${student.id}/courses/${course.id}/report`,
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`
+          },
+          responseType: 'blob'
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${student.firstName}_${student.lastName}_${course.courseCode}_report.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (err) {
       console.error('Error exporting report:', err);
-      setError('Failed to export report');
+      setError(err.message || 'Failed to export report');
     } finally {
       setExportingReport(false);
     }
@@ -1238,7 +924,6 @@ const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
           </button>
         </div>
 
-        {/* Student Information */}
         <div className="bg-gray-50 dark:bg-neutral-900 p-4 rounded-lg mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Student Information</h3>
           <div className="space-y-2">
@@ -1257,7 +942,6 @@ const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
           </div>
         </div>
 
-        {/* Attendance Summary */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Attendance Summary</h3>
@@ -1309,7 +993,6 @@ const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
                 </div>
               </div>
 
-              {/* Recent Attendance Sessions - Now including both present and absent sessions */}
               <div className="bg-white dark:bg-neutral-700 rounded-lg border border-gray-200 dark:border-neutral-600 overflow-hidden">
                 <div className="px-4 py-3 bg-gray-50 dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-600">
                   <h4 className="font-medium text-gray-700 dark:text-gray-300">Recent Sessions</h4>
@@ -1317,7 +1000,6 @@ const StudentDetailsModal = ({ student, course, onClose, mockMode }) => {
                 <div className="max-h-[200px] overflow-y-auto">
                   {attendanceData.sessions.length > 0 ? (
                     <div className="divide-y divide-gray-200 dark:divide-neutral-600">
-                      {/* Sort sessions by date (newest first) and take the most recent 10 */}
                       {attendanceData.sessions
                         .sort((a, b) => new Date(b.date) - new Date(a.date))
                         .slice(0, 10)

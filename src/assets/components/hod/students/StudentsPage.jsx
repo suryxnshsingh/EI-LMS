@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Search, Filter, RefreshCw, Eye, Calendar, Download, ChevronRight } from 'lucide-react';
+import { Loader2, Search, RefreshCw, Eye, Calendar, Download, ChevronRight } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
@@ -11,54 +11,30 @@ const StudentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterBy, setFilterBy] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [mockMode, setMockMode] = useState(false); // Use mock data if API isn't ready yet
   const [loadingAttendance, setLoadingAttendance] = useState({});
   const [exportingReport, setExportingReport] = useState({});
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      
-      // Try to fetch from the real API endpoint
-      try {
-        const response = await axios.get(`${BASE_URL}/api/hod/students`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`
-          }
-        });
-        
-        setStudents(response.data);
-        setFilteredStudents(response.data);
-        setMockMode(false);
-      } catch (apiError) {
-        console.warn('API not available, using mock data:', apiError);
-        setMockMode(true);
-        
-        // If the API call failed, use mock data
-        const mockStudents = [
-          { id: 1, firstName: 'John', lastName: 'Doe', enrollmentNumber: '0901EI201020', attendance: '85%' },
-          { id: 2, firstName: 'Jane', lastName: 'Smith', enrollmentNumber: '0901EI201021', attendance: '92%' },
-          { id: 3, firstName: 'Michael', lastName: 'Johnson', enrollmentNumber: '0901EI201022', attendance: '78%' },
-          { id: 4, firstName: 'Emily', lastName: 'Williams', enrollmentNumber: '0901EI201023', attendance: '90%' },
-          { id: 5, firstName: 'Robert', lastName: 'Brown', enrollmentNumber: '0901EI201024', attendance: '65%' },
-          { id: 6, firstName: 'Sarah', lastName: 'Davis', enrollmentNumber: '0901EI201025', attendance: '88%' },
-          { id: 7, firstName: 'William', lastName: 'Miller', enrollmentNumber: '0901EI201026', attendance: '95%' },
-          { id: 8, firstName: 'Olivia', lastName: 'Wilson', enrollmentNumber: '0901EI201027', attendance: '80%' },
-          { id: 9, firstName: 'James', lastName: 'Moore', enrollmentNumber: '0901EI201028', attendance: '72%' },
-          { id: 10, firstName: 'Sophia', lastName: 'Taylor', enrollmentNumber: '0901EI201029', attendance: '89%' },
-        ];
+      setError(null);
 
-        setStudents(mockStudents);
-        setFilteredStudents(mockStudents);
-      }
-      
-      setLoading(false);
+      const response = await axios.get(`${BASE_URL}/api/hod/students`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        }
+      });
+
+      setStudents(response.data);
+      setFilteredStudents(response.data);
     } catch (err) {
       console.error('Error fetching students:', err);
       setError(err.message || 'Failed to fetch students');
+      setStudents([]);
+      setFilteredStudents([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -68,18 +44,16 @@ const StudentsPage = () => {
   }, []);
 
   useEffect(() => {
-    // Filter students when search term or filter changes
     let result = students;
-    
-    // Filter by search term
+
     if (searchTerm) {
-      result = result.filter(student => 
+      result = result.filter(student =>
         student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.enrollmentNumber.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     setFilteredStudents(result);
   }, [searchTerm, students]);
 
@@ -91,60 +65,20 @@ const StudentsPage = () => {
 
   const handleViewAttendance = async (student) => {
     try {
-      // Set loading state for this specific student
       setLoadingAttendance(prev => ({ ...prev, [student.id]: true }));
-      
-      if (!mockMode) {
-        // In real mode, fetch detailed student data from API
-        const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`
-          }
-        });
-        setSelectedStudent(response.data);
-      } else {
-        // In mock mode, create mock data with multiple courses
-        // Adding slight delay to simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const mockStudentDetail = {
-          student: {
-            id: student.id,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            enrollmentNumber: student.enrollmentNumber || 'N/A',
-            email: 'student@example.com'
-          },
-          enrollments: [
-            { id: 1, courseId: 101, courseName: 'Digital Electronics', courseCode: 'EI301', semester: '5', status: 'ACCEPTED' },
-            { id: 2, courseId: 102, courseName: 'Control Systems', courseCode: 'EI302', semester: '5', status: 'ACCEPTED' },
-            { id: 3, courseId: 103, courseName: 'Microprocessors', courseCode: 'EI303', semester: '5', status: 'ACCEPTED' }
-          ],
-          attendance: [
-            { courseName: 'Digital Electronics', courseCode: 'EI301', present: 12, total: 15, percentage: '80%' },
-            { courseName: 'Control Systems', courseCode: 'EI302', present: 8, total: 10, percentage: '80%' },
-            { courseName: 'Microprocessors', courseCode: 'EI303', present: 9, total: 12, percentage: '75%' }
-          ]
-        };
-        setSelectedStudent(mockStudentDetail);
-      }
+      setError(null);
+
+      const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`
+        }
+      });
+      setSelectedStudent(response.data);
     } catch (err) {
       console.error('Error fetching student details:', err);
-      // Still set the student so we can show something in mock mode
-      const mockErrorStudent = {
-        student: {
-          id: student.id,
-          firstName: student.firstName,
-          lastName: student.lastName,
-          enrollmentNumber: student.enrollmentNumber || 'N/A',
-          email: 'error@example.com'
-        },
-        enrollments: [],
-        attendance: []
-      };
-      setSelectedStudent(mockErrorStudent);
+      setError(err.message || `Failed to fetch details for ${student.firstName} ${student.lastName}.`);
+      setSelectedStudent(null);
     } finally {
-      // Clear loading state for this student
       setLoadingAttendance(prev => ({ ...prev, [student.id]: false }));
     }
   };
@@ -152,33 +86,25 @@ const StudentsPage = () => {
   const handleExportReport = async (student) => {
     try {
       setExportingReport(prev => ({ ...prev, [student.id]: true }));
-      
-      if (!mockMode) {
-        // In real mode, request report from API
-        const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/report`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-          responseType: 'blob', // Important for file download
-        });
-        
-        // Create download link and click it
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${student.firstName}_${student.lastName}_attendance_report.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } else {
-        // In mock mode, simulate delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Export report for student:', student);
-        alert('Report export simulated in mock mode');
-      }
+      setError(null);
+
+      const response = await axios.get(`${BASE_URL}/api/hod/students/${student.id}/report`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${student.firstName}_${student.lastName}_attendance_report.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (err) {
       console.error('Error exporting report:', err);
-      alert('Failed to export report. Please try again.');
+      setError(err.message || 'Failed to export report. Please try again.');
     } finally {
       setExportingReport(prev => ({ ...prev, [student.id]: false }));
     }
@@ -212,12 +138,6 @@ const StudentsPage = () => {
         {error && (
           <div className="border px-4 py-3 rounded mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900 dark:border-red-800 dark:text-red-200">
             {error}
-          </div>
-        )}
-
-        {mockMode && (
-          <div className="border px-4 py-3 rounded mb-4 bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900 dark:border-yellow-800 dark:text-yellow-200">
-            Using mock data. The actual HOD API endpoint may not be available yet.
           </div>
         )}
 
@@ -335,73 +255,64 @@ const StudentsPage = () => {
         <StudentDetailDialog
           student={selectedStudent}
           onClose={() => setSelectedStudent(null)}
-          mockMode={mockMode}
         />
       )}
     </div>
   );
 };
 
-const StudentDetailDialog = ({ student, onClose, mockMode }) => {
+const StudentDetailDialog = ({ student, onClose }) => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [exportingCourseReport, setExportingCourseReport] = useState(false);
-  
-  // Calculate overall attendance across all courses
+  const [error, setError] = useState(null);
+
   const calculateOverallAttendance = () => {
     if (!student.attendance || student.attendance.length === 0) {
       return { present: 0, total: 0, percentage: '0%' };
     }
-    
+
     const totalPresent = student.attendance.reduce((sum, course) => sum + course.present, 0);
     const totalClasses = student.attendance.reduce((sum, course) => sum + course.total, 0);
     const overallPercentage = totalClasses > 0 
       ? `${Math.round((totalPresent / totalClasses) * 100)}%` 
       : '0%';
-    
+
     return {
       present: totalPresent,
       total: totalClasses,
       percentage: overallPercentage
     };
   };
-  
+
   const overallAttendance = calculateOverallAttendance();
 
   const handleExportCourseReport = async () => {
     if (!selectedCourse) return;
-    
+
     try {
       setExportingCourseReport(true);
-      
-      if (!mockMode) {
-        // In real mode, request course-specific report from API
-        const response = await axios.get(
-          `${BASE_URL}/api/hod/students/${student.student.id}/courses/${selectedCourse.courseId}/report`, 
-          {
-            headers: {
-              Authorization: `Bearer ${Cookies.get("token")}`,
-            },
-            responseType: 'blob', // Important for file download
-          }
-        );
-        
-        // Create download link and click it
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${student.student.firstName}_${student.student.lastName}_${selectedCourse.courseCode}_report.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } else {
-        // In mock mode, simulate delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Export course report:', {student: student.student, course: selectedCourse});
-        alert('Course report export simulated in mock mode');
-      }
+      setError(null);
+
+      const response = await axios.get(
+        `${BASE_URL}/api/hod/students/${student.student.id}/courses/${selectedCourse.courseId}/report`, 
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+          responseType: 'blob',
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${student.student.firstName}_${student.student.lastName}_${selectedCourse.courseCode}_report.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (err) {
       console.error('Error exporting course report:', err);
-      alert('Failed to export course report. Please try again.');
+      setError(err.message || 'Failed to export course report. Please try again.');
     } finally {
       setExportingCourseReport(false);
     }
@@ -432,16 +343,12 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
           </button>
         </div>
 
-        {mockMode && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded p-4 mb-4 text-yellow-800 dark:text-yellow-200">
-            <p className="font-medium">Mock Data Mode</p>
-            <p className="text-sm mt-1">
-              The detailed view for students is in mock mode. API integration pending.
-            </p>
+        {error && (
+          <div className="border px-4 py-3 rounded mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900 dark:border-red-800 dark:text-red-200">
+            {error}
           </div>
         )}
-        
-        {/* Overall Attendance Summary */}
+
         <div className="mb-6 p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Overall Attendance</h3>
@@ -483,14 +390,13 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left side - Course list */}
           <div className="md:col-span-1 bg-gray-50 dark:bg-neutral-900 rounded-lg p-4">
             <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Enrolled Courses</h3>
             
             {student.enrollments && student.enrollments.length > 0 ? (
               <div className="space-y-2">
                 {student.enrollments
-                  .filter(enrollment => enrollment.status === 'ACCEPTED') // Only show ACCEPTED enrollments
+                  .filter(enrollment => enrollment.status === 'ACCEPTED')
                   .map((enrollment) => (
                     <div 
                       key={enrollment.id}
@@ -515,7 +421,6 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
             )}
           </div>
           
-          {/* Right side - Attendance details */}
           <div className="md:col-span-2">
             {selectedCourse ? (
               <div>
@@ -542,7 +447,6 @@ const StudentDetailDialog = ({ student, onClose, mockMode }) => {
                   </button>
                 </div>
                 
-                {/* Get attendance for this specific course */}
                 {(() => {
                   const courseAttendance = student.attendance.find(
                     a => a.courseCode === selectedCourse.courseCode
