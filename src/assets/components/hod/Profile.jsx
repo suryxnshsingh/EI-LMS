@@ -17,6 +17,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     // For demo purposes, we'll load from cookies and add some mock data
@@ -41,13 +42,27 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUpdating(true);
+    setError(null);
+    setSuccessMessage('');
     
+    // TODO: Implement actual API call to update profile information
+    // For now, this only updates cookies locally.
+    console.log("Profile update submitted. Data:", profile); 
     // Simulating an API call
     setTimeout(() => {
-      // Update cookies with new name
-      Cookies.set('firstName', profile.firstName);
-      Cookies.set('lastName', profile.lastName);
-      setUpdating(false);
+      try {
+        // Update cookies with new name
+        Cookies.set('firstName', profile.firstName);
+        Cookies.set('lastName', profile.lastName);
+        // Cookies.set('userEmail', profile.email); // Email is usually not changed by user directly or requires verification
+        // Cookies.set('phone', profile.phone); // If phone is to be saved in cookies
+        setSuccessMessage('Profile information updated locally in cookies.');
+      } catch (err) {
+        setError('Failed to update profile information locally.');
+        console.error("Error updating cookies:", err);
+      } finally {
+        setUpdating(false);
+      }
     }, 1000);
   };
 
@@ -70,8 +85,13 @@ const Profile = () => {
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4">
             {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg mb-4">
+            {successMessage}
           </div>
         )}
 

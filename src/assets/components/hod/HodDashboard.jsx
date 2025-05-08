@@ -19,21 +19,8 @@ const HodDashboard = () => {
     // Fetch dashboard statistics
     const fetchStats = async () => {
       setLoading(true);
+      setError(null); // Reset error before fetching
       try {
-        if (import.meta.env.VITE_MOCK_MODE === 'true') {
-          // Mock mode
-          setTimeout(() => {
-            setStats({
-              totalStudents: 120,
-              totalCourses: 8,
-              activeAttendance: 3,
-              upcomingTests: 5
-            });
-            setLoading(false);
-          }, 800);
-          return;
-        }
-        
         // Real API call
         const response = await axios.get(`${BASE_URL}/api/hod/dashboard-stats`, {
           headers: {
@@ -42,25 +29,26 @@ const HodDashboard = () => {
         });
         
         // Count all students, not just those with accepted enrollments
-        const allStudents = response.data.allStudents || 120;
+        const allStudents = response.data.allStudents || 0; // Default to 0 if not present
         
         setStats({
           // Include all students, not just those with accepted enrollments
           totalStudents: allStudents,
-          totalCourses: response.data.totalCourses || 8,
-          activeAttendance: response.data.activeAttendance || 3,
-          upcomingTests: response.data.upcomingTests || 5
+          totalCourses: response.data.totalCourses || 0, // Default to 0
+          activeAttendance: response.data.activeAttendance || 0, // Default to 0
+          upcomingTests: response.data.upcomingTests || 0 // Default to 0
         });
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
-        // Fall back to mock data
+        setError(err.message || 'Failed to fetch dashboard statistics.');
+        // Set stats to zero or a default error state if API fails
         setStats({
-          totalStudents: 120,
-          totalCourses: 8,
-          activeAttendance: 3,
-          upcomingTests: 5
+          totalStudents: 0,
+          totalCourses: 0,
+          activeAttendance: 0,
+          upcomingTests: 0
         });
+      } finally {
         setLoading(false);
       }
     };

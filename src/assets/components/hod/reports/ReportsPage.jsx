@@ -27,57 +27,30 @@ const ReportsPage = () => {
   const [selectedSemester, setSelectedSemester] = useState('');
   const [selectedSession, setSelectedSession] = useState('');
   const [generating, setGenerating] = useState(false);
-  const [mockMode, setMockMode] = useState(false); // Use mock data if API isn't ready yet
   const [reportFormat, setReportFormat] = useState('dateRange'); // 'dateRange' or 'monthly' format
+  const [error, setError] = useState(null); // Add error state
 
   // Fetch courses and students on component mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null); // Reset error
       try {
-        // Try to fetch from the real API endpoint
-        try {
-          const [coursesResponse, studentsResponse] = await Promise.all([
-            axios.get(`${BASE_URL}/api/courses/all-courses`, {
-              headers: { Authorization: `Bearer ${Cookies.get("token")}` }
-            }),
-            axios.get(`${BASE_URL}/api/hod/students`, {
-              headers: { Authorization: `Bearer ${Cookies.get("token")}` }
-            })
-          ]);
-          setCourses(coursesResponse.data);
-          setStudents(studentsResponse.data);
-          setMockMode(false);
-        } catch (apiError) {
-          console.warn('API not available, using mock data:', apiError);
-          setMockMode(true);
-          
-          // Mock courses data
-          const mockCourses = [
-            { id: 1, name: 'Digital Signal Processing', courseCode: 'EI401', semester: '7', session: '2023-24' },
-            { id: 2, name: 'Control Systems', courseCode: 'EI303', semester: '5', session: '2023-24' },
-            { id: 3, name: 'Digital Electronics', courseCode: 'EI301', semester: '5', session: '2023-24' },
-            { id: 4, name: 'Microprocessors', courseCode: 'EI302', semester: '5', session: '2023-24' },
-            { id: 5, name: 'Signals and Systems', courseCode: 'EI203', semester: '3', session: '2023-24' },
-            { id: 6, name: 'Circuit Theory', courseCode: 'EI201', semester: '3', session: '2023-24' },
-            { id: 7, name: 'Advanced Signal Processing', courseCode: 'EI501', semester: '1', session: '2023-24' },
-            { id: 8, name: 'Industrial Automation', courseCode: 'EI502', semester: '1', session: '2023-24' }
-          ];
-          
-          // Mock students data
-          const mockStudents = Array.from({ length: 20 }, (_, i) => ({
-            id: i + 1,
-            firstName: ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah'][i % 6],
-            lastName: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller'][i % 6],
-            enrollmentNumber: `0901EI${20 + Math.floor(i / 6)}${i.toString().padStart(3, '0')}`,
-            semester: `${Math.floor(i / 5) + 1}`
-          }));
-          
-          setCourses(mockCourses);
-          setStudents(mockStudents);
-        }
+        const [coursesResponse, studentsResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/api/courses/all-courses`, {
+            headers: { Authorization: `Bearer ${Cookies.get("token")}` }
+          }),
+          axios.get(`${BASE_URL}/api/hod/students`, {
+            headers: { Authorization: `Bearer ${Cookies.get("token")}` }
+          })
+        ]);
+        setCourses(coursesResponse.data);
+        setStudents(studentsResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(error.message || 'Failed to fetch initial data for reports.');
+        setCourses([]); // Clear data on error
+        setStudents([]); // Clear data on error
       } finally {
         setLoading(false);
       }
@@ -89,144 +62,83 @@ const ReportsPage = () => {
   const handleGenerateReport = async (event) => {
     event.preventDefault();
     setGenerating(true);
+    setError(null); // Reset error
     
     try {
-      if (mockMode) {
-        // Simulate a delay in mock mode
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Alert the user that this is mock data
-        alert('Report generation simulated in mock mode');
-      } else {
-        let endpoint;
-        let params = {};
-        
-        // Handle different report types and contexts
-        if (activeTab === 'department') {
-          if (reportType === 'attendance') {
-            endpoint = `${BASE_URL}/api/hod/reports/department/attendance`;
-            params = { semester: selectedSemester, session: selectedSession };
-          } else if (reportType === 'assignments') {
-            endpoint = `${BASE_URL}/api/hod/reports/department/assignments`;
-            params = { semester: selectedSemester, session: selectedSession };
-          } else if (reportType === 'tests') {
-            endpoint = `${BASE_URL}/api/hod/reports/department/tests`;
-            params = { semester: selectedSemester, session: selectedSession };
-          }
-        } else if (activeTab === 'course') {
-          if (!selectedCourse) throw new Error('No course selected');
-          
-          // Use same structure for all report types for consistency
-          if (reportFormat === 'monthly') {
-            // Monthly reports (attendance, assignments, tests)
-            if (reportType === 'attendance') {
-              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-attendance`;
-            } else if (reportType === 'assignments') {
-              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-assignments`;
-            } else if (reportType === 'tests') {
-              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-tests`;
-            }
-            
-            params = { 
-              month: selectedMonth, 
-              year: selectedYear,
-              semester: selectedCourse.semester,
-              session: selectedCourse.session 
-            };
-          } else {
-            // Date range reports (attendance, assignments, tests)
-            if (reportType === 'attendance') {
-              endpoint = `${BASE_URL}/api/attendance/attendance/range-report/${selectedCourse.id}`;
-            } else if (reportType === 'assignments') {
-              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/assignments`;
-            } else if (reportType === 'tests') {
-              endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/tests`;
-            }
-            
-            params = { 
-              startDate: dateRange.startDate, 
-              endDate: dateRange.endDate,
-              semester: selectedCourse.semester,
-              session: selectedCourse.session 
-            };
-          }
-        } else if (activeTab === 'student') {
-          if (!selectedStudent) throw new Error('No student selected');
-          
-          if (reportFormat === 'monthly') {
-            // Monthly student reports
-            if (reportType === 'attendance') {
-              endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/monthly-attendance`;
-            } else if (reportType === 'assignments') {
-              endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/monthly-assignments`;
-            } else if (reportType === 'tests') {
-              endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/monthly-tests`;
-            }
-            params = { month: selectedMonth, year: selectedYear };
-          } else {
-            // Date range student reports
-            if (reportType === 'attendance') {
-              endpoint = `${BASE_URL}/api/hod/students/${selectedStudent.id}/report`;
-            } else if (reportType === 'assignments') {
-              endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/assignments`;
-              params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
-            } else if (reportType === 'tests') {
-              endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/tests`;
-              params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
-            }
-          }
+      let endpoint;
+      let params = {};
+      let filename = 'report.xlsx'; // Default filename
+
+      if (activeTab === 'department') {
+        if (reportType === 'attendance') {
+          endpoint = `${BASE_URL}/api/hod/reports/department/attendance`;
+          params = { semester: selectedSemester, session: selectedSession };
+          filename = `Department_Attendance_Sem${selectedSemester}_${selectedSession}.xlsx`;
+        } else if (reportType === 'assignments') {
+          endpoint = `${BASE_URL}/api/hod/reports/department/assignments`;
+          params = { semester: selectedSemester, session: selectedSession };
+          filename = `Department_Assignments_Sem${selectedSemester}_${selectedSession}.xlsx`;
+        } else if (reportType === 'tests') {
+          endpoint = `${BASE_URL}/api/hod/reports/department/tests`;
+          params = { semester: selectedSemester, session: selectedSession };
+          filename = `Department_Tests_Sem${selectedSemester}_${selectedSession}.xlsx`;
         }
-        
-        console.log('Generating report with:', { endpoint, params });
-        
-        // Make the API request to generate the report
-        const response = await axios.get(endpoint, {
-          params,
-          headers: { 
-            Authorization: `Bearer ${Cookies.get("token")}` 
-          },
-          responseType: 'blob' // Important for file downloads
-        });
-        
-        // Create and trigger a download link
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        
-        // Set the appropriate filename based on report type
-        let filename = '';
-        if (activeTab === 'department') {
-          filename = `Department_${reportType}_Sem${selectedSemester}_${selectedSession}.xlsx`;
-        } else if (activeTab === 'course') {
-          if (reportFormat === 'monthly') {
-            const monthNames = [
-              'January', 'February', 'March', 'April', 'May', 'June',
-              'July', 'August', 'September', 'October', 'November', 'December'
-            ];
-            filename = `${selectedCourse.courseCode}_${monthNames[selectedMonth-1]}_${selectedYear}_${reportType}.xlsx`;
-          } else {
-            filename = `${selectedCourse.courseCode}_${reportType}_${dateRange.startDate}_to_${dateRange.endDate}.xlsx`;
-          }
-        } else if (activeTab === 'student') {
-          if (reportFormat === 'monthly') {
-            const monthNames = [
-              'January', 'February', 'March', 'April', 'May', 'June',
-              'July', 'August', 'September', 'October', 'November', 'December'
-            ];
-            filename = `${selectedStudent.enrollmentNumber || selectedStudent.id}_${monthNames[selectedMonth-1]}_${selectedYear}_${reportType}.xlsx`;
-          } else {
-            filename = `${selectedStudent.enrollmentNumber || selectedStudent.id}_${reportType}_report.xlsx`;
-          }
+      } else if (activeTab === 'course') {
+        if (!selectedCourse) {
+          setError('Please select a course.');
+          setGenerating(false);
+          return;
         }
-        
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        if (reportFormat === 'dateRange') {
+          endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/${reportType}`;
+          params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+          filename = `${selectedCourse.courseCode}_${reportType}_${dateRange.startDate}_to_${dateRange.endDate}.xlsx`;
+        } else { // monthly
+          endpoint = `${BASE_URL}/api/hod/reports/course/${selectedCourse.id}/monthly-${reportType}`;
+          params = { month: selectedMonth, year: selectedYear };
+          const monthName = months[selectedMonth -1];
+          filename = `${selectedCourse.courseCode}_${monthName}_${selectedYear}_${reportType}.xlsx`;
+        }
+      } else if (activeTab === 'student') {
+        if (!selectedStudent) {
+          setError('Please select a student.');
+          setGenerating(false);
+          return;
+        }
+        if (reportFormat === 'dateRange') {
+          endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/${reportType}`;
+          params = { startDate: dateRange.startDate, endDate: dateRange.endDate };
+          filename = `${selectedStudent.enrollmentNumber}_${reportType}_${dateRange.startDate}_to_${dateRange.endDate}.xlsx`;
+        } else { // monthly
+          endpoint = `${BASE_URL}/api/hod/reports/student/${selectedStudent.id}/monthly-${reportType}`;
+          params = { month: selectedMonth, year: selectedYear };
+          const monthName = months[selectedMonth -1];
+          filename = `${selectedStudent.enrollmentNumber}_${monthName}_${selectedYear}_${reportType}.xlsx`;
+        }
       }
+
+      if (!endpoint) {
+        setError('Invalid report configuration.');
+        setGenerating(false);
+        return;
+      }
+
+      const response = await axios.get(endpoint, {
+        params,
+        headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (error) {
       console.error('Error generating report:', error);
-      alert(`Failed to generate report: ${error.message || 'Unknown error'}`);
+      setError(error.response?.data?.error || error.message || 'Failed to generate report.');
     } finally {
       setGenerating(false);
     }
@@ -263,14 +175,14 @@ const ReportsPage = () => {
           </p>
         </div>
 
-        {mockMode && (
-          <div className="border px-4 py-3 rounded mb-4 bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-200">
+        {error && (
+          <div className="border px-4 py-3 rounded mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-200">
             <div className="flex items-start">
-              <FileText className="h-5 w-5 text-yellow-500 dark:text-yellow-300" />
+              <FileText className="h-5 w-5 text-red-500 dark:text-red-300" />
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">Using mock data</h3>
-                <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
-                  <p>The actual HOD API endpoints may not be available yet.</p>
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-400">
+                  <p>{error}</p>
                 </div>
               </div>
             </div>
