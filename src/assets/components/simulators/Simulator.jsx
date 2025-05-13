@@ -6,7 +6,7 @@ export function Simulator() {
   return (
     <div className="w-full h-full m-10 mb-20 -left-10 md:m-20 flex flex-col">
       <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
-      <div className="flex flex-col md:flex-row gap-10">
+      <div className="flex flex-col md:flex-row flex-wrap justify-center gap-10"> {/* Added flex-wrap and justify-center for better layout if more cards are added */}
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
@@ -36,6 +36,16 @@ export function Simulator() {
             containerClassName="bg-black"
             colors={[[125, 211, 252]]} 
             dotSize={4}/>
+        </Card>
+        <Card title="VHDL/Verilog" icon={<HDLIcon />} link='https://www.edaplayground.com/'> 
+          <CanvasRevealEffect
+            animationSpeed={5}
+            containerClassName="bg-sky-900" 
+            colors={[
+              [14, 165, 233], 
+              [56, 189, 248],
+            ]}
+            dotSize={3} />
         </Card>
       </div>
     </div>
@@ -138,6 +148,48 @@ const MatlabIcon = () => {
         <path d="M19.8,4.02c-.67.9-1.48,2.55-2.94,4.38-2.27,2.82-3.5,2.63-4.17,2.98a19.674,19.674,0,0,0-2.72,2.95l3.3,2.41c2.8-3.82,4.3-7.96,5.47-10.64A13.579,13.579,0,0,1,19.8,4.02Z" style={{ fill: "url(#a)" }}/>
         <path d="M20.8,3.3c-2.18,0-3.67,11.48-11.72,17.89,2.26-.37,4.22,5.24,5.12,7.51,4-.68,7.2-8.33,10.43-8.21,1.85.07,3.47,1.86,5.37,3.63C25.66,15,23.63,3.3,20.8,3.3Z" style={{ fill: "url(#b)" }}/>
       </g>
+    </svg>
+  );
+};
+
+const HDLIcon = () => { // New HDL Icon
+  return (
+    <svg
+      width="66"
+      height="65"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-12 w-12 text-black dark:text-white group-hover/canvas-card:text-white"
+    >
+      <path
+        d="M4 7V4H20V7L12 12L4 7Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 17H20V20H4V17Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 7L10 17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 7L14 17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 };
