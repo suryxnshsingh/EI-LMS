@@ -10,7 +10,7 @@ export function Simulator() {
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
-        <Card title="Circuit Simulator" icon={<CircuitBoardIcon />} link='http://localhost:5173/circuit'>
+        <Card title="Circuit Simulator" icon={<CircuitBoardIcon />} link='https://eilms.vercel.app/circuit'>
           <CanvasRevealEffect
             animationSpeed={5}
             containerClassName="bg-purple-900 dark:bg-black"
@@ -20,7 +20,7 @@ export function Simulator() {
             ]}
             dotSize={3} />
         </Card>
-        <Card title="Spice Simulator" icon={<AceternityIcon />} link='http://localhost:5173/spice'>
+        <Card title="Spice Simulator" icon={<AceternityIcon />} link='https://eilms.vercel.app/spice'>
           <CanvasRevealEffect
             animationSpeed={5}
             containerClassName="bg-pink-900 dark:bg-black"
