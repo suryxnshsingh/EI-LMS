@@ -6,7 +6,7 @@ export function Simulator() {
   return (
     <div className="w-full h-full m-10 mb-20 -left-10 md:m-20 flex flex-col">
       <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
-      <div className="flex flex-col md:flex-row flex-wrap justify-center gap-10"> {/* Added flex-wrap and justify-center for better layout if more cards are added */}
+      <div className="mx-auto max-w-5xl flex flex-row flex-wrap justify-center items-start gap-10">
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
@@ -37,7 +37,12 @@ export function Simulator() {
             colors={[[125, 211, 252]]} 
             dotSize={4}/>
         </Card>
-        <Card title="VHDL/Verilog" icon={<HDLIcon />} link='https://www.edaplayground.com/'> 
+        <Card 
+          title="VHDL/Verilog" 
+          icon={<HDLIcon />} 
+          link='https://www.edaplayground.com/' 
+          infoText={`Instructions to use VHDL/Verilog Simulation:\n\n1. When the page opens, log in (necessary to run, save and share your code.)\n2. Select “VHDL” under Language, then write your design (design.vhd) and testbench (testbench.vhd) in their respective panels.\n3. Fill the Top Entity with your testbench entity name and select "GHDL 3.0.0" in "Tools and Silmulators".\n4. Enable “Open EPWave after run” under the simulator options,\n5. Hit Run to simulate and view waveforms for all signals.`}
+        >
           <CanvasRevealEffect
             animationSpeed={5}
             containerClassName="bg-sky-900" 
@@ -52,8 +57,10 @@ export function Simulator() {
   );
 }
 
-const Card = ({ title, icon, children, link, disabled }) => {
+const Card = ({ title, icon, children, link, disabled, infoText }) => {
   const [hovered, setHovered] = React.useState(false);
+  const [infoHovered, setInfoHovered] = React.useState(false);
+
   return (
     <a
       href={disabled ? undefined : link}
@@ -67,6 +74,46 @@ const Card = ({ title, icon, children, link, disabled }) => {
       <Icon className="absolute h-6 w-6 -bottom-3 -left-3 dark:text-white text-black" />
       <Icon className="absolute h-6 w-6 -top-3 -right-3 dark:text-white text-black" />
       <Icon className="absolute h-6 w-6 -bottom-3 -right-3 dark:text-white text-black" />
+
+      {infoText && (
+        <div className="absolute top-2 right-2 z-30">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onMouseEnter={() => setInfoHovered(true)}
+            onMouseLeave={() => setInfoHovered(false)}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent link navigation
+              e.stopPropagation(); // Prevent card hover state from being affected
+            }}
+            className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-150"
+            aria-label="More info"
+          >
+            <InfoIcon />
+          </motion.button>
+          <AnimatePresence>
+            {infoHovered && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="absolute right-0 mt-2 w-80 p-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl shadow-2xl text-sm text-left text-black dark:text-white whitespace-pre-line"
+                style={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 20px 40px -10px rgba(0, 0, 0, 0.15)" }}
+              >
+                <h4 className="font-semibold mb-2 text-md text-slate-800 dark:text-slate-200">Instructions:</h4>
+                {infoText.split('\\\\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
       <AnimatePresence>
         {hovered && (
           <motion.div
@@ -88,6 +135,12 @@ const Card = ({ title, icon, children, link, disabled }) => {
     </a>
   );
 };
+
+const InfoIcon = () => (
+  <svg className="h-5 w-5 text-black dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  </svg>
+);
 
 const AceternityIcon = () => {
   return (
@@ -152,7 +205,7 @@ const MatlabIcon = () => {
   );
 };
 
-const HDLIcon = () => { // New HDL Icon
+const HDLIcon = () => {
   return (
     <svg
       width="66"
