@@ -6,7 +6,7 @@ export function Simulator() {
   return (
     <div className="w-full h-full m-10 mb-20 -left-10 md:m-20 flex flex-col">
       <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
-      <div className="flex flex-col md:flex-row gap-10">
+      <div className="mx-auto max-w-5xl flex flex-row flex-wrap justify-center items-start gap-10">
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
@@ -37,13 +37,30 @@ export function Simulator() {
             colors={[[125, 211, 252]]} 
             dotSize={4}/>
         </Card>
+        <Card 
+          title="VHDL/Verilog" 
+          icon={<HDLIcon />} 
+          link='https://www.edaplayground.com/' 
+          infoText={`Instructions to use VHDL/Verilog Simulation:\n\n1. When the page opens, log in (necessary to run, save and share your code.)\n2. Select “VHDL” under Language, then write your design (design.vhd) and testbench (testbench.vhd) in their respective panels.\n3. Fill the Top Entity with your testbench entity name and select "GHDL 3.0.0" in "Tools and Silmulators".\n4. Enable “Open EPWave after run” under the simulator options,\n5. Hit Run to simulate and view waveforms for all signals.`}
+        >
+          <CanvasRevealEffect
+            animationSpeed={5}
+            containerClassName="bg-sky-900" 
+            colors={[
+              [14, 165, 233], 
+              [56, 189, 248],
+            ]}
+            dotSize={3} />
+        </Card>
       </div>
     </div>
   );
 }
 
-const Card = ({ title, icon, children, link, disabled }) => {
+const Card = ({ title, icon, children, link, disabled, infoText }) => {
   const [hovered, setHovered] = React.useState(false);
+  const [infoHovered, setInfoHovered] = React.useState(false);
+
   return (
     <a
       href={disabled ? undefined : link}
@@ -57,6 +74,46 @@ const Card = ({ title, icon, children, link, disabled }) => {
       <Icon className="absolute h-6 w-6 -bottom-3 -left-3 dark:text-white text-black" />
       <Icon className="absolute h-6 w-6 -top-3 -right-3 dark:text-white text-black" />
       <Icon className="absolute h-6 w-6 -bottom-3 -right-3 dark:text-white text-black" />
+
+      {infoText && (
+        <div className="absolute top-2 right-2 z-30">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onMouseEnter={() => setInfoHovered(true)}
+            onMouseLeave={() => setInfoHovered(false)}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent link navigation
+              e.stopPropagation(); // Prevent card hover state from being affected
+            }}
+            className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-150"
+            aria-label="More info"
+          >
+            <InfoIcon />
+          </motion.button>
+          <AnimatePresence>
+            {infoHovered && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="absolute right-0 mt-2 w-80 p-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl shadow-2xl text-sm text-left text-black dark:text-white whitespace-pre-line"
+                style={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 20px 40px -10px rgba(0, 0, 0, 0.15)" }}
+              >
+                <h4 className="font-semibold mb-2 text-md text-slate-800 dark:text-slate-200">Instructions:</h4>
+                {infoText.split('\\\\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
       <AnimatePresence>
         {hovered && (
           <motion.div
@@ -78,6 +135,12 @@ const Card = ({ title, icon, children, link, disabled }) => {
     </a>
   );
 };
+
+const InfoIcon = () => (
+  <svg className="h-5 w-5 text-black dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  </svg>
+);
 
 const AceternityIcon = () => {
   return (
@@ -138,6 +201,48 @@ const MatlabIcon = () => {
         <path d="M19.8,4.02c-.67.9-1.48,2.55-2.94,4.38-2.27,2.82-3.5,2.63-4.17,2.98a19.674,19.674,0,0,0-2.72,2.95l3.3,2.41c2.8-3.82,4.3-7.96,5.47-10.64A13.579,13.579,0,0,1,19.8,4.02Z" style={{ fill: "url(#a)" }}/>
         <path d="M20.8,3.3c-2.18,0-3.67,11.48-11.72,17.89,2.26-.37,4.22,5.24,5.12,7.51,4-.68,7.2-8.33,10.43-8.21,1.85.07,3.47,1.86,5.37,3.63C25.66,15,23.63,3.3,20.8,3.3Z" style={{ fill: "url(#b)" }}/>
       </g>
+    </svg>
+  );
+};
+
+const HDLIcon = () => {
+  return (
+    <svg
+      width="66"
+      height="65"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-12 w-12 text-black dark:text-white group-hover/canvas-card:text-white"
+    >
+      <path
+        d="M4 7V4H20V7L12 12L4 7Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 17H20V20H4V17Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 7L10 17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 7L14 17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 };
