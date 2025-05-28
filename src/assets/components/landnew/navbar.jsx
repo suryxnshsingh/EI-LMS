@@ -54,14 +54,14 @@ export function Navbar() {
       >
         <motion.div 
           className={cn(
-            "bg-black/20 border border-white/10 rounded-full shadow-lg transition-all duration-300 backdrop-blur-md",
-            isScrolled && "bg-black/30 border-white/20 backdrop-blur-xl"
+            "bg-black/20 border border-violet-500/20 rounded-full shadow-lg transition-all duration-300 backdrop-blur-md",
+            isScrolled && "bg-black/30 border-violet-400/30 backdrop-blur-xl"
           )}
           animate={{
             padding: isScrolled ? "10px 16px" : "10px 16px",
             boxShadow: isScrolled
-              ? "0 0 24px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 4px rgba(0, 0, 0, 0.08)"
-              : "0 4px 24px rgba(0, 0, 0, 0.1)",
+              ? "0 0 24px rgba(139, 92, 246, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(139, 92, 246, 0.2), 0 0 4px rgba(139, 92, 246, 0.08)"
+              : "0 4px 24px rgba(139, 92, 246, 0.1)",
           }}
           transition={{
             type: "spring",
@@ -87,7 +87,7 @@ export function Navbar() {
               <span className="font-bold tracking-wide">EI LMS</span>
             </motion.a>
             
-            <div className="h-6 w-px bg-white/10 mx-2 flex-shrink-0" />
+            <div className="h-6 w-px bg-violet-500/20 mx-2 flex-shrink-0" />
             
             <div className="md:flex items-center gap-1 flex-1 justify-center hidden">
               {navLinks.slice(1).map((link) => (
@@ -95,9 +95,9 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative text-sm font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white",
+                    "relative text-sm font-medium text-white/80 rounded-full transition-all duration-300 hover:text-violet-200",
                     "group",
-                    activeLink === link.href && "text-white"
+                    activeLink === link.href && "text-violet-300"
                   )}
                   onClick={(e) => handleLinkClick(link.href, e)}
                   animate={{
@@ -112,22 +112,22 @@ export function Navbar() {
                 >
                   <span className="relative z-10">{link.label}</span>
                   <span className={cn(
-                    "absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-all duration-300",
-                    activeLink === link.href ? "bg-white/10" : ""
+                    "absolute inset-0 rounded-full bg-violet-500/0 group-hover:bg-violet-500/20 transition-all duration-300",
+                    activeLink === link.href ? "bg-violet-500/15" : ""
                   )} />
                   <span className={cn(
-                    "absolute inset-1 rounded-full bg-white/0 scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300",
-                    activeLink === link.href ? "bg-white/5 opacity-100 scale-100" : ""
+                    "absolute inset-1 rounded-full bg-violet-400/0 scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300",
+                    activeLink === link.href ? "bg-violet-400/10 opacity-100 scale-100" : ""
                   )} />
                 </motion.a>
               ))}
             </div>
             
-            <div className="h-6 w-px bg-white/10 mx-2 flex-shrink-0" />
+            <div className="h-6 w-px bg-violet-500/20 mx-2 flex-shrink-0" />
             
             <motion.a 
               href="/signin" 
-              className="relative text-sm font-medium text-white/90 rounded-full transition-all duration-300 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 flex-shrink-0"
+              className="relative text-sm font-medium text-white/90 rounded-full transition-all duration-300 bg-gradient-to-r from-violet-600/20 to-purple-600/20 hover:from-violet-500/30 hover:to-purple-500/30 border border-violet-500/30 hover:border-violet-400/50 flex-shrink-0"
               onClick={(e) => handleLinkClick('/signin', e)}
               animate={{
                 fontSize: "15px",
