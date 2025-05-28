@@ -51,8 +51,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/land" element={<Landnew />} />
+          <Route path="/" element={<Landnew />} />
+          <Route path="/oldland" element={<Home />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-email" element={<VerifyEmail />} />

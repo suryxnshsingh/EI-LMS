@@ -84,12 +84,12 @@ export function Navbar() {
                 damping: 30,
               }}
             >
-              <span className="font-bold tracking-wide">LMS</span>
+              <span className="font-bold tracking-wide">EI LMS</span>
             </motion.a>
             
             <div className="h-6 w-px bg-white/10 mx-2 flex-shrink-0" />
             
-            <div className="flex items-center gap-1 flex-1 justify-center">
+            <div className="md:flex items-center gap-1 flex-1 justify-center hidden">
               {navLinks.slice(1).map((link) => (
                 <motion.a
                   key={link.href}
