@@ -21,9 +21,9 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/#', label: 'About' },
-    { href: '/#', label: 'Faculty' },
-    { href: '/#', label: 'Contact' },
+    { href: '/#about', label: 'About' },
+    { href: '/#faculty', label: 'Faculty' },
+    { href: '/#contact', label: 'Contact' },
   ];
 
   const handleLinkClick = (href, e) => {

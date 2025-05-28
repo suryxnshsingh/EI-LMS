@@ -2,6 +2,7 @@
 import { HeroSectionOne } from '../ui/hero'
 import FooterFull from './foot'
 import { Navbar } from './navbar'
+import InfiniteMenuSection from './InfiniteMenuSection'
 
 const LandingPage = () => {
   return (
@@ -9,7 +10,7 @@ const LandingPage = () => {
       <Navbar />
       <div className="pt-20">
         <HeroSectionOne/>
-        {/* Add your main content here */}
+        <InfiniteMenuSection />
         <FooterFull/>
       </div>
     </div>
