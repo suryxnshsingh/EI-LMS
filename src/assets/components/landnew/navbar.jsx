@@ -1,11 +1,13 @@
 import { cn } from "../../../utils/cn";
 import { useState, useRef } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export function Navbar() {
   const [activeLink, setActiveLink] = useState('/');
   const [isScrolled, setIsScrolled] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
   
   const { scrollY } = useScroll();
 
@@ -30,6 +32,10 @@ export function Navbar() {
     // Add your navigation logic here if using React Router
     // navigate(href);
   };
+  
+    const handleSignIn = () => {
+      navigate('/signin');
+    };
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
@@ -133,7 +139,7 @@ export function Navbar() {
                 damping: 30,
               }}
             >
-              <span className="font-medium">Sign In</span>
+              <span onClick={handleSignIn} className="font-medium">Sign In</span>
             </motion.a>
           </div>
         </motion.div>
