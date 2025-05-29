@@ -5,7 +5,7 @@ import Footer from '../ui/footer';
 
 const FooterFull = () => {
   return (
-    <div className="relative dark text-white">
+    <div className="relative dark text-white w-full">
 
       {/* Background Effects */}
       <div className="absolute inset-0 z-[-1] bg-black overflow-hidden">
