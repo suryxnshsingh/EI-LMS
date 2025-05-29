@@ -6,15 +6,12 @@ import { Navbar } from './navbar'
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900/50 to-black"></div>
-      
+    <div className="min-h-screen bg-black relative overflow-hidden">    
       <Navbar />
       <div className="relative z-10 pt-20 flex flex-col items-center">
         <div className="w-full max-w-7xl">
           <HeroSectionOne/>
-          <TabsDemo/>
+          {/* <TabsDemo/> */}
         </div>
         <div className="w-full">
           <FooterFull/>
