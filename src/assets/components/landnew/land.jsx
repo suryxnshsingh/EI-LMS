@@ -12,7 +12,7 @@ const LandingPage = () => {
           <HeroSectionOne/>
         </div>
         {/* Add your main content here */}
-        <div className="w-full max-w-7xl">
+        <div className="w-full">
           <FooterFull/>
         </div>
       </div>
