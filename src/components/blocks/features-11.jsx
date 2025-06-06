@@ -46,7 +46,7 @@ export function Features() {
                             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/10 to-black/30 pointer-events-none z-20"></div>
                             <div className="absolute inset-0 shadow-inner shadow-black/30 pointer-events-none z-20"></div>
                             
-                            <div className="bg-black overflow-hidden rounded-tl-lg border-l border-t border-violet-500/30 group-hover:border-violet-400/40 pl-2 pt-2 shadow-inner shadow-violet-500/5 group-hover:shadow-violet-500/10 transition-all duration-300 relative">
+                            <div className="bg-black overflow-hidden rounded-tl-lg border-2 border-violet-500/30 group-hover:border-violet-400/40 pl-2 pt-2 shadow-inner shadow-violet-500/5 group-hover:shadow-violet-500/10 transition-all duration-300 relative">
                                 <img
                                     src="/land/attendance.png"
                                     className="opacity-90 group-hover:opacity-100 transition-opacity duration-300 w-full h-auto"
