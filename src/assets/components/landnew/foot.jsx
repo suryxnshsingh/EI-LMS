@@ -28,7 +28,10 @@ const FooterFull = () => {
         <TextHoverEffect text="LMS" />
       </div>
 
-      <Footer/>
+      {/* Footer with higher z-index to ensure links are clickable */}
+      <div className="relative z-20">
+        <Footer/>
+      </div>
     </div>
   )
 }
