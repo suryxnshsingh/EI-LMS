@@ -13,7 +13,7 @@ const Dotted = () => {
       <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-black to-transparent"></div>
       <div className="px-4 sm:px-6 lg:px-8">
         <h2 className="text-center pb-2 flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-3xl sm:text-4xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-violet-500">
-          <span className="text-white">Smart</span>Learning, <span className="text-white">Simplified!</span>
+          <span className="text-white">Smart</span> <span className="bg-gradient-to-r from-violet-400 to-purple-500 bg-clip-text text-transparent">Learning,</span> <span className="text-white">Simplified!</span>
         </h2>
       </div>
     </div>
