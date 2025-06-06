@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { BookOpen, Users, Calendar, BarChart3, FileText, GraduationCap, Clock, Award } from 'lucide-react'
+import { BookOpen, Users, Calendar, BarChart3, FileText, GraduationCap, Clock, Award, QrCode, ClipboardCheck, Library } from 'lucide-react'
 
 export function Features() {
     return (
@@ -164,24 +164,24 @@ export function Features() {
                         <div className="absolute inset-0 [background:radial-gradient(70%_85%_at_30%_80%,transparent,rgba(0,0,0,0.3)_100%)]"></div>
                         
                         <CardHeader className="p-6 md:p-12 relative z-10">
-                            <p className="font-medium text-violet-400 group-hover:text-violet-300 transition-colors duration-300 drop-shadow-sm">Platform Integration</p>
-                            <p className="text-neutral-400 mt-2 max-w-sm text-sm group-hover:text-neutral-300 transition-colors duration-300">Seamlessly integrated with modern educational tools and assessment platforms.</p>
+                            <p className="font-medium text-violet-400 group-hover:text-violet-300 transition-colors duration-300 drop-shadow-sm">Complete Educational Suite</p>
+                            <p className="text-neutral-400 mt-2 max-w-sm text-sm group-hover:text-neutral-300 transition-colors duration-300">QR-based attendance system, comprehensive testing platform, digital library, assignment management, and quiz preparation tools - all in one integrated solution.</p>
                         </CardHeader>
                         <CardContent className="relative h-fit px-6 pb-6 md:px-12 md:pb-12 z-10">
                             <div className="grid grid-cols-4 gap-2 md:grid-cols-6">
                                 <div className="rounded-lg aspect-square border border-violet-500/30 border-dashed hover:border-violet-400/40 transition-colors duration-300"></div>
                                 <div className="rounded-lg bg-violet-500/20 flex aspect-square items-center justify-center border border-violet-500/30 p-4 hover:bg-violet-500/25 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300 relative group/item">
-                                    <BookOpen className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
+                                    <QrCode className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
                                     <div className="absolute inset-0 bg-violet-500/5 rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"></div>
                                 </div>
                                 <div className="rounded-lg aspect-square border border-violet-500/30 border-dashed hover:border-violet-400/40 transition-colors duration-300"></div>
                                 <div className="rounded-lg bg-violet-500/20 flex aspect-square items-center justify-center border border-violet-500/30 p-4 hover:bg-violet-500/25 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300 relative group/item">
-                                    <Users className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
+                                    <ClipboardCheck className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
                                     <div className="absolute inset-0 bg-violet-500/5 rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"></div>
                                 </div>
                                 <div className="rounded-lg aspect-square border border-violet-500/30 border-dashed hover:border-violet-400/40 transition-colors duration-300"></div>
                                 <div className="rounded-lg bg-violet-500/20 flex aspect-square items-center justify-center border border-violet-500/30 p-4 hover:bg-violet-500/25 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300 relative group/item">
-                                    <BarChart3 className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
+                                    <Library className="size-6 text-violet-400 opacity-80 group-hover/item:opacity-100 transition-opacity duration-300" />
                                     <div className="absolute inset-0 bg-violet-500/5 rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"></div>
                                 </div>
                             </div>
