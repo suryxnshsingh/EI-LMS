@@ -5,6 +5,7 @@ import { FeaturesSectionDemo } from './feature'
 import FooterFull from './foot'
 import { Navbar } from './navbar'
 import { Demo } from './bento'
+import Dotted from './dotted'
 
 const LandingPage = () => {
   return (
@@ -13,10 +14,11 @@ const LandingPage = () => {
       <div className="relative z-10 pt-20 flex flex-col items-center">
         <div className="w-full max-w-7xl">
           <HeroSectionOne/>
-          <Demo/>
           {/* <TabsDemo/>
           <FeaturesSectionDemo/> */}
         </div>
+          <Dotted/>
+          <Demo/>
         <div className="w-full">
           <FooterFull/>
         </div>

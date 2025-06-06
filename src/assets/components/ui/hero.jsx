@@ -6,6 +6,21 @@ export function HeroSectionOne() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const parentRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Toggle this to enable/disable beams for performance testing
+  const BEAMS_ENABLED = true;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleGetStarted = () => {
     navigate('/signin');
@@ -224,15 +239,52 @@ export function HeroSectionOne() {
     },
   ];
 
+  // Reduced beams for mobile performance - only 3 beams instead of 21
+  const mobileBeams = [
+    {
+      initialX: -200,
+      translateX: 0,
+      initialY: -400,
+      translateY: 800,
+      duration: 7,
+      repeatDelay: 8,
+      delay: 1,
+      className: "h-8",
+    },
+    {
+      initialX: 0,
+      translateX: 0,
+      initialY: -380,
+      translateY: 780,
+      duration: 6.5,
+      repeatDelay: 9,
+      delay: 3,
+      className: "h-10",
+    },
+    {
+      initialX: 200,
+      translateX: 0,
+      initialY: -350,
+      translateY: 750,
+      duration: 6.8,
+      repeatDelay: 8.5,
+      delay: 2,
+      className: "h-9",
+    },
+  ];
+
+  const currentBeams = isMobile ? mobileBeams : beams;
+
   return (
     <div ref={parentRef} className="relative mx-auto my-10 flex flex-col items-center justify-center px-4 overflow-hidden md:overflow-visible">
-      {/* Collision Beams */}
-      {beams.map((beam, index) => (
+      {/* Collision Beams - Optimized for mobile */}
+      {BEAMS_ENABLED && currentBeams.map((beam, index) => (
         <CollisionBeam
           key={index + "beam-idx"}
           beamOptions={beam}
           containerRef={containerRef}
           parentRef={parentRef}
+          isMobile={isMobile}
         />
       ))}
       
@@ -244,11 +296,11 @@ export function HeroSectionOne() {
               .map((word, index) => (
                 <motion.span
                   key={index}
-                  initial={{ opacity: 0, filter: "blur(4px)", y: 10 }}
+                  initial={{ opacity: 0, filter: isMobile ? "blur(0px)" : "blur(4px)", y: isMobile ? 5 : 10 }}
                   animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
                   transition={{
-                    duration: 0.3,
-                    delay: index * 0.1,
+                    duration: isMobile ? 0.2 : 0.3,
+                    delay: index * (isMobile ? 0.05 : 0.1),
                     ease: "easeInOut",
                   }}
                   className="mr-2 inline-block text-lg font-normal text-neutral-400 md:text-xl lg:text-2xl"
@@ -263,11 +315,11 @@ export function HeroSectionOne() {
               .map((word, index) => (
                 <motion.span
                   key={index + 2}
-                  initial={{ opacity: 0, filter: "blur(4px)", y: 10 }}
+                  initial={{ opacity: 0, filter: isMobile ? "blur(0px)" : "blur(4px)", y: isMobile ? 5 : 10 }}
                   animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
                   transition={{
-                    duration: 0.3,
-                    delay: (index + 2) * 0.1,
+                    duration: isMobile ? 0.2 : 0.3,
+                    delay: (index + 2) * (isMobile ? 0.05 : 0.1),
                     ease: "easeInOut",
                   }}
                   className="mr-2 inline-block"
@@ -383,7 +435,7 @@ export function HeroSectionOne() {
   );
 }
 
-const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions = {} }, ref) => {
+const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions = {}, isMobile = false }, ref) => {
   const beamRef = useRef(null);
   const [collision, setCollision] = useState({
     detected: false,
@@ -422,10 +474,11 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
       }
     };
 
-    const animationInterval = setInterval(checkCollision, 50);
+    // Less frequent collision checking on mobile for better performance
+    const animationInterval = setInterval(checkCollision, isMobile ? 150 : 50);
 
     return () => clearInterval(animationInterval);
-  }, [cycleCollisionDetected, containerRef]);
+  }, [cycleCollisionDetected, containerRef, isMobile]);
 
   useEffect(() => {
     if (collision.detected && collision.coordinates) {
@@ -478,6 +531,7 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
               top: `${collision.coordinates.y}px`,
               transform: "translate(-50%, -50%)",
             }}
+            isMobile={isMobile}
           />
         )}
       </AnimatePresence>
@@ -487,8 +541,10 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
 
 CollisionBeam.displayName = "CollisionBeam";
 
-const Explosion = ({ ...props }) => {
-  const spans = Array.from({ length: 20 }, (_, index) => ({
+const Explosion = ({ isMobile = false, ...props }) => {
+  // Significantly reduce explosion particles on mobile for better performance
+  const particleCount = isMobile ? 5 : 20;
+  const spans = Array.from({ length: particleCount }, (_, index) => ({
     id: index,
     initialX: 0,
     initialY: 0,
