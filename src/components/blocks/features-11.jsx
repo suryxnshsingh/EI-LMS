@@ -4,8 +4,6 @@ import { BookOpen, Users, Calendar, BarChart3, FileText, GraduationCap, Clock, A
 export function Features() {
     return (
         <section className="bg-black py-16 md:py-32 relative overflow-hidden">
-            {/* Subtle Background glow effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-900/10 via-black to-purple-900/10"></div>
             
             {/* Gentle floating orbs */}
             <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl"></div>
