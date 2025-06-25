@@ -31,9 +31,9 @@ const Footer = () => {
                   <li className="mb-4">
                     <a href="https://www.linkedin.com/in/suryxnshsingh/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suryansh Singh</a>
                   </li>
-                  <li className="mb-4">
+                  {/* <li className="mb-4">
                     <a href="https://www.linkedin.com/in/pranshuaf/" target="_blank" rel="noopener noreferrer" className="hover:underline">Pranshu Pandey</a>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
               <div>
