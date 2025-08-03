@@ -29,7 +29,7 @@ const Footer = () => {
                 <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Crafted by</h2>
                 <ul className="text-gray-500 dark:text-gray-400 font-medium">
                   <li className="mb-4">
-                    <a href="https://www.linkedin.com/in/suryxnshsingh/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suryansh Singh</a>
+                    <a href="https://www.suryxnshsingh.me/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suryansh Singh</a>
                   </li>
                   <li className="mb-4">
                     <a href="https://www.linkedin.com/in/pranshuaf/" target="_blank" rel="noopener noreferrer" className="hover:underline">Pranshu Pandey</a>

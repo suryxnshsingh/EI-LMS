@@ -5,21 +5,21 @@ import Footer from '../ui/footer';
 
 const FooterFull = () => {
   return (
-    <div className="relative dark text-white">
+    <div className="relative dark text-white w-full bg-black">
 
       {/* Background Effects */}
-      <div className="absolute inset-0 z-[-1] bg-black overflow-hidden">
+      <div className="absolute inset-0 z-0 overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
-          className="absolute -left-1/4 top-1/4 h-1/3 w-96 rounded-full bg-cyan-500/50 blur-[120px]"
+          className="absolute -left-1/4 top-1/4 h-1/3 w-96 rounded-full bg-cyan-500/30 blur-[120px]"
         />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2, delay: 0.5 }}
-          className="absolute -right-1/4 top-1/2 h-96 w-1/2 rounded-full bg-violet-500/50 blur-[200px]"
+          className="absolute -right-1/4 top-1/2 h-96 w-1/2 rounded-full bg-violet-500/30 blur-[200px]"
         />
       </div>
 
@@ -28,7 +28,10 @@ const FooterFull = () => {
         <TextHoverEffect text="LMS" />
       </div>
 
-      <Footer/>
+      {/* Footer with higher z-index to ensure links are clickable */}
+      <div className="relative z-20">
+        <Footer/>
+      </div>
     </div>
   )
 }

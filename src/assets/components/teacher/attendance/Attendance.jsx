@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useMediaQuery } from 'react-responsive';
 import Responses from './Responses';
 import AttendanceDownloadDialog from './AttendanceDownloadDialog';
+import ManualAttendanceDialog from './ManualAttendanceDialog'; // Import the new dialog
 import CryptoJS from 'crypto-js'; // Import CryptoJS
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
@@ -32,6 +33,10 @@ const Attendance = () => {
   const [sessionsLoading, setSessionsLoading] = useState(false); // New state for sessions loading
   const [dynamicQrToken, setDynamicQrToken] = useState(null); // New state for dynamic QR token
   const qrRefreshInterval = useRef(null); // Ref to store interval ID
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showManualAttendanceDialog, setShowManualAttendanceDialog] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   const toggleDropdown = (id) => {
     setDropdownOpen((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -350,13 +355,22 @@ const Attendance = () => {
                 <div className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white">
                   {selectedCourse.name} <p className="hidden md:block">({selectedCourse.courseCode})</p>
                 </div>
-                <button
-                  onClick={() => setShowDownloadDialog(true)}
-                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700 transition-colors"
-                >
-                  <Download className="h-4 w-4" />
-                  <p className='hidden md:block ml-2'>Download Excel</p>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDownloadDialog(true)}
+                    className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-800 dark:text-green-300 dark:hover:bg-green-700 transition-colors"
+                  >
+                    <Download className="h-4 w-4" />
+                    <p className='hidden md:block ml-2'>Download Excel</p>
+                  </button>
+                  <button
+                    onClick={() => setShowManualAttendanceDialog(true)}
+                    className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 dark:bg-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-700 transition-colors"
+                  >
+                    <BookUser className="h-4 w-4" />
+                    <p className='hidden md:block ml-2'>Manual Attendance</p>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -454,6 +468,13 @@ const Attendance = () => {
         )}
       </div>
 
+      {showManualAttendanceDialog && selectedCourse && (
+        <ManualAttendanceDialog
+          course={selectedCourse}
+          onClose={() => setShowManualAttendanceDialog(false)}
+        />
+      )}
+
       {dynamicQrToken && qrCodeSession && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
           <div className="bg-white rounded-lg shadow-lg px-6 pb-6 pt-2">
@@ -533,6 +554,49 @@ const Attendance = () => {
           courseName={selectedCourse.name}
           onClose={() => setShowDownloadDialog(false)}
         />
+      )}
+      {showUploadDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-96">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Upload Attendance Sheet</h2>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setUploading(true);
+              setUploadError(null);
+              const fileInput = e.target.elements.attendanceFile;
+              if (!fileInput.files[0]) {
+                setUploadError('Please select a file.');
+                setUploading(false);
+                return;
+              }
+              const formData = new FormData();
+              formData.append('file', fileInput.files[0]);
+              formData.append('courseId', selectedCourse.id);
+              try {
+                await axios.post(`${BASE_URL}/api/attendance/upload-sheet`, formData, {
+                  headers: {
+                    'Authorization': `Bearer ${Cookies.get('token')}`,
+                    'Content-Type': 'multipart/form-data'
+                  }
+                });
+                setShowUploadDialog(false);
+                fetchAttendanceSessions(selectedCourse.id);
+              } catch (err) {
+                setUploadError(err.response?.data?.error || 'Upload failed.');
+              } finally {
+                setUploading(false);
+              }
+            }}>
+              <input type="file" name="attendanceFile" accept=".xlsx,.xls" className="mb-4" />
+              {uploadError && <div className="text-red-500 mb-2">{uploadError}</div>}
+              <button type="submit" disabled={uploading} className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin inline-block mr-2" /> : 'Upload'}
+              </button>
+              <button type="button" onClick={() => setShowUploadDialog(false)} className="w-full mt-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg">Cancel</button>
+            </form>
+            <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">Monthly/Range upload coming soon.</div>
+          </div>
+        </div>
       )}
     </div>
   );
