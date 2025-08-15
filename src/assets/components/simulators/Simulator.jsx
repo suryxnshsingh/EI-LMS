@@ -26,7 +26,7 @@ export function Simulator() {
       </BannerCard>
       
       <div className="mx-auto max-w-5xl flex flex-row flex-wrap justify-center items-start gap-10 mt-12">
-        <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
+  <Card title="Digital Simulator" icon={<LogicGateIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
         <Card title="Circuit Simulator" icon={<CircuitBoardIcon />} link='https://eilms.vercel.app/circuit'>
@@ -46,6 +46,16 @@ export function Simulator() {
             colors={[
               [236, 72, 153],
               [232, 121, 249],
+            ]}
+            dotSize={3} />
+        </Card>
+  <Card title="8085 Simulator" icon={<CircuitIcon />} link='https://www.sim8085.com/'>
+          <CanvasRevealEffect
+            animationSpeed={5}
+            containerClassName="bg-indigo-900 dark:bg-black"
+            colors={[
+              [99, 102, 241],
+              [56, 189, 248],
             ]}
             dotSize={3} />
         </Card>
@@ -354,6 +364,23 @@ const IITBIcon = () => {
       alt="IIT Bombay Logo"
       className="h-16 w-16 md:h-20 md:w-20 object-contain group-hover/canvas-card:scale-110 transition-transform duration-200 invert dark:invert-0"
     />
+  );
+};
+
+const LogicGateIcon = () => {
+  // Simple AND gate symbol
+  return (
+    <svg
+      width="66"
+      height="65"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-12 w-12 text-black dark:text-white group-hover/canvas-card:text-white"
+    >
+      <path d="M6 6h5a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H6V6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+      <path d="M3 9h3M3 15h3M18 13h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
   );
 };
 
