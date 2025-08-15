@@ -6,7 +6,26 @@ export function Simulator() {
   return (
     <div className="w-full h-full m-10 mb-20 -left-10 md:m-20 flex flex-col">
       <h1 className="text-4xl font-bold chakra-petch-bold pb-10 md:pb-20 text-center ">Simulators</h1>
-      <div className="mx-auto max-w-5xl flex flex-row flex-wrap justify-center items-start gap-10">
+      
+      {/* IITB VLabs Banner Card */}
+      <BannerCard 
+        title="IIT Bombay Virtual Labs" 
+        icon={<IITBIcon />} 
+        link="https://iitb.vlabs.co.in"
+      >
+        <CanvasRevealEffect
+          animationSpeed={3}
+          containerClassName="bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 dark:bg-gradient-to-r dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900"
+          colors={[
+            [59, 130, 246],  // Blue
+            [99, 102, 241],  // Indigo
+            [139, 92, 246],  // Purple
+          ]}
+          dotSize={2}
+        />
+      </BannerCard>
+      
+      <div className="mx-auto max-w-5xl flex flex-row flex-wrap justify-center items-start gap-10 mt-12">
         <Card title="Digital Simulator" icon={<CircuitIcon />} link="https://circuitverse.org/simulator">
           <CanvasRevealEffect animationSpeed={5.1} containerClassName="bg-emerald-900 dark:bg-black" />
         </Card>
@@ -56,6 +75,53 @@ export function Simulator() {
     </div>
   );
 }
+
+const BannerCard = ({ title, subtitle, icon, children, link }) => {
+  const [hovered, setHovered] = React.useState(false);
+
+  return (
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="border border-black/[0.2] group/canvas-card flex items-center justify-center dark:border-white/[0.2] bg-white dark:bg-black relative w-full max-w-4xl h-32 md:h-48 cursor-pointer mb-8 mx-auto"
+    >
+      <Icon className="absolute h-6 w-6 -top-3 -left-3 dark:text-white text-black" />
+      <Icon className="absolute h-6 w-6 -bottom-3 -left-3 dark:text-white text-black" />
+      <Icon className="absolute h-6 w-6 -top-3 -right-3 dark:text-white text-black" />
+      <Icon className="absolute h-6 w-6 -bottom-3 -right-3 dark:text-white text-black" />
+
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="h-full w-full absolute inset-0">
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <div className="relative z-20 flex flex-col items-center justify-center w-full h-full px-6 py-4">
+        <div className="flex-shrink-0 mb-3 group-hover/canvas-card:-translate-y-2 transition duration-200">
+          {icon}
+        </div>
+        <div className="text-center">
+          <h2 className="card-text dark:text-white text-2xl md:text-3xl text-black font-bold group-hover/canvas-card:text-white group-hover/canvas-card:-translate-y-2 transition duration-200">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-sm md:text-base opacity-0 group-hover/canvas-card:opacity-100 text-gray-600 dark:text-gray-300 group-hover/canvas-card:text-gray-200 transition duration-200 group-hover/canvas-card:-translate-y-1 mt-2">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      </div>
+    </a>
+  );
+};
 
 const Card = ({ title, icon, children, link, disabled, infoText }) => {
   const [hovered, setHovered] = React.useState(false);
@@ -278,6 +344,16 @@ const CircuitBoardIcon = () => {
       className="h-10 w-10 text-black dark:text-white group-hover/canvas-card:text-white">
       <path d="M14.5 1h-13l-.5.5v13l.5.5h13l.5-.5v-13l-.5-.5zM14 14H5v-2h2.3c.3.6 1 1 1.7 1 1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2H4v3H2V2h2v2.3c-.6.3-1 1-1 1.7 0 1.1.9 2 2 2s2-.9 2-2h2c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2c-.7 0-1.4.4-1.7 1H6.7c-.3-.6-1-1-1.7-1V2h9v12zm-6-3c0-.6.4-1 1-1s1 .4 1 1-.4 1-1 1-1-.4-1-1zM5 5c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1zm6 0c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1z"/>
     </svg>
+  );
+};
+
+const IITBIcon = () => {
+  return (
+    <img 
+      src="/iitb.png" 
+      alt="IIT Bombay Logo"
+      className="h-16 w-16 md:h-20 md:w-20 object-contain group-hover/canvas-card:scale-110 transition-transform duration-200 invert dark:invert-0"
+    />
   );
 };
 
