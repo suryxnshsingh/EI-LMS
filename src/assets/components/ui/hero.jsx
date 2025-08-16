@@ -350,18 +350,28 @@ export function HeroSectionOne() {
             duration: 0.3,
             delay: 1,
           }}
-          className="relative z-10 mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 px-4"
+          className="relative z-10 mt-8 flex items-center justify-center px-4"
         >
-          <button 
+          <motion.button 
             onClick={handleGetStarted}
-            className="group relative w-full sm:w-60 max-w-xs transform rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-2 font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:from-violet-500 hover:to-purple-500 hover:shadow-xl hover:shadow-violet-500/60 shadow-lg shadow-violet-600/40"
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group relative px-8 py-3 rounded-full bg-gradient-to-r from-violet-600/20 to-purple-600/20 hover:from-violet-500/30 hover:to-purple-500/30 border border-violet-500/30 hover:border-violet-400/50 text-white font-medium text-lg transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/25"
           >
-            <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-violet-400/60 via-purple-500/50 to-violet-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative">Get Started</span>
-          </button>
-          <button className="w-full sm:w-60 max-w-xs transform rounded-lg border border-violet-500/30 bg-black px-6 py-2 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-violet-950/50 hover:border-violet-400/50 hover:shadow-lg hover:shadow-violet-500/20">
-            Learn More
-          </button>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-400/0 via-violet-300/10 to-purple-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative flex items-center gap-2">
+              Get Started
+              <svg 
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </motion.button>
         </motion.div>
         <motion.div
           initial={{
