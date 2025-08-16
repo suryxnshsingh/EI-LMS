@@ -10,10 +10,24 @@ export function HeroSectionOne() {
 
   // Toggle this to enable/disable beams for performance testing
   const BEAMS_ENABLED = true;
+  
+  // Mobile performance detection - disable beams on very low-end devices
+  const [mobilePerformanceMode, setMobilePerformanceMode] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+      
+      // Check for low-end mobile devices
+      if (isMobileDevice) {
+        const isLowEnd = (
+          navigator.hardwareConcurrency <= 2 || // 2 or fewer CPU cores
+          navigator.deviceMemory <= 2 ||        // 2GB or less RAM
+          /Android.*[2-4]\./.test(navigator.userAgent) // Old Android versions
+        );
+        setMobilePerformanceMode(isLowEnd);
+      }
     };
     
     checkMobile();
@@ -169,56 +183,97 @@ export function HeroSectionOne() {
     },
   ];
 
-  // Reduced beams for mobile performance - only 4 beams with consistent timing
+  // Optimized beams for mobile - 8 beams, no collision detection
   const mobileBeams = [
     {
-      initialX: -200,
-      translateX: 0,
-      initialY: -400,
-      translateY: 800,
-      duration: 6,
-      repeatDelay: 6,
-      delay: 0,
-      className: "h-8",
-    },
-    {
-      initialX: -60,
-      translateX: 0,
-      initialY: -380,
-      translateY: 780,
-      duration: 6,
-      repeatDelay: 6,
-      delay: 1.5,
-      className: "h-10",
-    },
-    {
-      initialX: 60,
+      initialX: -250,
       translateX: 0,
       initialY: -350,
-      translateY: 750,
-      duration: 6,
-      repeatDelay: 6,
-      delay: 3,
-      className: "h-9",
+      translateY: 650,
+      duration: 7,
+      repeatDelay: 8,
+      delay: 0,
+      className: "h-6",
     },
     {
-      initialX: 200,
+      initialX: -150,
+      translateX: 0,
+      initialY: -320,
+      translateY: 620,
+      duration: 7.5,
+      repeatDelay: 8,
+      delay: 1,
+      className: "h-8",
+    },
+    {
+      initialX: -80,
+      translateX: 0,
+      initialY: -380,
+      translateY: 680,
+      duration: 7.2,
+      repeatDelay: 8,
+      delay: 2,
+      className: "h-7",
+    },
+    {
+      initialX: -20,
+      translateX: 0,
+      initialY: -340,
+      translateY: 640,
+      duration: 7.8,
+      repeatDelay: 8,
+      delay: 3,
+      className: "h-6",
+    },
+    {
+      initialX: 20,
+      translateX: 0,
+      initialY: -360,
+      translateY: 660,
+      duration: 7.3,
+      repeatDelay: 8,
+      delay: 4,
+      className: "h-7",
+    },
+    {
+      initialX: 80,
+      translateX: 0,
+      initialY: -330,
+      translateY: 630,
+      duration: 7.6,
+      repeatDelay: 8,
+      delay: 5,
+      className: "h-8",
+    },
+    {
+      initialX: 150,
       translateX: 0,
       initialY: -370,
-      translateY: 770,
-      duration: 6,
-      repeatDelay: 6,
-      delay: 4.5,
-      className: "h-8",
+      translateY: 670,
+      duration: 7.1,
+      repeatDelay: 8,
+      delay: 6,
+      className: "h-6",
+    },
+    {
+      initialX: 250,
+      translateX: 0,
+      initialY: -350,
+      translateY: 650,
+      duration: 7.4,
+      repeatDelay: 8,
+      delay: 7,
+      className: "h-7",
     },
   ];
 
   const currentBeams = isMobile ? mobileBeams : beams;
+  const shouldShowBeams = BEAMS_ENABLED && !mobilePerformanceMode;
 
   return (
     <div ref={parentRef} className="relative mx-auto my-10 flex flex-col items-center justify-center px-4 overflow-hidden md:overflow-visible">
       {/* Collision Beams - Optimized for mobile */}
-      {BEAMS_ENABLED && currentBeams.map((beam, index) => (
+      {shouldShowBeams && currentBeams.map((beam, index) => (
         <CollisionBeam
           key={index + "beam-idx"}
           beamOptions={beam}
@@ -385,6 +440,9 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
   const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
   useEffect(() => {
+    // Skip collision detection entirely on mobile for better performance
+    if (isMobile) return;
+    
     const checkCollision = () => {
       if (
         beamRef.current &&
@@ -414,8 +472,8 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
       }
     };
 
-    // Less frequent collision checking on mobile for better performance
-    const animationInterval = setInterval(checkCollision, isMobile ? 150 : 50);
+    // Only run collision detection on desktop
+    const animationInterval = setInterval(checkCollision, 50);
 
     return () => clearInterval(animationInterval);
   }, [cycleCollisionDetected, containerRef, isMobile]);
@@ -455,14 +513,21 @@ const CollisionBeam = React.forwardRef(({ parentRef, containerRef, beamOptions =
           duration: beamOptions.duration || 6,
           repeat: Infinity,
           repeatType: "loop",
-          ease: "linear",
+          ease: isMobile ? "linear" : "linear",
           delay: beamOptions.delay || 0,
           repeatDelay: beamOptions.repeatDelay || 0,
         }}
         className={`absolute left-1/2 top-0 m-auto w-px rounded-full bg-gradient-to-b from-transparent via-violet-500 to-purple-500 opacity-80 ${beamOptions.className || "h-10"}`}
+        style={{
+          // Force hardware acceleration on mobile
+          willChange: isMobile ? "transform" : "auto",
+          transform: isMobile ? "translateZ(0)" : "none",
+          backfaceVisibility: isMobile ? "hidden" : "visible",
+          perspective: isMobile ? "1000px" : "none",
+        }}
       />
       <AnimatePresence>
-        {collision.detected && collision.coordinates && (
+        {!isMobile && collision.detected && collision.coordinates && (
           <Explosion
             key={`${collision.coordinates.x}-${collision.coordinates.y}`}
             className=""
@@ -483,13 +548,13 @@ CollisionBeam.displayName = "CollisionBeam";
 
 const Explosion = ({ isMobile = false, ...props }) => {
   // Significantly reduce explosion particles on mobile for better performance
-  const particleCount = isMobile ? 5 : 20;
+  const particleCount = isMobile ? 3 : 20;
   const spans = Array.from({ length: particleCount }, (_, index) => ({
     id: index,
     initialX: 0,
     initialY: 0,
-    directionX: Math.floor(Math.random() * 80 - 40),
-    directionY: Math.floor(Math.random() * -50 - 10),
+    directionX: Math.floor(Math.random() * (isMobile ? 40 : 80) - (isMobile ? 20 : 40)),
+    directionY: Math.floor(Math.random() * (isMobile ? -30 : -50) - 10),
   }));
 
   return (
@@ -498,8 +563,16 @@ const Explosion = ({ isMobile = false, ...props }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="absolute -inset-x-10 top-0 m-auto h-2 w-10 rounded-full bg-gradient-to-r from-transparent via-violet-500 to-transparent blur-sm"
+        transition={{ 
+          duration: isMobile ? 1 : 1.5, 
+          ease: "easeOut" 
+        }}
+        className={`absolute -inset-x-10 top-0 m-auto h-2 w-10 rounded-full bg-gradient-to-r from-transparent via-violet-500 to-transparent ${isMobile ? 'blur-sm' : 'blur-sm'}`}
+        style={{
+          // Mobile optimization
+          willChange: isMobile ? "transform, opacity" : "auto",
+          transform: isMobile ? "translateZ(0)" : "none",
+        }}
       />
       {spans.map((span) => (
         <motion.span
@@ -510,8 +583,16 @@ const Explosion = ({ isMobile = false, ...props }) => {
             y: span.directionY,
             opacity: 0,
           }}
-          transition={{ duration: Math.random() * 1.5 + 0.5, ease: "easeOut" }}
+          transition={{ 
+            duration: isMobile ? Math.random() * 1 + 0.5 : Math.random() * 1.5 + 0.5, 
+            ease: "easeOut" 
+          }}
           className="absolute h-1 w-1 rounded-full bg-gradient-to-b from-violet-500 to-purple-500"
+          style={{
+            // Mobile optimization
+            willChange: isMobile ? "transform, opacity" : "auto",
+            transform: isMobile ? "translateZ(0)" : "none",
+          }}
         />
       ))}
     </div>
